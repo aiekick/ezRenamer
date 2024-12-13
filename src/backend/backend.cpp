@@ -17,8 +17,8 @@
 #include <algorithm>  // std::min, std::max
 #include <stdexcept>  // std::exception
 
-#include <backend/backend.h>
 #include <project/projectFile.h>
+#include <plugins/pluginManager.h>
 
 #include <LayoutManager.h>
 
@@ -408,6 +408,7 @@ bool Backend::m_InitImGui() {
 }
 
 void Backend::m_InitPlugins(const ez::App& vApp) {
+    PluginManager::Instance()->LoadPlugins(vApp);
 }
 
 void Backend::m_InitModels() {
@@ -417,6 +418,7 @@ void Backend::m_UnitModels() {
 }
 
 void Backend::m_UnitPlugins() {
+    PluginManager::Instance()->Clear();
 }
 
 void Backend::m_InitSystems() {

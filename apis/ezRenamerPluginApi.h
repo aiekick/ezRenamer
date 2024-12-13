@@ -28,8 +28,6 @@ limitations under the License.
 
 namespace rnm {
 
-struct PluginBridge {};
-
 struct PluginModule {
     virtual ~PluginModule() = default;
     virtual bool init() = 0;

@@ -22,14 +22,14 @@ limitations under the License.
 #include <ImGuiPack.h>
 
 #include <backend/backend.h>
-
 #include <project/projectFile.h>
+#include <systems/settingsDialog.h>
+#include <helpers/translationHelper.h>
 
 #include <panes/consolePane.h>
-
-#include <systems/settingsDialog.h>
-
-#include <helpers/translationHelper.h>
+#include <panes/controlPane.h>
+#include <panes/previewPane.h>
+#include <panes/pathsPane.h>
 
 // panes
 #define DEBUG_PANE_ICON ICON_SDFM_BUG
@@ -69,9 +69,10 @@ bool Frontend::init() {
     LayoutManager::Instance()->SetPaneDisposalRatio("BOTTOM", 0.25f);
 
     // Views
-    LayoutManager::Instance()->AddPane(ConsolePane::Instance(), "Console", "Panes", "BOTTOM", 0.25f, false, false);
-    
-    // Maintenance
+    LayoutManager::Instance()->AddPane(ConsolePane::Instance(), "Console", "", "BOTTOM", 0.25f, false, false);
+    LayoutManager::Instance()->AddPane(ControlPane::Instance(), "Control", "", "LEFT", 0.25f, true, true);
+    LayoutManager::Instance()->AddPane(PreviewPane::Instance(), "Preview", "", "RIGHT", 0.25f, true, false);
+    LayoutManager::Instance()->AddPane(PathsPane::Instance(), "Paths", "", "CENTRAL", 0.0f, true, false);
     
     // InitPanes is done in m_InitPanes, because a specific order is needed
 
