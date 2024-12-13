@@ -1,10 +1,10 @@
-#include <systems/SettingsDialog.h>
+#include <systems/settingsDialog.h>
 
 #include <ezlibs/ezTools.hpp>
 
 #include <ImGuiPack.h>
 
-#include <project/ProjectFile.h>
+#include <project/projectFile.h>
 
 bool SettingsDialog::init() {
     return true;
@@ -127,9 +127,9 @@ ez::xml::Nodes SettingsDialog::getXmlNodes(const std::string& vUserDatas) {
 }
 
 bool SettingsDialog::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
-    const auto& strName = vNode.getName();
+    //const auto& strName = vNode.getName();
     const auto& strValue = vNode.getContent();
-    const auto& strParentName = vParent.getName();
+    //const auto& strParentName = vParent.getName();
     for (const auto& cat : m_SettingsPerCategoryPath) {
         auto ptr = cat.second.lock();
         if (ptr != nullptr) {

@@ -17,14 +17,14 @@ limitations under the License.
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "ProjectFile.h"
+#include "projectFile.h"
 
 #include <ezlibs/ezLog.hpp>
 #include <ezlibs/ezFile.hpp>
 
 #include <LayoutManager.h>
 
-#include <systems/SettingsDialog.h>
+#include <systems/settingsDialog.h>
 
 ProjectFile::ProjectFile() = default;
 
@@ -163,8 +163,8 @@ ez::xml::Nodes ProjectFile::getXmlNodes(const std::string& vUserDatas) {
 
 bool ProjectFile::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
     const auto& strName = vNode.getName();
-    const auto& strValue = vNode.getContent();
-    const auto& strParentName = vParent.getName();
+    //const auto& strValue = vNode.getContent();
+    //const auto& strParentName = vParent.getName();
     if (strName == "config") {
         return true;
     } else if (strName == "project") {

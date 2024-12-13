@@ -23,13 +23,13 @@ limitations under the License.
 
 #include <backend/backend.h>
 
-#include <project/ProjectFile.h>
+#include <project/projectFile.h>
 
-#include <panes/ConsolePane.h>
+#include <panes/consolePane.h>
 
-#include <systems/SettingsDialog.h>
+#include <systems/settingsDialog.h>
 
-#include <helpers/TranslationHelper.h>
+#include <helpers/translationHelper.h>
 
 // panes
 #define DEBUG_PANE_ICON ICON_SDFM_BUG

@@ -21,7 +21,7 @@ limitations under the License.
 #include <ezlibs/ezTools.hpp>
 #include <ezlibs/ezLog.hpp>
 #include <ezlibs/ezXmlConfig.hpp>
-#include <systems/FrameActionSystem.h>
+#include <systems/frameActionSystem.h>
 
 #include <backend/backend.h>
 

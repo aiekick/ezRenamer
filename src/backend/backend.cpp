@@ -18,7 +18,7 @@
 #include <stdexcept>  // std::exception
 
 #include <backend/backend.h>
-#include <project/ProjectFile.h>
+#include <project/projectFile.h>
 
 #include <LayoutManager.h>
 
@@ -29,13 +29,13 @@
 #include <ezlibs/ezFile.hpp>
 #include <frontend/frontend.h>
 
-#include <panes/ConsolePane.h>
+#include <panes/consolePane.h>
 
-#include <systems/SettingsDialog.h>
+#include <systems/settingsDialog.h>
 
 // we include the cpp just for embedded fonts
 #include <res/fontIcons.cpp>
-#include <res/Roboto_Medium.cpp> 
+#include <res/robotoMedium.cpp>
 
 #define INITIAL_WIDTH 1700
 #define INITIAL_HEIGHT 700

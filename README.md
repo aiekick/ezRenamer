@@ -1,8 +1,13 @@
-[![Win](https://github.com/aiekick/ezRenamer/actions/workflows/Win.yml/badge.svg)](https://github.com/aiekick/ezRenamer/actions/workflows/Win.yml)
-[![Linux](https://github.com/aiekick/ezRenamer/actions/workflows/Linux.yml/badge.svg)](https://github.com/aiekick/ezRenamer/actions/workflows/Linux.yml)
-[![Osx](https://github.com/aiekick/ezRenamer/actions/workflows/Osx.yml/badge.svg)](https://github.com/aiekick/ezRenamer/actions/workflows/Osx.yml)
+[![Win](https://github.com/aiekick/ezRenamer/actions/workflows/win.yml/badge.svg)](https://github.com/aiekick/ezRenamer/actions/workflows/win.yml)
+[![Linux](https://github.com/aiekick/ezRenamer/actions/workflows/linux.yml/badge.svg)](https://github.com/aiekick/ezRenamer/actions/workflows/linux.yml)
+[![Osx](https://github.com/aiekick/ezRenamer/actions/workflows/osx.yml/badge.svg)](https://github.com/aiekick/ezRenamer/actions/workflows/osx.yml)
 
 # ezRenamer
+
+A plugin based tool for easily rename many files and directories (like the well known Ant Renamer but with many more features)
+
+## Features :
+
 
 ## How to Build : 
 
@@ -20,13 +25,13 @@ cmake --build my_build_directory --config BuildMode
 Some cMake version need Build mode define via the directive CMAKE_BUILD_TYPE or via --Config when we launch the build. 
 This is why i put the boths possibilities
 
-## Dependencies per Os :
+### Dependencies per Os :
 
-### On Windows :
+#### On Windows :
 
 You need to have the opengl library installed
 
-### On Linux :
+#### On Linux :
 
 You need many lib : (X11, xrandr, xinerama, xcursor, mesa)
 
@@ -36,7 +41,7 @@ If you are on debian you can run :
 sudo apt-get install libgl1-mesa-dev libx11-dev libxi-dev libxrandr-dev libxinerama-dev libxcursor-dev
 ```
 
-### On MacOs :
+#### On MacOs :
 
 you need many lib : opengl and cocoa framework
 
