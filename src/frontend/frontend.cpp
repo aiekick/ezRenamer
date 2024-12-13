@@ -68,11 +68,11 @@ bool Frontend::init() {
     LayoutManager::Instance()->SetPaneDisposalRatio("RIGHT", 0.25f);
     LayoutManager::Instance()->SetPaneDisposalRatio("BOTTOM", 0.25f);
 
-    // Views
     LayoutManager::Instance()->AddPane(ConsolePane::Instance(), "Console", "", "BOTTOM", 0.25f, false, false);
+
     LayoutManager::Instance()->AddPane(ControlPane::Instance(), "Control", "", "LEFT", 0.25f, true, true);
-    LayoutManager::Instance()->AddPane(PreviewPane::Instance(), "Preview", "", "RIGHT", 0.25f, true, false);
-    LayoutManager::Instance()->AddPane(PathsPane::Instance(), "Paths", "", "CENTRAL", 0.0f, true, false);
+    LayoutManager::Instance()->AddPane(PreviewPane::Instance(), "Preview", "", "CENTRAL", 0.0f, true, false);
+    LayoutManager::Instance()->AddPane(PathsPane::Instance(), "Paths", "", "BOTTOM", 0.3f, true, false);
     
     // InitPanes is done in m_InitPanes, because a specific order is needed
 

@@ -2,8 +2,6 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include "consolePane.h"
-#include <imgui_internal.h>
-#include <cinttypes>  // printf zu
 
 ConsolePane::ConsolePane() = default;
 ConsolePane::~ConsolePane() {

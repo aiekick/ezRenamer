@@ -89,14 +89,14 @@ private:
 
     bool m_InitWindow();
     bool m_InitImGui();
-    void m_InitPlugins(const ez::App& vApp);
-    void m_InitModels();
-    void m_InitSystems();
-    void m_InitPanes();
-    void m_InitSettings();
+    bool m_InitPlugins(const ez::App& vApp);
+    bool m_InitCores();
+    bool m_InitSystems();
+    bool m_InitPanes();
+    bool m_InitSettings();
 
     void m_UnitWindow();
-    void m_UnitModels();
+    void m_UnitCores();
     void m_UnitImGui();
     void m_UnitPlugins();
     void m_UnitSystems();

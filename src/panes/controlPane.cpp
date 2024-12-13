@@ -2,8 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include "controlPane.h"
-#include <imgui_internal.h>
-#include <cinttypes>  // printf zu
+#include <core/controller.h>
 
 ControlPane::ControlPane() = default;
 ControlPane::~ControlPane() {
@@ -34,6 +33,7 @@ bool ControlPane::DrawPanes(const uint32_t& /*vCurrentFrame*/, bool* vOpened, Im
             else
                 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_MenuBar;
 #endif
+            change |= Controller::instance()->drawControl();
         }
 
         ImGui::End();

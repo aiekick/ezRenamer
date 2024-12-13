@@ -19,6 +19,7 @@
 
 #include <project/projectFile.h>
 #include <plugins/pluginManager.h>
+#include <core/controller.h>
 
 #include <LayoutManager.h>
 
@@ -73,14 +74,21 @@ bool Backend::init(const ez::App& vApp) {
 #else
     SetConsoleVisibility(false);
 #endif
-    if (m_InitWindow() && m_InitImGui()) {
-        m_InitPlugins(vApp);
-        m_InitModels();
-        m_InitSystems();
-        m_InitPanes();
-        m_InitSettings();
-        LoadConfigFile("config.xml", "app");
-        return true;
+    if (m_InitWindow()) {
+        if (m_InitImGui()) {
+            if (m_InitPlugins(vApp)) {
+                if (m_InitCores()) {
+                    if (m_InitSystems()) {
+                        if (m_InitPanes()) {
+                            if (m_InitSettings()) {
+                                LoadConfigFile("config.xml", "app");
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     return false;
 }
@@ -89,7 +97,7 @@ bool Backend::init(const ez::App& vApp) {
 void Backend::unit() {
     SaveConfigFile("config.xml", "app", "config");
     m_UnitSystems();
-    m_UnitModels();
+    m_UnitCores();
     m_UnitImGui();     // before plugins since containing weak ptr to plugins
     m_UnitSettings();  // after gui but before plugins since containing weak ptr to plugins
     m_UnitPlugins();
@@ -407,39 +415,45 @@ bool Backend::m_InitImGui() {
     return false;
 }
 
-void Backend::m_InitPlugins(const ez::App& vApp) {
+bool Backend::m_InitPlugins(const ez::App& vApp) {
     PluginManager::Instance()->LoadPlugins(vApp);
+    return true;
 }
 
-void Backend::m_InitModels() {
+bool Backend::m_InitCores() {
+    return Controller::instance()->init();
 }
 
-void Backend::m_UnitModels() {
+void Backend::m_UnitCores() {
+    Controller::instance()->unit();
 }
 
 void Backend::m_UnitPlugins() {
     PluginManager::Instance()->Clear();
 }
 
-void Backend::m_InitSystems() {
-    
+bool Backend::m_InitSystems() {
+    return true;    
 }
 
 void Backend::m_UnitSystems() {
 }
 
-void Backend::m_InitPanes() {
+bool Backend::m_InitPanes() {
     if (LayoutManager::Instance()->InitPanes()) {
         // a faire apres InitPanes() sinon ConsolePane::Instance()->paneFlag vaudra 0 et changeras apres InitPanes()
         Messaging::Instance()->sMessagePaneId = ConsolePane::Instance()->GetFlag();
+        return true;
     }
+    return false;
 }
 
 void Backend::m_UnitPanes() {
 }
 
-void Backend::m_InitSettings() {
+bool Backend::m_InitSettings() {
     SettingsDialog::Instance()->init();
+    return true;
 }
 
 void Backend::m_UnitSettings() {

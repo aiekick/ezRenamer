@@ -96,7 +96,7 @@ add_definitions(-DPLUGIN_NAME_PREFIX="${PLUGIN_NAME_PREFIX}")
 ##### SEARCH FOR PLUGINS ##################################
 ###########################################################
 
-set(LOADED_CASHME_PLUGINS) ### musty be fillerd by each pluigns in CMakeLists.txt with plugin name
+set(LOADED_EZ_RENAMER_PLUGINS) ### musty be fillerd by each pluigns in CMakeLists.txt with plugin name
 set(PLUGINS_DIRECTORY ${CMAKE_SOURCE_DIR}/plugins)
 file(GLOB SUBDIRS RELATIVE ${PLUGINS_DIRECTORY} ${PLUGINS_DIRECTORY}/*)
 FOREACH(SUBDIR ${SUBDIRS})
@@ -151,7 +151,7 @@ add_executable(${PROJECT}
 if (USE_SHARED_LIBS)
 	target_compile_definitions(${PROJECT} PRIVATE BUILD_IMGUI_PACK_SHARED_LIBS)	
 	target_compile_definitions(${PROJECT} PRIVATE BUILD_IN_APP_GPU_PROFILER_SHARED_LIBS)
-	target_compile_definitions(${PROJECT} PRIVATE BUILD_CASHME_BRIDGE_SHARED_LIBS)
+	target_compile_definitions(${PROJECT} PRIVATE BUILD_EZ_RENAMER_BRIDGE_SHARED_LIBS)
 endif()
 
 set_target_properties(${PROJECT} PROPERTIES OUTPUT_NAME "${PROJECT}_${CMAKE_SYSTEM_NAME}_${ARCH}")
@@ -180,7 +180,7 @@ include_directories(
 )
 
 target_link_libraries(${PROJECT}
-	${CASHME_BRIDGE_LIBRARIES}
+	${EZ_RENAMER_BRIDGE_LIBRARIES}
 	${IN_APP_GPU_PROFILER_LIBRARIES}
 	${IMGUIPACK_LIBRARIES}
 	${TINYXML2_LIBRARIES}
@@ -207,7 +207,7 @@ set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBI
 ############## FORCE BUILD OF PLUGINS ##################
 ########################################################
 
-FOREACH(PLUGIN ${LOADED_CASHME_PLUGINS})
+FOREACH(PLUGIN ${LOADED_EZ_RENAMER_PLUGINS})
 	add_dependencies(${PROJECT} ${PLUGIN})
 ENDFOREACH()
 

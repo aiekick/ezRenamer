@@ -2,8 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include "previewPane.h"
-#include <imgui_internal.h>
-#include <cinttypes>  // printf zu
+#include <core/controller.h>
 
 PreviewPane::PreviewPane() = default;
 PreviewPane::~PreviewPane() {
@@ -35,7 +34,7 @@ bool PreviewPane::DrawPanes(const uint32_t& /*vCurrentFrame*/, bool* vOpened, Im
             else
                 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_MenuBar;
 #endif
-            // draw iagp frame
+            change |= Controller::instance()->drawPreview();
         }
 
 
