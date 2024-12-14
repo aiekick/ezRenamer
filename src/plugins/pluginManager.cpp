@@ -16,8 +16,7 @@ void PluginManager::Clear() {
 }
 
 void PluginManager::LoadPlugins(const ez::App& vApp) {
-    printf("-----------\n");
-    LogVarLightInfo("Availables Plugins :\n");
+    std::cout << "-----------" << std::endl;
     auto plugin_directory = std::filesystem::path(vApp.getAppPath()).append("plugins");
     if (std::filesystem::exists(plugin_directory)) {
         const auto dir_iter = std::filesystem::directory_iterator(plugin_directory);
@@ -28,7 +27,7 @@ void PluginManager::LoadPlugins(const ez::App& vApp) {
     } else {
         LogVarLightInfo("Plugin directory %s not found !", plugin_directory.string().c_str());
     }
-    printf("-----------\n");
+    std::cout << "-----------" << std::endl;
 }
 
 std::vector<rnm::PluginModuleInfos> PluginManager::GetPluginModulesInfos() const {

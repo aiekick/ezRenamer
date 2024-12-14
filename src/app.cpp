@@ -26,24 +26,19 @@
 
 int App::run(int argc, char** argv) {
     ez::App app(argc, argv);
-    printf("-----------\n");
-    printf("[[ %s Beta %s ]]\n", ezRenamer_Label, ezRenamer_BuildId);
-
-#ifdef _DEBUG
-    ez::file::createDirectoryIfNotExist("sqlite3");
-#endif
-
-    m_InitMessaging();
-
-    Backend::Instance()->run(app);
-
-    return 0;
-}
-
-void App::m_InitMessaging() {
-    Messaging::Instance()->AddCategory(MESSAGING_CODE_INFOS, "Infos(s)", MESSAGING_LABEL_INFOS, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
-    Messaging::Instance()->AddCategory(MESSAGING_CODE_WARNINGS, "Warnings(s)", MESSAGING_LABEL_WARNINGS, ImVec4(0.8f, 0.8f, 0.0f, 1.0f));
-    Messaging::Instance()->AddCategory(MESSAGING_CODE_ERRORS, "Errors(s)", MESSAGING_LABEL_ERRORS, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
+    // https://patorjk.com/software/taag/#p=display&h=1&v=0&f=Big&t=ezRenamer%20v0.1
+    std::cout << u8R"(             _____                                                      ___    __ 
+            |  __ \                                                    / _ \  /_ |
+   ___  ____| |__) | ___  _ __    __ _  _ __ ___    ___  _ __  __   __| | | |  | |
+  / _ \|_  /|  _  / / _ \| '_ \  / _` || '_ ` _ \  / _ \| '__| \ \ / /| | | |  | |
+ |  __/ / / | | \ \|  __/| | | || (_| || | | | | ||  __/| |     \ V / | |_| |_ | |
+  \___|/___||_|  \_\\___||_| |_| \__,_||_| |_| |_| \___||_|      \_/   \___/(_)|_| 
+)" << std::endl;
+    std::cout << "-----------" << std::endl;
+    LogVarLightInfo("[[ %s Beta v%s ]]", ezRenamer_Label, ezRenamer_BuildId);
+    Messaging::Instance()->AddCategory(MESSAGING_CODE_INFOS, "Info(s)", MESSAGING_LABEL_INFOS, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
+    Messaging::Instance()->AddCategory(MESSAGING_CODE_WARNINGS, "Warning(s)", MESSAGING_LABEL_WARNINGS, ImVec4(0.8f, 0.8f, 0.0f, 1.0f));
+    Messaging::Instance()->AddCategory(MESSAGING_CODE_ERRORS, "Error(s)", MESSAGING_LABEL_ERRORS, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
     Messaging::Instance()->AddCategory(MESSAGING_CODE_DEBUG, "Debug(s)", MESSAGING_LABEL_DEBUG, ImVec4(0.8f, 0.8f, 0.0f, 1.0f));
     Messaging::Instance()->SetLayoutManager(LayoutManager::Instance());
     ez::Log::instance()->setStandardLogMessageFunctor([](const int& vType, const std::string& vMessage) {
@@ -51,4 +46,6 @@ void App::m_InitMessaging() {
         const auto& type = vType;
         Messaging::Instance()->AddMessage(vMessage, type, false, msg_datas, {});
     });
+    Backend::Instance()->run(app);
+    return 0;
 }

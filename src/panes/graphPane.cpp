@@ -1,7 +1,7 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Graph Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <Panes/GraphPane.h>
+#include <panes/graphPane.h>
 #include <core/controller.h>
 
 
