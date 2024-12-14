@@ -21,22 +21,10 @@ limitations under the License.
 #include <string>
 #include <iostream>
 
-#include <ezlibs/ezLog.hpp>
 #include <ezlibs/ezTools.hpp>
 
 int main(int argc, char** argv) {
 	int res = EXIT_SUCCESS;
-	
-#ifdef _MSC_VER
-#ifdef _DEBUG
-    // active memory leak detector
-    // https://stackoverflow.com/questions/4790564/finding-memory-leaks-in-a-c-application-with-visual-studio
-    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_CRT_DF);
-    _CrtMemState sOld;
-    _CrtMemCheckpoint(&sOld);  // take a snapshot
-#endif
-#endif
-
     try {
         App app;
         app.run(argc, argv);
@@ -45,25 +33,6 @@ int main(int argc, char** argv) {
         res = EXIT_FAILURE;
         EZ_TOOLS_DEBUG_BREAK;
     }
-
     ez::Log::instance()->close();
-
-#ifdef _MSC_VER
-#ifdef _DEBUG
-    _CrtMemState sNew;
-    _CrtMemCheckpoint(&sNew);  // take a snapshot
-    _CrtMemState sDiff;
-    if (_CrtMemDifference(&sDiff, &sOld, &sNew))  // if there is a difference
-    {
-        std::cout << "-----------_CrtMemDumpStatistics ---------" << std::endl;
-        _CrtMemDumpStatistics(&sDiff);
-        std::cout << "-----------_CrtMemDumpAllObjectsSince ---------" << std::endl;
-        _CrtMemDumpAllObjectsSince(&sOld);
-        std::cout << "-----------_CrtDumpMemoryLeaks ---------" << std::endl;
-        _CrtDumpMemoryLeaks();
-    }
-#endif
-#endif
-
     return res;
 }
