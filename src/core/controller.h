@@ -20,6 +20,7 @@ public:
     bool drawControl();
     bool drawFilesList();
     bool drawPreview();
+    bool drawGraph();
 
 private:
     void m_getAvailableRenamers();

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 
-set(PROJECT_TEST LCLBroker_Tests)
+set(PROJECT_TEST CaseRenamer_Tests)
 enable_language(C CXX)
 project(${PROJECT} CXX)
 
@@ -9,12 +9,6 @@ file(GLOB_RECURSE PROJECT_TEST_SRC_RECURSE
 	${CMAKE_CURRENT_SOURCE_DIR}/*.h 
 )
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${PROJECT_TEST_SRC_RECURSE})
-
-file(GLOB PROJECT_TEST_UTILS 
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/Utils/Utils.cpp 
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/Utils/Utils.h 
-)
-source_group(LCLBroker/Utils FILES ${PROJECT_TEST_UTILS})
 
 add_executable(${PROJECT_TEST} ${PROJECT_TEST_SRC_RECURSE} ${PROJECT_TEST_UTILS})
 

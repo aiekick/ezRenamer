@@ -1,5 +1,6 @@
 #include <core/controller.h>
 #include <plugins/pluginManager.h>
+#include <graph/nodeManager.h>
 
 bool Controller::init() {
     m_getAvailableRenamers();
@@ -11,7 +12,7 @@ void Controller::unit() {
 }
 
 bool Controller::drawControl() {
-    ImGui::Header("Renamers");
+    /*ImGui::Header("Renamers");
     const auto w = ImGui::GetContentRegionAvail().x;
     auto selectedRenamerPtr = m_selectedRenamer.lock();
     if (ImGui::BeginChild("##Renamers", ImVec2(w, -1), ImGuiChildFlags_FrameStyle | ImGuiChildFlags_Border)) {
@@ -21,7 +22,7 @@ bool Controller::drawControl() {
             }
         }
         ImGui::EndChild(); 
-    }
+    }*/
 
     return false;
 }
@@ -37,6 +38,10 @@ bool Controller::drawPreview() {
         change |= ptr->drawControls();
     }
     return change;
+}
+
+bool Controller::drawGraph() {
+    return NodeManager::instance()->drawGraph();
 }
 
 void Controller::m_getAvailableRenamers() {

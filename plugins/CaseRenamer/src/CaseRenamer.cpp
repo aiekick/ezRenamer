@@ -67,11 +67,11 @@ std::string CaseRenamer::GetVersion() const {
 }
 
 std::string CaseRenamer::GetContact() const {
-    return "cashme@funparadigm.com";
+    return "ezRenamer@funparadigm.com";
 }
 
 std::string CaseRenamer::GetDescription() const {
-    return "LCL Bank Statement Importer";
+    return "Cases Renamer";
 }
 
 std::vector<rnm::PluginModuleInfos> CaseRenamer::GetModulesInfos() const {

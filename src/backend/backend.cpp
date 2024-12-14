@@ -19,6 +19,7 @@
 
 #include <project/projectFile.h>
 #include <plugins/pluginManager.h>
+#include <graph/nodeManager.h>
 #include <core/controller.h>
 
 #include <LayoutManager.h>
@@ -368,6 +369,7 @@ void Backend::m_UnitWindow() {
 bool Backend::m_InitImGui() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImNodes::CreateContext();
 
     ImGuiIO& io = ImGui::GetIO();
     (void)io;
@@ -421,10 +423,14 @@ bool Backend::m_InitPlugins(const ez::App& vApp) {
 }
 
 bool Backend::m_InitCores() {
-    return Controller::instance()->init();
+    bool ret = true;
+    ret &= NodeManager::initInstance();
+    ret &= Controller::instance()->init();
+    return ret;
 }
 
 void Backend::m_UnitCores() {
+    NodeManager::unitInstance();
     Controller::instance()->unit();
 }
 
@@ -467,5 +473,6 @@ void Backend::m_UnitImGui() {
     ImGui_ImplGlfw_Shutdown();
 
     ImGui::DestroyContext();
+    ImNodes::DestroyContext();
 }
 

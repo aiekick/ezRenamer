@@ -2,12 +2,8 @@
 // PVS-Studio Static Graph Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <Panes/GraphPane.h>
+#include <core/controller.h>
 
-#include <cinttypes>  // printf zu
-
-#include <Models/DataBase.h>
-
-#include <Project/ProjectFile.h>
 
 GraphPane::GraphPane() = default;
 GraphPane::~GraphPane() {
@@ -41,10 +37,7 @@ bool GraphPane::DrawPanes(const uint32_t& vCurrentFrame, bool* vOpened, ImGuiCon
             else
                 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_MenuBar;
 #endif
-
-            if (ProjectFile::Instance()->IsProjectLoaded()) {
-
-            }
+            Controller::instance()->drawGraph();
         }
 
         ImGui::End();
