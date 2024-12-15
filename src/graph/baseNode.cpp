@@ -1,10 +1,11 @@
 #include <graph/baseNode.h>
 
 bool BaseNode::drawGraph() {
-    m_canvas.begin();
-    m_canvas.drawGrid(m_gridConfig);
-    m_canvas.end();
-    return false;
+    bool ret = false;
+    m_drawGraphBegin();
+    m_drawGraphNodes();
+    m_drawGraphEnd();
+    return ret;
 }
 
 bool BaseNode::drawNode() {
@@ -13,8 +14,7 @@ bool BaseNode::drawNode() {
         auto parentGraphPtr = m_getParentGraphPtr();
         if (parentGraphPtr != nullptr) {
             ImGui::PushID(this);
-            ImVec2 offset = parentGraphPtr->m_canvas.canvasToScreen(ImVec2(0.0f, 0.0f));
-            ImVec2 localPos = offset + m_pos;
+            ImVec2 localPos = parentGraphPtr->m_canvas.canvasToScreen(m_pos);
             ImVec2 paddingTL = {m_nodeConfig.padding.x, m_nodeConfig.padding.y};
             ImVec2 paddingBR = {m_nodeConfig.padding.z, m_nodeConfig.padding.w};
 
@@ -203,4 +203,29 @@ BaseNodeWeak BaseNode::m_getParentGraph() {
 
 BaseNodePtr BaseNode::m_getParentGraphPtr() {
     return m_getParentGraph().lock();
+}
+
+void BaseNode::m_drawGraphBegin() {
+    m_canvas.begin();
+    m_canvas.drawGrid(m_gridConfig);
+}
+
+bool BaseNode::m_drawGraphNodes() {
+    bool ret = false;
+    auto* drawListPtr = ImGui::GetWindowDrawList();
+    if (drawListPtr != nullptr) {
+        drawListPtr->ChannelsSplit(2);
+        for (auto& node_ptr : getNodes()) {
+            auto base_node_ptr = std::dynamic_pointer_cast<BaseNode>(node_ptr);
+            if (base_node_ptr != nullptr) {
+                ret |= base_node_ptr->drawNode();
+            }
+        }
+        drawListPtr->ChannelsMerge();
+    }
+    return ret;
+}
+
+void BaseNode::m_drawGraphEnd() {
+    m_canvas.end();
 }

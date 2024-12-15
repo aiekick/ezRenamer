@@ -92,4 +92,7 @@ private: // Node
 private: // Graph
     BaseNodeWeak m_getParentGraph();
     BaseNodePtr m_getParentGraphPtr();
+    void m_drawGraphBegin();
+    bool m_drawGraphNodes();
+    void m_drawGraphEnd();
 };

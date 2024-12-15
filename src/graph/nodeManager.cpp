@@ -21,6 +21,7 @@ void NodeManager::unitInstance() {
 
 bool NodeManager::init() {
     m_graphPtr = BaseNode::create({});
+    m_graphPtr->createChildNode<BaseNode>({});
     return true;
 }
 
