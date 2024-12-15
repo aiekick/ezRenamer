@@ -1,6 +1,5 @@
 #include <graph/nodeManager.h>
-#include <filesystem>
-namespace fs = std::filesystem;
+#include <graph/baseSlot.h>
 
 std::unique_ptr<NodeManager> NodeManager::m_singleton = nullptr;
 
@@ -21,7 +20,12 @@ void NodeManager::unitInstance() {
 
 bool NodeManager::init() {
     m_graphPtr = BaseNode::create({});
-    m_graphPtr->createChildNode<BaseNode>({});
+    auto node = m_graphPtr->createChildNode<BaseNode>({});
+    auto ptr = node.lock();
+    if (ptr != nullptr) {
+        ptr->addSlot<BaseSlot>(ez::SlotDatas("in0", "base", ez::SlotDir::INPUT));
+        ptr->addSlot<BaseSlot>(ez::SlotDatas("out0", "base", ez::SlotDir::OUTPUT));
+    }
     return true;
 }
 

@@ -12,7 +12,6 @@ class BaseNode : public ez::Node {
 public: // Static
     static BaseNodePtr create(const ez::NodeDatas& vNodeDatas) {
         auto node_ptr = std::make_shared<BaseNode>();
-        node_ptr->m_this = node_ptr;
         if (!node_ptr->initNode(vNodeDatas, node_ptr)) {
             node_ptr.reset();
         }
@@ -33,9 +32,6 @@ private:
         float borderHoveredThickness = 2.0f;
         float borderSelectedThickness = 2.0f;
     };
-
-private:
-    BaseNodeWeak m_this;
 
 private: // Node
     ImVec2 m_pos;

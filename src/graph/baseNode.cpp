@@ -1,4 +1,5 @@
 #include <graph/baseNode.h>
+#include <graph/baseSlot.h>
 
 bool BaseNode::drawGraph() {
     bool ret = false;
@@ -27,47 +28,42 @@ bool BaseNode::drawNode() {
             ImGui::BeginGroup();
             m_drawNodeHeader();
             ImGui::EndGroup();
-            float headerH = ImGui::GetItemRectSize().y;
-            // float titleW = ImGui::GetItemRectSize().x;
+            const auto& item_size = ImGui::GetItemRectSize();
 
             // Inputs
-            /*ImGui::BeginGroup();
-            for (auto& p : m_ins) {
-                p->setPos(ImGui::GetCursorPos());
-                p->update();
+            ImGui::BeginGroup();
+            for (auto& ez_slot_ptr : m_getInputsRef()) {
+                auto base_slot_ptr = std::dynamic_pointer_cast<BaseSlot>(ez_slot_ptr);
+                if (base_slot_ptr != nullptr) {
+                    base_slot_ptr->setPos(ImGui::GetCursorPos());
+                    base_slot_ptr->draw();
+                }
             }
             ImGui::EndGroup();
-            ImGui::SameLine();*/
+
+            ImGui::SameLine();
 
             // Content
-            /*ImGui::BeginGroup();
-            draw();
+            ImGui::BeginGroup();
+            m_drawNodeContent();
             ImGui::Dummy(ImVec2(0.f, 0.f));
             ImGui::EndGroup();
             ImGui::SameLine();
 
             // Outputs
-            float maxW = 0.0f;
-            for (auto& p : m_outs) {
-                float w = p->calcWidth();
-                if (w > maxW)
-                    maxW = w;
-            }
             ImGui::BeginGroup();
-            for (auto& p : m_outs) {
-                // FIXME: This looks horrible
-                if ((m_pos + ImVec2(titleW, 0) + m_inf->getGrid().scroll()).x < ImGui::GetCursorPos().x + ImGui::GetWindowPos().x + maxW)
-                    p->setPos(ImGui::GetCursorPos() + ImGui::GetWindowPos() + ImVec2(maxW - p->calcWidth(), 0.f));
-                else
-                    p->setPos(ImVec2((m_pos + ImVec2(titleW - p->calcWidth(), 0) + m_inf->getGrid().scroll()).x, ImGui::GetCursorPos().y + ImGui::GetWindowPos().y));
-                p->update();
+            for (auto& ez_slot_ptr : m_getOutputsRef()) {
+                auto base_slot_ptr = std::dynamic_pointer_cast<BaseSlot>(ez_slot_ptr);
+                if (base_slot_ptr != nullptr) {
+                    base_slot_ptr->setPos(ImGui::GetCursorPos());
+                    base_slot_ptr->draw();
+                }
             }
-
-            ImGui::EndGroup();*/
+            ImGui::EndGroup();
 
             ImGui::EndGroup();
             m_size = ImGui::GetItemRectSize();
-            ImVec2 headerSize = ImVec2(m_size.x + paddingBR.x, headerH);
+            ImVec2 headerSize = ImVec2(m_size.x + paddingBR.x, item_size.y);
 
             // Events
             m_isHovered = ImGui::IsMouseHoveringRect(localPos - paddingTL, localPos + headerSize);
