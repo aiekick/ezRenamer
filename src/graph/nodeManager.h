@@ -1,6 +1,7 @@
 #pragma once
 
 #include <imguipack/ImGuiPack.h>
+#include <graph/baseNode.h>
 
 #include <memory>
 #include <functional>
@@ -10,8 +11,7 @@ private: // Static
     static std::unique_ptr<NodeManager> m_singleton;
 
 private: // Normal
-    ImCanvas::GridConfig m_gridConfig;
-    ImCanvas m_canvas;
+    BaseNodePtr m_graphPtr = nullptr;
 
 public:
     static NodeManager* instance();

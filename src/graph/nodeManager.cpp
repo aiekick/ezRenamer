@@ -20,15 +20,14 @@ void NodeManager::unitInstance() {
 }
 
 bool NodeManager::init() {
+    m_graphPtr = BaseNode::create({});
     return true;
 }
 
 void NodeManager::unit() {
+    m_graphPtr.reset();
 }
 
 bool NodeManager::drawGraph() {
-    m_canvas.begin();
-    m_canvas.drawGrid(m_gridConfig);
-    m_canvas.end();
-    return false;
+    return m_graphPtr->drawGraph();
 }

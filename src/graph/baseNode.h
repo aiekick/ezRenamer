@@ -2,6 +2,7 @@
 
 #include <imguipack/ImGuiPack.h>
 #include <ezlibs/ezGraph.hpp>
+#include <unordered_map>
 
 class BaseNode;
 typedef std::shared_ptr<BaseNode> BaseNodePtr;
@@ -11,11 +12,45 @@ class BaseNode : public ez::Node {
 public: // Static
     static BaseNodePtr create(const ez::NodeDatas& vNodeDatas) {
         auto node_ptr = std::make_shared<BaseNode>();
+        node_ptr->m_this = node_ptr;
         if (!node_ptr->initNode(vNodeDatas, node_ptr)) {
             node_ptr.reset();
         }
         return node_ptr;
     }
+
+private:
+    struct NodeConfig : public ez::NodeDatas {
+        ImU32 bgColor = IM_COL32(55, 64, 75, 255);
+        ImU32 headerBgColor = IM_COL32(191, 90, 90, 255);
+        ImColor headerTitleColor = ImColor(233, 241, 244, 255);
+        ImU32 borderColor = IM_COL32(30, 38, 41, 140);
+        ImU32 borderHoveredColor = IM_COL32(170, 190, 205, 230);
+        ImU32 borderSelectedColor = IM_COL32(170, 190, 205, 230);
+        ImVec4 padding = ImVec4(13.7f, 6.0f, 13.7f, 2.0f);
+        float cornerRadius = 2.5f;
+        float borderThickness = -1.35f;
+        float borderHoveredThickness = 2.0f;
+        float borderSelectedThickness = 2.0f;
+    };
+
+private:
+    BaseNodeWeak m_this;
+
+private: // Node
+    ImVec2 m_pos;
+    ImVec2 m_size;
+    NodeConfig m_nodeConfig;
+    std::string m_nodeTitle{"Node"};
+    ImU32 m_nodeHeaderColor{IM_COL32(100, 0, 0, 200)};
+    bool m_isHovered = false;
+    bool m_isSelected = false;
+
+private: // Graph
+    ImCanvas m_canvas;
+    ImCanvas::Config m_canvasConfig;
+    ImCanvas::GridConfig m_gridConfig;
+    std::set<ez::Uuid> m_selectedNodes;
 
 public: // Template
     template <typename U, typename = std::enable_if<std::is_base_of<ez::Node, U>::value>>
@@ -44,5 +79,17 @@ public: // Template
     }
 
 public: // Normal
-    ez::RetCodes connectSlots(ez::SlotWeak vFrom, ez::SlotWeak vTo) { return m_connectSlots(vFrom, vTo); }
+    bool drawGraph();
+    bool drawNode();
+    ez::RetCodes connectSlots(ez::SlotWeak vFrom, ez::SlotWeak vTo);
+
+private: // Node
+    bool m_drawNodeHeader();
+    bool m_drawNodeContent();
+    bool m_drawNodeInputSlots();
+    bool m_drawNodeOutputSlots();
+
+private: // Graph
+    BaseNodeWeak m_getParentGraph();
+    BaseNodePtr m_getParentGraphPtr();
 };
