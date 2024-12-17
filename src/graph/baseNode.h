@@ -45,7 +45,8 @@ private: // Node
     bool m_isSelected = false;
 
 private: // Graph
-    ImCanvas m_canvas;
+    //ImCanvas m_canvas;
+    ImGuiEx::Canvas m_canvas;
     ImCanvas::Config m_canvasConfig;
     ImCanvas::GridConfig m_gridConfig;
     std::set<ez::Uuid> m_selectedNodes;

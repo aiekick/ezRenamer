@@ -19,23 +19,22 @@ void NodeManager::unitInstance() {
 }
 
 bool NodeManager::init() {
-    /* m_graphPtr = BaseNode::create({});
+    m_graphPtr = BaseNode::create({});
     auto node = m_graphPtr->createChildNode<BaseNode>({});
     auto ptr = node.lock();
     if (ptr != nullptr) {
         ptr->addSlot<BaseSlot>(BaseSlot::SlotConfig("in0", "base", ez::SlotDir::INPUT));
         ptr->addSlot<BaseSlot>(BaseSlot::SlotConfig("out0", "base", ez::SlotDir::OUTPUT));
-    }*/
+    }
     return true;
 }
 
 void NodeManager::unit() {
-    //m_graphPtr.reset();
+    m_graphPtr.reset();
 }
 
 bool NodeManager::drawGraph() {
-    return true;
-    //return m_graphPtr->drawGraph();
+    return m_graphPtr->drawGraph();
 }
 
 void NodeManager::m_displayBlueprintNodesMenu() {

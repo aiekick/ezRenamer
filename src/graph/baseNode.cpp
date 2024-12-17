@@ -10,7 +10,7 @@ bool BaseNode::drawGraph() {
 }
 
 bool BaseNode::drawNode() {
-    auto* drawListPtr = ImGui::GetWindowDrawList();
+    /*auto* drawListPtr = ImGui::GetWindowDrawList();
     if (drawListPtr != nullptr) {
         auto parentGraphPtr = m_getParentGraphPtr();
         if (parentGraphPtr != nullptr) {
@@ -84,11 +84,6 @@ bool BaseNode::drawNode() {
             m_isHovered = false;
             bool m_isSelected = (parentGraphPtr->m_selectedNodes.find(getUUID()) != parentGraphPtr->m_selectedNodes.end());
 
-            // mark node as "to destroy" if delete key was pressed
-            /*if (ImGui::IsKeyPressed(ImGuiKey_Delete) && !ImGui::IsAnyItemActive() && m_IsSelected) {
-                parentGraphPtr->destroyNode(m_Uuid);
-            }*/
-
             // a selection can be indirect by a zone selection
             // m_IsZoneSelected
 
@@ -115,7 +110,7 @@ bool BaseNode::drawNode() {
             ImVec2 ptl = paddingTL;
             ImVec2 pbr = paddingBR;
 
-            if (m_isSelected /*|| m_isZoneSelected*/) {
+            if (m_isSelected) {
                 col = m_nodeConfig.borderSelectedColor;
                 thickness = m_nodeConfig.borderSelectedThickness;
             } else if (m_isHovered) {
@@ -126,55 +121,9 @@ bool BaseNode::drawNode() {
             // node border
             drawListPtr->AddRect(localPos - ptl, localPos + m_size + pbr, col, m_nodeConfig.cornerRadius, 0, thickness);
 
-            /*if (!ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !m_inf->on_selected_node()) {
-                selected(false);
-            }*/
-
-            /*if (isHovered()) {
-                m_inf->hoveredNode(this);
-                if (mouseClickState) {
-                    selected(true);
-                    m_inf->consumeSingleUseClick();
-                }
-            }*/
-
-            /*if (ImGui::IsKeyPressed(ImGuiKey_Delete) && !ImGui::IsAnyItemActive() && isSelected())
-                destroy();*/
-
-            /*bool onHeader = ImGui::IsMouseHoveringRect(localPos - paddingTL, localPos + headerSize);
-            if (onHeader && mouseClickState) {
-                m_inf->consumeSingleUseClick();
-                m_dragged = true;
-                m_inf->draggingNode(true);
-            }
-            if (m_dragged || (m_selected && m_inf->isNodeDragged())) {
-                float step = m_inf->getStyle().grid_size / m_inf->getStyle().grid_subdivisions;
-                m_posTarget += ImGui::GetIO().MouseDelta;
-                // "Slam" The position
-                m_pos.x = round(m_posTarget.x / step) * step;
-                m_pos.y = round(m_posTarget.y / step) * step;
-
-                if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
-                    m_dragged = false;
-                    m_inf->draggingNode(false);
-                    m_posTarget = m_pos;
-                }
-            }*/
             ImGui::PopID();
-
-            // Resolve output pins values
-            /*for (auto& p : m_outs)
-                p->resolve();
-            for (auto& p : m_dynamicOuts)
-                p.second->resolve();*/
-
-            // Deleting dead pins
-            /*m_dynamicIns.erase(std::remove_if(m_dynamicIns.begin(), m_dynamicIns.end(), [](const std::pair<int, std::shared_ptr<Pin>>& p) { return p.first == 0; }),
-                               m_dynamicIns.end());
-            m_dynamicOuts.erase(std::remove_if(m_dynamicOuts.begin(), m_dynamicOuts.end(), [](const std::pair<int, std::shared_ptr<Pin>>& p) { return p.first == 0; }),
-                                m_dynamicOuts.end());*/
         }
-    }
+    }*/
     return false;
 }
 
@@ -208,8 +157,55 @@ BaseNodePtr BaseNode::m_getParentGraphPtr() {
 }
 
 void BaseNode::m_drawGraphBegin() {
-    m_canvas.begin();
-    m_canvas.drawGrid(m_gridConfig);
+    static ImVec2 gridSize{50.0f, 50.0f};
+    static ImVec2 gridSubdivs{5.0f, 5.0f};
+    static ImU32 gridColor{IM_COL32(200, 200, 200, 40)};
+    static ImU32 subGridColor{IM_COL32(200, 200, 200, 10)};
+    
+    if (m_canvas.Begin("##canvas", ImGui::GetContentRegionAvail())) {
+
+        // grid
+        auto* drawListPtr = ImGui::GetWindowDrawList();
+        if (drawListPtr != nullptr) {
+            const ImVec2 win_pos = ImGui::GetCursorScreenPos();
+            const ImVec2 canvas_sz = ImGui::GetWindowSize();
+            for (float x = fmodf(m_canvas.getScroll().x, vGridConfig.gridSize.x); x < canvas_sz.x; x += vGridConfig.gridSize.x) {
+                drawListPtr->AddLine(ImVec2(x, 0.0f) + win_pos, ImVec2(x, canvas_sz.y) + win_pos, vGridConfig.gridColor);
+            }
+            for (float y = fmodf(getScroll().y, vGridConfig.gridSize.y); y < canvas_sz.y; y += vGridConfig.gridSize.y) {
+                drawListPtr->AddLine(ImVec2(0.0f, y) + win_pos, ImVec2(canvas_sz.x, y) + win_pos, vGridConfig.gridColor);
+            }
+            for (float x = fmodf(getScroll().x, vGridConfig.gridSize.x / vGridConfig.gridSubdivs.x); x < canvas_sz.x;
+                 x += vGridConfig.gridSize.x / vGridConfig.gridSubdivs.x) {
+                drawListPtr->AddLine(ImVec2(x, 0.0f) + win_pos, ImVec2(x, canvas_sz.y) + win_pos, vGridConfig.subGridColor);
+            }
+            for (float y = fmodf(getScroll().y, vGridConfig.gridSize.y / vGridConfig.gridSubdivs.y); y < canvas_sz.y;
+                 y += vGridConfig.gridSize.y / vGridConfig.gridSubdivs.y) {
+                drawListPtr->AddLine(ImVec2(0.0f, y) + win_pos, ImVec2(canvas_sz.x, y) + win_pos, vGridConfig.subGridColor);
+            }
+        }
+
+        m_canvas.End();
+    }
+    /*    auto* drawListPtr = ImGui::GetWindowDrawList();
+    if (drawListPtr != nullptr) {
+        const ImVec2 win_pos = ImGui::GetCursorScreenPos();
+        const ImVec2 canvas_sz = ImGui::GetWindowSize();
+        for (float x = fmodf(getScroll().x, vGridConfig.gridSize.x); x < canvas_sz.x; x += vGridConfig.gridSize.x) {
+            drawListPtr->AddLine(ImVec2(x, 0.0f) + win_pos, ImVec2(x, canvas_sz.y) + win_pos, vGridConfig.gridColor);
+        }
+        for (float y = fmodf(getScroll().y, vGridConfig.gridSize.y); y < canvas_sz.y; y += vGridConfig.gridSize.y) {
+            drawListPtr->AddLine(ImVec2(0.0f, y) + win_pos, ImVec2(canvas_sz.x, y) + win_pos, vGridConfig.gridColor);
+        }
+        for (float x = fmodf(getScroll().x, vGridConfig.gridSize.x / vGridConfig.gridSubdivs.x); x < canvas_sz.x;
+             x += vGridConfig.gridSize.x / vGridConfig.gridSubdivs.x) {
+            drawListPtr->AddLine(ImVec2(x, 0.0f) + win_pos, ImVec2(x, canvas_sz.y) + win_pos, vGridConfig.subGridColor);
+        }
+        for (float y = fmodf(getScroll().y, vGridConfig.gridSize.y / vGridConfig.gridSubdivs.y); y < canvas_sz.y;
+             y += vGridConfig.gridSize.y / vGridConfig.gridSubdivs.y) {
+            drawListPtr->AddLine(ImVec2(0.0f, y) + win_pos, ImVec2(canvas_sz.x, y) + win_pos, vGridConfig.subGridColor);
+        }
+    }*/
 }
 
 bool BaseNode::m_drawGraphNodes() {
@@ -229,5 +225,5 @@ bool BaseNode::m_drawGraphNodes() {
 }
 
 void BaseNode::m_drawGraphEnd() {
-    m_canvas.end();
+    //m_canvas.end();
 }

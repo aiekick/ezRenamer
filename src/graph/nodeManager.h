@@ -11,7 +11,7 @@ private: // Static
     static std::unique_ptr<NodeManager> m_singleton;
 
 private: // Normal
-    //BaseNodePtr m_graphPtr = nullptr;
+    BaseNodePtr m_graphPtr = nullptr;
 
 public:
     static NodeManager* instance();
