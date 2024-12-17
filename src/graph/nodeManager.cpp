@@ -19,9 +19,6 @@ void NodeManager::unitInstance() {
 }
 
 bool NodeManager::init() {
-    m_nodeEditor.rightClickPopUpContent([this](ImFlow::BaseNode* /*vNodePtr*/) {
-        m_displayBlueprintNodesMenu();
-    });
     /* m_graphPtr = BaseNode::create({});
     auto node = m_graphPtr->createChildNode<BaseNode>({});
     auto ptr = node.lock();
@@ -37,18 +34,9 @@ void NodeManager::unit() {
 }
 
 bool NodeManager::drawGraph() {
-    m_nodeEditor.update();
     return true;
     //return m_graphPtr->drawGraph();
 }
 
 void NodeManager::m_displayBlueprintNodesMenu() {
-    if (ImGui::BeginMenu("Blueprints")) {
-        if (ImGui::MenuItem("StringNode")) {
-            m_nodeEditor.addNode<StringNode>(m_nodeEditor.screen2grid(ImGui::GetMousePos()));
-        } else if (ImGui::MenuItem("PrintNode")) {
-            m_nodeEditor.addNode<PrintNode>(m_nodeEditor.screen2grid(ImGui::GetMousePos()));
-        }
-        ImGui::EndMenu();
-    }
 }
