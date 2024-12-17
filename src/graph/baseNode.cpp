@@ -3,19 +3,20 @@
 
 bool BaseNode::drawGraph() {
     bool ret = false;
-    m_drawGraphBegin();
-    m_drawGraphNodes();
-    m_drawGraphEnd();
+    if (m_canvas.begin("##Canvas", ImGui::GetContentRegionAvail())) {
+        m_drawGraphNodes();
+        m_canvas.end();
+    }
     return ret;
 }
 
 bool BaseNode::drawNode() {
-    /*auto* drawListPtr = ImGui::GetWindowDrawList();
+    auto* drawListPtr = ImGui::GetWindowDrawList();
     if (drawListPtr != nullptr) {
         auto parentGraphPtr = m_getParentGraphPtr();
         if (parentGraphPtr != nullptr) {
             ImGui::PushID(this);
-            ImVec2 localPos = parentGraphPtr->m_canvas.canvasToScreen(m_pos);
+            ImVec2 localPos = m_pos;
             ImVec2 paddingTL = {m_nodeConfig.padding.x, m_nodeConfig.padding.y};
             ImVec2 paddingBR = {m_nodeConfig.padding.z, m_nodeConfig.padding.w};
 
@@ -123,7 +124,7 @@ bool BaseNode::drawNode() {
 
             ImGui::PopID();
         }
-    }*/
+    }
     return false;
 }
 
@@ -156,58 +157,6 @@ BaseNodePtr BaseNode::m_getParentGraphPtr() {
     return m_getParentGraph().lock();
 }
 
-void BaseNode::m_drawGraphBegin() {
-    static ImVec2 gridSize{50.0f, 50.0f};
-    static ImVec2 gridSubdivs{5.0f, 5.0f};
-    static ImU32 gridColor{IM_COL32(200, 200, 200, 40)};
-    static ImU32 subGridColor{IM_COL32(200, 200, 200, 10)};
-    
-    /*if (m_canvas.Begin("##canvas", ImGui::GetContentRegionAvail())) {
-
-        // grid
-        auto* drawListPtr = ImGui::GetWindowDrawList();
-        if (drawListPtr != nullptr) {
-            const ImVec2 win_pos = ImGui::GetCursorScreenPos();
-            const ImVec2 canvas_sz = ImGui::GetWindowSize();
-            for (float x = fmodf(m_canvas.getScroll().x, vGridConfig.gridSize.x); x < canvas_sz.x; x += vGridConfig.gridSize.x) {
-                drawListPtr->AddLine(ImVec2(x, 0.0f) + win_pos, ImVec2(x, canvas_sz.y) + win_pos, vGridConfig.gridColor);
-            }
-            for (float y = fmodf(getScroll().y, vGridConfig.gridSize.y); y < canvas_sz.y; y += vGridConfig.gridSize.y) {
-                drawListPtr->AddLine(ImVec2(0.0f, y) + win_pos, ImVec2(canvas_sz.x, y) + win_pos, vGridConfig.gridColor);
-            }
-            for (float x = fmodf(getScroll().x, vGridConfig.gridSize.x / vGridConfig.gridSubdivs.x); x < canvas_sz.x;
-                 x += vGridConfig.gridSize.x / vGridConfig.gridSubdivs.x) {
-                drawListPtr->AddLine(ImVec2(x, 0.0f) + win_pos, ImVec2(x, canvas_sz.y) + win_pos, vGridConfig.subGridColor);
-            }
-            for (float y = fmodf(getScroll().y, vGridConfig.gridSize.y / vGridConfig.gridSubdivs.y); y < canvas_sz.y;
-                 y += vGridConfig.gridSize.y / vGridConfig.gridSubdivs.y) {
-                drawListPtr->AddLine(ImVec2(0.0f, y) + win_pos, ImVec2(canvas_sz.x, y) + win_pos, vGridConfig.subGridColor);
-            }
-        }
-
-        m_canvas.End();
-    }*/
-    /*    auto* drawListPtr = ImGui::GetWindowDrawList();
-    if (drawListPtr != nullptr) {
-        const ImVec2 win_pos = ImGui::GetCursorScreenPos();
-        const ImVec2 canvas_sz = ImGui::GetWindowSize();
-        for (float x = fmodf(getScroll().x, vGridConfig.gridSize.x); x < canvas_sz.x; x += vGridConfig.gridSize.x) {
-            drawListPtr->AddLine(ImVec2(x, 0.0f) + win_pos, ImVec2(x, canvas_sz.y) + win_pos, vGridConfig.gridColor);
-        }
-        for (float y = fmodf(getScroll().y, vGridConfig.gridSize.y); y < canvas_sz.y; y += vGridConfig.gridSize.y) {
-            drawListPtr->AddLine(ImVec2(0.0f, y) + win_pos, ImVec2(canvas_sz.x, y) + win_pos, vGridConfig.gridColor);
-        }
-        for (float x = fmodf(getScroll().x, vGridConfig.gridSize.x / vGridConfig.gridSubdivs.x); x < canvas_sz.x;
-             x += vGridConfig.gridSize.x / vGridConfig.gridSubdivs.x) {
-            drawListPtr->AddLine(ImVec2(x, 0.0f) + win_pos, ImVec2(x, canvas_sz.y) + win_pos, vGridConfig.subGridColor);
-        }
-        for (float y = fmodf(getScroll().y, vGridConfig.gridSize.y / vGridConfig.gridSubdivs.y); y < canvas_sz.y;
-             y += vGridConfig.gridSize.y / vGridConfig.gridSubdivs.y) {
-            drawListPtr->AddLine(ImVec2(0.0f, y) + win_pos, ImVec2(canvas_sz.x, y) + win_pos, vGridConfig.subGridColor);
-        }
-    }*/
-}
-
 bool BaseNode::m_drawGraphNodes() {
     bool ret = false;
     auto* drawListPtr = ImGui::GetWindowDrawList();
@@ -222,8 +171,4 @@ bool BaseNode::m_drawGraphNodes() {
         drawListPtr->ChannelsMerge();
     }
     return ret;
-}
-
-void BaseNode::m_drawGraphEnd() {
-    //m_canvas.end();
 }

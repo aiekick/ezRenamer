@@ -2,6 +2,7 @@
 
 #include <imguipack/ImGuiPack.h>
 #include <ezlibs/ezGraph.hpp>
+#include <graph/baseCanvas.h>
 #include <graph/baseSlot.h>
 #include <unordered_map>
 
@@ -45,8 +46,7 @@ private: // Node
     bool m_isSelected = false;
 
 private: // Graph
-    //ImCanvas m_canvas;
-    ImGuiEx::Canvas m_canvas;
+    BaseCanvas m_canvas;
     ImCanvas::Config m_canvasConfig;
     ImCanvas::GridConfig m_gridConfig;
     std::set<ez::Uuid> m_selectedNodes;
@@ -95,7 +95,5 @@ private: // Node
 private: // Graph
     BaseNodeWeak m_getParentGraph();
     BaseNodePtr m_getParentGraphPtr();
-    void m_drawGraphBegin();
     bool m_drawGraphNodes();
-    void m_drawGraphEnd();
 };
