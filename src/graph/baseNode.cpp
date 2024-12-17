@@ -33,7 +33,10 @@ bool BaseNode::drawNode() {
             // Inputs
             ImGui::BeginGroup();
             for (auto& ez_slot_ptr : m_getInputsRef()) {
-                auto base_slot_ptr = std::dynamic_pointer_cast<BaseSlot>(ez_slot_ptr);
+                // the check have been done before. 
+                // we are sure this is derived from baseSlot
+                // so we can avoid use of slow dynamic_cast
+                auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(ez_slot_ptr);
                 if (base_slot_ptr != nullptr) {
                     base_slot_ptr->setPos(ImGui::GetCursorPos());
                     base_slot_ptr->draw();
@@ -53,7 +56,10 @@ bool BaseNode::drawNode() {
             // Outputs
             ImGui::BeginGroup();
             for (auto& ez_slot_ptr : m_getOutputsRef()) {
-                auto base_slot_ptr = std::dynamic_pointer_cast<BaseSlot>(ez_slot_ptr);
+                // the check have been done before.
+                // we are sure this is derived from baseSlot
+                // so we can avoid use of slow dynamic_cast
+                auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(ez_slot_ptr);
                 if (base_slot_ptr != nullptr) {
                     base_slot_ptr->setPos(ImGui::GetCursorPos());
                     base_slot_ptr->draw();
@@ -177,7 +183,7 @@ ez::RetCodes BaseNode::connectSlots(ez::SlotWeak vFrom, ez::SlotWeak vTo) {
 }
 
 bool BaseNode::m_drawNodeHeader() {
-    ImGui::Text("%s", m_nodeTitle.c_str());
+    ImGui::Text(" %s", m_nodeTitle.c_str());
     return false;
 }
 

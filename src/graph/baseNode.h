@@ -19,7 +19,7 @@ public:
         ImU32 bgColor = IM_COL32(55, 64, 75, 255);
         ImU32 borderColor = IM_COL32(30, 38, 41, 140);
         ImU32 headerBgColor = IM_COL32(191, 90, 90, 255);
-        ImVec4 padding = ImVec4(13.7f, 6.0f, 13.7f, 2.0f);
+        ImVec4 padding = ImVec4(4.0f, 0.0f, 4.0f, 0.0f); // TLBR
         ImColor headerTitleColor = ImColor(233, 241, 244, 255);
         ImU32 borderHoveredColor = IM_COL32(170, 190, 205, 230);
         ImU32 borderSelectedColor = IM_COL32(170, 190, 205, 230);

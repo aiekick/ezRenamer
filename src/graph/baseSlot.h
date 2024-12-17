@@ -10,7 +10,7 @@ typedef std::weak_ptr<BaseSlot> BaseSlotWeak;
 class BaseSlot : public ez::Slot {
 public:
     struct SlotConfig : ez::SlotDatas {
-        float radius = 5.0f;
+        float radius = 2.5f;
         ImU32 color = IM_COL32(200, 200, 0, 255);
         ImU32 hovered_color = IM_COL32(0, 200, 0, 255);
         SlotConfig() = default;
