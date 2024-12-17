@@ -23,8 +23,8 @@ bool NodeManager::init() {
     auto node = m_graphPtr->createChildNode<BaseNode>({});
     auto ptr = node.lock();
     if (ptr != nullptr) {
-        ptr->addSlot<BaseSlot>(ez::SlotDatas("in0", "base", ez::SlotDir::INPUT));
-        ptr->addSlot<BaseSlot>(ez::SlotDatas("out0", "base", ez::SlotDir::OUTPUT));
+        ptr->addSlot<BaseSlot>(BaseSlot::SlotConfig("in0", "base", ez::SlotDir::INPUT));
+        ptr->addSlot<BaseSlot>(BaseSlot::SlotConfig("out0", "base", ez::SlotDir::OUTPUT));
     }
     return true;
 }

@@ -210,7 +210,7 @@ bool BaseNode::m_drawGraphNodes() {
     bool ret = false;
     auto* drawListPtr = ImGui::GetWindowDrawList();
     if (drawListPtr != nullptr) {
-        drawListPtr->ChannelsSplit(2);
+        drawListPtr->ChannelsSplit(3);
         for (auto& node_ptr : getNodes()) {
             auto base_node_ptr = std::dynamic_pointer_cast<BaseNode>(node_ptr);
             if (base_node_ptr != nullptr) {
