@@ -162,7 +162,7 @@ void BaseNode::m_drawGraphBegin() {
     static ImU32 gridColor{IM_COL32(200, 200, 200, 40)};
     static ImU32 subGridColor{IM_COL32(200, 200, 200, 10)};
     
-    if (m_canvas.Begin("##canvas", ImGui::GetContentRegionAvail())) {
+    /*if (m_canvas.Begin("##canvas", ImGui::GetContentRegionAvail())) {
 
         // grid
         auto* drawListPtr = ImGui::GetWindowDrawList();
@@ -186,7 +186,7 @@ void BaseNode::m_drawGraphBegin() {
         }
 
         m_canvas.End();
-    }
+    }*/
     /*    auto* drawListPtr = ImGui::GetWindowDrawList();
     if (drawListPtr != nullptr) {
         const ImVec2 win_pos = ImGui::GetCursorScreenPos();
