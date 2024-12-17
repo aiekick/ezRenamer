@@ -369,7 +369,6 @@ void Backend::m_UnitWindow() {
 bool Backend::m_InitImGui() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImNodes::CreateContext();
 
     ImGuiIO& io = ImGui::GetIO();
     (void)io;
@@ -473,6 +472,5 @@ void Backend::m_UnitImGui() {
     ImGui_ImplGlfw_Shutdown();
 
     ImGui::DestroyContext();
-    ImNodes::DestroyContext();
 }
 
