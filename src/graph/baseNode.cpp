@@ -1,5 +1,6 @@
 #include <graph/baseNode.h>
 #include <graph/baseSlot.h>
+#include <ezlibs/ezLog.hpp>
 
 bool BaseNode::drawGraph() {
     bool ret = false;
@@ -11,118 +12,16 @@ bool BaseNode::drawGraph() {
 }
 
 bool BaseNode::drawNode() {
-    auto* drawListPtr = ImGui::GetWindowDrawList();
-    if (drawListPtr != nullptr) {
-        auto parentGraphPtr = m_getParentGraphPtr();
-        if (parentGraphPtr != nullptr) {
-            ImGui::PushID(this);
-            ImVec2 localPos = m_pos;
-            ImVec2 paddingTL = {m_nodeConfig.padding.x, m_nodeConfig.padding.y};
-            ImVec2 paddingBR = {m_nodeConfig.padding.z, m_nodeConfig.padding.w};
-
-            drawListPtr->ChannelsSetCurrent(1);  // Foreground
-            ImGui::SetCursorScreenPos(localPos);
-
-            ImGui::BeginGroup();
-
-            // Header
-            ImGui::BeginGroup();
-            m_drawNodeHeader();
-            ImGui::EndGroup();
-            const auto& item_size = ImGui::GetItemRectSize();
-
-            // Inputs
-            ImGui::BeginGroup();
-            for (auto& ez_slot_ptr : m_getInputsRef()) {
-                // the check have been done before. 
-                // we are sure this is derived from baseSlot
-                // so we can avoid use of slow dynamic_cast
-                auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(ez_slot_ptr);
-                if (base_slot_ptr != nullptr) {
-                    base_slot_ptr->setPos(ImGui::GetCursorPos());
-                    base_slot_ptr->draw();
-                }
-            }
-            ImGui::EndGroup();
-
-            ImGui::SameLine();
-
-            // Content
-            ImGui::BeginGroup();
-            m_drawNodeContent();
-            ImGui::Dummy(ImVec2(0.f, 0.f));
-            ImGui::EndGroup();
-            ImGui::SameLine();
-
-            // Outputs
-            ImGui::BeginGroup();
-            for (auto& ez_slot_ptr : m_getOutputsRef()) {
-                // the check have been done before.
-                // we are sure this is derived from baseSlot
-                // so we can avoid use of slow dynamic_cast
-                auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(ez_slot_ptr);
-                if (base_slot_ptr != nullptr) {
-                    base_slot_ptr->setPos(ImGui::GetCursorPos());
-                    base_slot_ptr->draw();
-                }
-            }
-            ImGui::EndGroup();
-
-            ImGui::EndGroup();
-            m_size = ImGui::GetItemRectSize();
-            ImVec2 headerSize = ImVec2(m_size.x + paddingBR.x, item_size.y);
-
-            // Events
-            m_isHovered = ImGui::IsMouseHoveringRect(localPos - paddingTL, localPos + headerSize);
-            if (m_isHovered) {
-                if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-                    parentGraphPtr->m_selectedNodes.clear();
-                    parentGraphPtr->m_selectedNodes.emplace(getUUID());
-                }
-            }
-
-            // a selection can be direct by a left click
-            m_isHovered = false;
-            bool m_isSelected = (parentGraphPtr->m_selectedNodes.find(getUUID()) != parentGraphPtr->m_selectedNodes.end());
-
-            // a selection can be indirect by a zone selection
-            // m_IsZoneSelected
-
-            // Background
-            drawListPtr->ChannelsSetCurrent(0);
-
-            // node background
-            drawListPtr->AddRectFilled(  //
-                localPos - paddingTL,
-                localPos + m_size + paddingBR,
-                m_nodeConfig.bgColor,
-                m_nodeConfig.cornerRadius);
-
-            // header background
-            drawListPtr->AddRectFilled(  //
-                localPos - paddingTL,
-                localPos + headerSize,
-                m_nodeConfig.headerBgColor,
-                m_nodeConfig.cornerRadius,
-                ImDrawFlags_RoundCornersTop);
-
-            ImU32 col = m_nodeConfig.borderColor;
-            float thickness = m_nodeConfig.borderThickness;
-            ImVec2 ptl = paddingTL;
-            ImVec2 pbr = paddingBR;
-
-            if (m_isSelected) {
-                col = m_nodeConfig.borderSelectedColor;
-                thickness = m_nodeConfig.borderSelectedThickness;
-            } else if (m_isHovered) {
-                col = m_nodeConfig.borderHoveredColor;
-                thickness = m_nodeConfig.borderHoveredThickness;
-            }
-
-            // node border
-            drawListPtr->AddRect(localPos - ptl, localPos + m_size + pbr, col, m_nodeConfig.cornerRadius, 0, thickness);
-
-            ImGui::PopID();
+    if (m_drawBegin()) {
+        m_drawHeader();
+        m_drawNodeContent();
+        m_drawFooter();
+        m_drawEnd();
+    }
+    m_size = ImGui::GetItemRectSize();
+    m_pos = ImGui::GetItemRectMin();
+    if (ImGui::IsItemHovered()) {
+        if (ImGui::IsMouseClicked(0)) {  // bouton gauche click
         }
     }
     return false;
@@ -138,6 +37,22 @@ bool BaseNode::m_drawNodeHeader() {
 }
 
 bool BaseNode::m_drawNodeContent() {
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ImGui::GetStyle().ItemSpacing.x, 0));
+    ImGui::BeginHorizontal("content");
+    ImGui::Spring(0, 0);
+    ImGui::BeginVertical("inputs", ImVec2(0, 0), 0.0f);
+    for (auto& p_slot : m_getInputsRef()) {  // slots
+        std::static_pointer_cast<BaseSlot>(p_slot)->draw();
+    }
+    ImGui::EndVertical();
+    ImGui::Spring(1, 5.0f);  // pour que BeginVertical soi poussé au bout
+    ImGui::BeginVertical("outputs", ImVec2(0, 0), 1.0f);  // 1.0f pour que l'interieur soit aligné sur la fin
+    for (auto& p_slot : m_getOutputsRef()) {              // slots
+        std::static_pointer_cast<BaseSlot>(p_slot)->draw();
+    }
+    ImGui::EndVertical();
+    ImGui::EndHorizontal();
+    ImGui::PopStyleVar();
     return false;
 }
 
@@ -171,4 +86,74 @@ bool BaseNode::m_drawGraphNodes() {
         drawListPtr->ChannelsMerge();
     }
     return ret;
+}
+
+bool BaseNode::m_drawBegin() {
+    ImGui::PushID(this);
+    ImGui::BeginGroup();
+    m_canvas.setExternalChannel(ImGui::GetWindowDrawList()->_Splitter._Current);
+    ImGui::BeginVertical("node");
+    return true;
+}
+
+bool BaseNode::m_drawHeader() {
+    ImGui::BeginHorizontal("header");
+    ImGui::Spring(1, 5.0f);
+    ImGui::TextUnformatted(getDatas<NodeConfig>().name.c_str());
+    ImGui::Spring(1, 5.0f);
+    // ImGui::Dummy(ImVec2(0, 24));
+    ImGui::EndHorizontal();
+    m_headerRect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+    return false;
+}
+
+bool BaseNode::m_drawFooter() {
+    return false;
+}
+
+bool BaseNode::m_drawEnd() {
+    ImGui::EndVertical();
+    ImGui::EndGroup();
+    if (ImGui::IsItemVisible()) {
+        auto drawList = ImGui::GetWindowDrawList();  // GetNodeBackgroundDrawList(nodeID);
+        if (drawList) {
+            ImGuiContext& g = *GImGui;
+            const auto itemRect = g.LastItemData.Rect;
+            drawList->AddRectFilled(itemRect.Min, itemRect.Max, ImGui::GetColorU32(ImVec4(0.2, 0.5, 0.2, 0.8)), 2.0f, ImDrawFlags_RoundCornersAll);
+            if (m_headerRect.GetSize().y > 0.0f) {
+                const ImVec4 NodePadding = getDatas<NodeConfig>().padding;
+                const auto halfBorderWidth = 50.0f;
+
+                auto alpha = static_cast<int>(255 * ImGui::GetStyle().Alpha);
+
+                drawList->AddLine(
+                    ImVec2(m_headerRect.Min.x - (NodePadding.x - halfBorderWidth), m_headerRect.Max.y - 0.5f),
+                    ImVec2(m_headerRect.Max.x + (NodePadding.z - halfBorderWidth), m_headerRect.Max.y - 0.5f),
+                    ImColor(255, 255, 255, 96 * alpha / (3 * 255)),
+                    1.0f);
+            }
+
+            m_displayInfosOnTopOfTheNode();
+        } else {
+            LogVarDebugInfo("why drawList is null ?? in BaseNode::DrawEnd");
+        }
+    }
+    ImGui::PopID();
+    return false;
+}
+
+void BaseNode::m_displayInfosOnTopOfTheNode() {
+    auto drawList = ImGui::GetWindowDrawList();  // GetNodeBackgroundDrawList(nodeID);
+    if (drawList) {
+        char debugBuffer[255] = "\0";
+        snprintf(
+            debugBuffer,
+            254,
+            "Used(%s)\nCell(%i, %i)" /*\nPos(%.1f, %.1f)\nSize(%.1f, %.1f)*/,
+            (getDatas<NodeConfig>().used ? "true" : "false"),
+            getDatas<NodeConfig>().cell.x,
+            getDatas<NodeConfig>().cell.y /*, pos.x, pos.y, size.x, size.y*/);
+        ImVec2 txtSize = ImGui::CalcTextSize(debugBuffer);
+        drawList->AddText(m_pos - ImVec2(0, txtSize.y), ImGui::GetColorU32(ImGuiCol_Text), debugBuffer);
+    }
 }

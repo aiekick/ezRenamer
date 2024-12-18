@@ -2,7 +2,6 @@
 
 #include <imguipack/ImGuiPack.h>
 #include <ezlibs/ezGraph.hpp>
-#include <graph/baseCanvas.h>
 #include <graph/baseSlot.h>
 #include <unordered_map>
 
@@ -24,6 +23,8 @@ public:
         ImColor headerTitleColor = ImColor(233, 241, 244, 255);
         ImU32 borderHoveredColor = IM_COL32(170, 190, 205, 230);
         ImU32 borderSelectedColor = IM_COL32(170, 190, 205, 230);
+        bool used = false;
+        ImVec2 cell;
     };
 
 public:  // Static
@@ -46,10 +47,9 @@ private: // Node
     bool m_isSelected = false;
 
 private: // Graph
-    BaseCanvas m_canvas;
-    ImCanvas::Config m_canvasConfig;
-    ImCanvas::GridConfig m_gridConfig;
+    ImCanvas2 m_canvas;
     std::set<ez::Uuid> m_selectedNodes;
+    ImRect m_headerRect;
 
 public: // Template
     template <typename U, typename = std::enable_if<std::is_base_of<ez::Node, U>::value>>
@@ -91,6 +91,11 @@ private: // Node
     bool m_drawNodeContent();
     bool m_drawNodeInputSlots();
     bool m_drawNodeOutputSlots();
+    bool m_drawBegin();
+    bool m_drawHeader();
+    bool m_drawFooter();
+    bool m_drawEnd();
+    void m_displayInfosOnTopOfTheNode();
 
 private: // Graph
     BaseNodeWeak m_getParentGraph();
