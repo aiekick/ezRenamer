@@ -12,6 +12,7 @@ private: // Static
 
 private: // Normal
     BaseNodePtr m_graphPtr = nullptr;
+    std::map<std::string, ImVec4> m_ColorSlots;
 
 public:
     static NodeManager* instance();
@@ -22,7 +23,6 @@ public:
     bool init();
     void unit();
     bool drawGraph();
-
-private:
-    void m_displayBlueprintNodesMenu();
+    ImVec4 getSlotColor(const std::string& vNodeSlotType);
+    void addSlotColor(const std::string& vNodeSlotType, const ImVec4& vSlotColor);
 };

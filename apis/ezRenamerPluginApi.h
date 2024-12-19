@@ -17,14 +17,38 @@ limitations under the License.
 #pragma once
 #pragma warning(disable : 4251)
 
+#include <set>
+#include <array>
 #include <memory>
-#include <cstdint>
 #include <string>
 #include <vector>
-#include <array>
+#include <cstdint>
 
 #include "ILayoutPane.h"
 #include <ezlibs/ezXml.hpp>
+
+class BaseNode;
+typedef std::weak_ptr<BaseNode> BaseNodeWeak;
+typedef std::shared_ptr<BaseNode> BaseNodePtr;
+
+class NodeSlot;
+typedef std::weak_ptr<NodeSlot> NodeSlotWeak;
+typedef std::shared_ptr<NodeSlot> NodeSlotPtr;
+
+class NodeLink;
+typedef std::weak_ptr<NodeLink> NodeLinkWeak;
+typedef std::shared_ptr<NodeLink> NodeLinkPtr;
+
+class NodeSlotInput;
+typedef std::weak_ptr<NodeSlotInput> NodeSlotInputWeak;
+typedef std::shared_ptr<NodeSlotInput> NodeSlotInputPtr;
+
+class NodeSlotOutput;
+typedef std::weak_ptr<NodeSlotOutput> NodeSlotOutputWeak;
+typedef std::shared_ptr<NodeSlotOutput> NodeSlotOutputPtr;
+
+typedef std::set<std::string> FilesSet;
+typedef void* UserDatas;
 
 namespace rnm {
 
@@ -52,7 +76,7 @@ struct IXmlSettings {
 };
 
 struct PathDatas {
-	std::vector<std::string> paths;
+    std::vector<std::string> paths;
 };
 
 struct RenamerModule : PluginModule {
@@ -66,6 +90,10 @@ struct RenamerModule : PluginModule {
 typedef std::shared_ptr<RenamerModule> RenamerModulePtr;
 typedef std::weak_ptr<RenamerModule> RenamerModuleWeak;
 
+typedef std::string PluginName;
+typedef std::string PluginPath;
+typedef std::map<PluginName, RenamerModulePtr> RenamerContainer;
+
 enum class PluginModuleType { NONE = 0, RENAMER };
 
 struct PluginModuleInfos {
@@ -74,8 +102,7 @@ struct PluginModuleInfos {
     PluginModuleType type;
     std::array<float, 4> color{};
     PluginModuleInfos(const std::string& vPath, const std::string& vLabel, const PluginModuleType& vType, const std::array<float, 4>& vColor = {})
-        : path(vPath), label(vLabel), type(vType), color(vColor) {
-    }
+        : path(vPath), label(vLabel), type(vType), color(vColor) {}
 };
 
 struct ISettings : public IXmlSettings {
@@ -95,8 +122,7 @@ typedef std::weak_ptr<ISettings> ISettingsWeak;
 
 struct PluginSettingsConfig {
     ISettingsWeak settings;
-    PluginSettingsConfig(ISettingsWeak vSertings) : settings(vSertings) {
-    }
+    PluginSettingsConfig(ISettingsWeak vSertings) : settings(vSertings) {}
 };
 
 struct PluginInterface {
@@ -118,4 +144,104 @@ struct PluginInterface {
     virtual std::vector<PluginSettingsConfig> GetSettings() const = 0;
 };
 
-}
+class NodeInterface {
+protected:
+    BaseNodeWeak m_ParentNode;  // node parent dans le cas d'un ndoe enfant d'un graph
+
+public:
+    void SetParentNode(BaseNodeWeak vBaseNodeWeak = BaseNodeWeak()) { m_ParentNode = vBaseNodeWeak; }
+    BaseNodeWeak GetParentNode() { return m_ParentNode; }
+    virtual bool DrawNodeWidget(const uint32_t& vFrame) = 0;
+    virtual void BeforeNodeXmlLoading() {}
+    virtual void AfterNodeXmlLoading() {}
+};
+
+template <typename T>
+class WeakThisInterface {
+protected:
+    std::weak_ptr<T> m_This;
+
+public:
+    std::weak_ptr<T> getWeak() { return m_This; }
+};
+
+class FilesOutputInterface {
+public:
+    virtual FilesSet getFiles() const = 0;
+};
+
+class FilesInputInterface {
+public:
+    virtual bool setFiles(const FilesSet& vFiles) = 0;
+};
+
+struct ImGuiContext;
+class GuiInterface {
+public:
+    virtual bool DrawWidgets(const uint32_t& vFrame, ImGuiContext* vpCtx) = 0;
+};
+
+typedef std::string NotifyEvent;
+class NotifyInterface {
+public:
+    virtual void notify(const NotifyEvent& vEvent, const NodeSlotWeak& vEmitterSlot, const NodeSlotWeak& vReceiverSlot) = 0;
+};
+
+class NotifierInterface {
+public:
+    /// Treat an event (to be herited)
+    virtual void treatNotification(const NotifyEvent& vEvent, const NodeSlotWeak& vEmitterSlot, const NodeSlotWeak& vReceiverSlot) = 0;
+
+    /// Send a event in front (to be herited)
+    virtual void sendFrontNotification(const NotifyEvent& vEvent) = 0;
+
+    /// Send a event in back (to be herited)
+    virtual void sendBackNotification(const NotifyEvent& vEvent) = 0;
+};
+
+class TaskInterface {
+protected:
+    // to compare to current frame
+    // to know is the execution was already done
+    uint32_t m_lastExecutedFrame = 0U;
+    bool m_askForOneExecution = false;
+    bool m_executionOnDemand = false;
+
+protected:
+    // only for execution on demand
+    void m_needOneExecution() { m_askForOneExecution = true; }
+    void m_setExecutionOnDemand(const bool vFlag) { m_askForOneExecution = vFlag; }
+
+    // one execution per frame
+    virtual bool m_execPerFrame(const uint32_t vFrame, UserDatas vUserDatas = nullptr) {
+        (void)vFrame;
+        assert(nullptr); // must be overriden
+        return false;
+    }
+
+    // one execution on demand
+    virtual bool m_execOnDemand(const uint32_t vFrame, UserDatas vUserDatas = nullptr) {
+        (void)vFrame;
+        assert(nullptr);  // must be overriden
+        return false;
+    }
+
+public:
+    // each derived class of TaskInterface must choose its execution mode
+    bool exec(const uint32_t vFrame, UserDatas vUserDatas = nullptr) {
+        if (m_lastExecutedFrame != vFrame) {
+            m_lastExecutedFrame = vFrame;
+            if (m_executionOnDemand) {
+                if (m_askForOneExecution) {
+                    m_askForOneExecution = false;
+                    return m_execOnDemand(vFrame, vUserDatas);
+                }
+            } else {
+                return m_execPerFrame(vFrame, vUserDatas);
+            }
+        }
+        return false;
+    }
+};
+
+}  // namespace rnm

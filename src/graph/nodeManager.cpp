@@ -19,6 +19,9 @@ void NodeManager::unitInstance() {
 }
 
 bool NodeManager::init() {
+    addSlotColor("NONE", ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+    addSlotColor("FILES", ImVec4(0.5f, 0.5f, 0.9f, 1.0f));
+    addSlotColor("TOKEN", ImVec4(0.9f, 0.9f, 0.1f, 1.0f));
     m_graphPtr = BaseNode::create({});
     auto node = m_graphPtr->createChildNode<BaseNode>({});
     auto ptr = node.lock();
@@ -37,5 +40,16 @@ bool NodeManager::drawGraph() {
     return m_graphPtr->drawGraph();
 }
 
-void NodeManager::m_displayBlueprintNodesMenu() {
+ImVec4 NodeManager::getSlotColor(const std::string& vNodeSlotType) {
+    ImVec4 res = ImVec4(0.8f, 0.8f, 0.0f, 1.0f);
+
+    if (m_ColorSlots.find(vNodeSlotType) != m_ColorSlots.end()) {
+        res = m_ColorSlots.at(vNodeSlotType);
+    }
+
+    return res;
+}
+
+void NodeManager::addSlotColor(const std::string& vNodeSlotType, const ImVec4& vSlotColor) {
+    m_ColorSlots[vNodeSlotType] = vSlotColor;
 }
