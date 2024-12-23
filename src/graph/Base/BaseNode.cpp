@@ -24,8 +24,8 @@ limitations under the License.
 #include <Gaia/Core/VulkanCore.h>
 #include <imgui_node_editor_internal.h>
 
-#include <SoGLSL/Graph/Base/NodeSlotInput.h>
-#include <SoGLSL/Graph/Base/NodeSlotOutput.h>
+#include <SoGLSL/Graph/Base/BaseSlotInput.h>
+#include <SoGLSL/Graph/Base/BaseSlotOutput.h>
 
 #include <utility>
 
@@ -78,8 +78,8 @@ void BaseNode::OpenGraph_Callback(const BaseNodeWeak& vNode)
 	}
 }
 
-std::function<void(const NodeSlotWeak&, const ImGuiMouseButton&)> BaseNode::sSelectSlotCallback;
-void BaseNode::SelectSlot_Callback(const NodeSlotWeak& vSlot, const ImGuiMouseButton& vMouseButton)
+std::function<void(const BaseSlotWeak&, const ImGuiMouseButton&)> BaseNode::sSelectSlotCallback;
+void BaseNode::SelectSlot_Callback(const BaseSlotWeak& vSlot, const ImGuiMouseButton& vMouseButton)
 {
 	if (BaseNode::sSelectSlotCallback)
 	{
@@ -92,8 +92,8 @@ void BaseNode::SelectSlot_Callback(const NodeSlotWeak& vSlot, const ImGuiMouseBu
 }
 
 
-std::function<void(const NodeSlotWeak&, const ImGuiMouseButton&)> BaseNode::sSelectForGraphOutputCallback;
-void BaseNode::SelectForGraphOutput_Callback(const NodeSlotWeak& vSlot, const ImGuiMouseButton& vMouseButton)
+std::function<void(const BaseSlotWeak&, const ImGuiMouseButton&)> BaseNode::sSelectForGraphOutputCallback;
+void BaseNode::SelectForGraphOutput_Callback(const BaseSlotWeak& vSlot, const ImGuiMouseButton& vMouseButton)
 {
 	if (BaseNode::sSelectForGraphOutputCallback)
 	{
@@ -242,11 +242,11 @@ void BaseNode::InitGraph(const nd::Style& vStyle)
 	{
 		nd::Config config;
 		if (!m_ParentNode.expired() && !name.empty())
-			m_NodeGraphConfigFile = "json\\" + name + ".json";
+			m_NodeBaseGraphDatasFile = "json\\" + name + ".json";
 		else
-			m_NodeGraphConfigFile = "json\\root.json";
+			m_NodeBaseGraphDatasFile = "json\\root.json";
 
-		config.SettingsFile = m_NodeGraphConfigFile.c_str();
+		config.SettingsFile = m_NodeBaseGraphDatasFile.c_str();
 		m_BaseNodeState.m_NodeGraphContext = nd::CreateEditor(&config);
 
 		if (m_BaseNodeState.m_NodeGraphContext)
@@ -286,13 +286,13 @@ void BaseNode::FinalizeGraphLoading()
 {
 	// select outputs
 	BaseNode::SelectForGraphOutput_Callback(
-		FindNodeSlotById(m_OutputLeftSlotToSelectAfterLoading.first, m_OutputLeftSlotToSelectAfterLoading.second), 
+		FindBaseSlotById(m_OutputLeftSlotToSelectAfterLoading.first, m_OutputLeftSlotToSelectAfterLoading.second), 
 		ImGuiMouseButton_Left);
 	BaseNode::SelectForGraphOutput_Callback(
-		FindNodeSlotById(m_OutputMiddleSlotToSelectAfterLoading.first, m_OutputMiddleSlotToSelectAfterLoading.second),
+		FindBaseSlotById(m_OutputMiddleSlotToSelectAfterLoading.first, m_OutputMiddleSlotToSelectAfterLoading.second),
 		ImGuiMouseButton_Middle);
 	BaseNode::SelectForGraphOutput_Callback(
-		FindNodeSlotById(m_OutputRightSlotToSelectAfterLoading.first, m_OutputRightSlotToSelectAfterLoading.second),
+		FindBaseSlotById(m_OutputRightSlotToSelectAfterLoading.first, m_OutputRightSlotToSelectAfterLoading.second),
 		ImGuiMouseButton_Right);
 
 	for (const auto& entry : m_LinksToBuildAfterLoading)
@@ -300,8 +300,8 @@ void BaseNode::FinalizeGraphLoading()
 		const SlotEntry& entIn = entry.first;
 		const SlotEntry& entOut = entry.second;
 
-		auto inSlot = FindNodeSlotById(entIn.first, entIn.second);
-		auto outSlot = FindNodeSlotById(entOut.first, entOut.second);
+		auto inSlot = FindBaseSlotById(entIn.first, entIn.second);
+		auto outSlot = FindBaseSlotById(entOut.first, entOut.second);
 
 		ConnectSlots(inSlot, outSlot);
 	}
@@ -683,19 +683,19 @@ bool BaseNode::DrawNodeContent(BaseNodeState *vBaseNodeState)
 	return true;
 }
 
-void BaseNode::DrawInputWidget(BaseNodeState *vBaseNodeState, NodeSlotWeak vSlot)
+void BaseNode::DrawInputWidget(BaseNodeState *vBaseNodeState, BaseSlotWeak vSlot)
 {
 	UNUSED(vBaseNodeState);
 	UNUSED(vSlot);
 }
 
-void BaseNode::DrawOutputWidget(BaseNodeState *vBaseNodeState, NodeSlotWeak vSlot)
+void BaseNode::DrawOutputWidget(BaseNodeState *vBaseNodeState, BaseSlotWeak vSlot)
 {
 	UNUSED(vBaseNodeState);
 	UNUSED(vSlot);
 }
 
-void BaseNode::DrawContextMenuForSlot(BaseNodeState *vBaseNodeState, NodeSlotWeak vSlot)
+void BaseNode::DrawContextMenuForSlot(BaseNodeState *vBaseNodeState, BaseSlotWeak vSlot)
 {
 	UNUSED(vBaseNodeState);
 	UNUSED(vSlot);
@@ -727,14 +727,14 @@ void BaseNode::SetCodeDirty(bool vFlag)
 	m_IsCodeDirty = vFlag;
 }
 
-/*void BaseNode::JustConnectedBySlots(NodeSlotWeak vStartSlot, NodeSlotWeak vEndSlot)
+/*void BaseNode::JustConnectedBySlots(BaseSlotWeak vStartSlot, BaseSlotWeak vEndSlot)
 {
 #ifdef _DEBUG
 	//LogVarInfo("BaseNode::JustConnectedBySlots catched, some class not implment it. maybe its wanted");
 #endif
 }
 
-void BaseNode::JustDisConnectedBySlots(NodeSlotWeak vStartSlot, NodeSlotWeak vEndSlot)
+void BaseNode::JustDisConnectedBySlots(BaseSlotWeak vStartSlot, BaseSlotWeak vEndSlot)
 {
 #ifdef _DEBUG
 	//LogVarInfo("BaseNode::JustDisConnectedBySlots catched, some class not implment it. maybe its wanted");
@@ -932,18 +932,18 @@ void BaseNode::DrawProperties(BaseNodeState* vBaseNodeState)
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-NodeSlotWeak BaseNode::AddInput(NodeSlotInputPtr vSlotPtr, bool vIncSlotId, bool vHideName)
+BaseSlotWeak BaseNode::AddInput(BaseSlotInputPtr vSlotPtr, bool vIncSlotId, bool vHideName)
 {
 	if (vSlotPtr)
 	{
 		assert(!m_This.expired());
 		vSlotPtr->parentNode = m_This;
-		vSlotPtr->slotPlace = NodeSlot::PlaceEnum::INPUT;
+		vSlotPtr->slotPlace = BaseSlot::PlaceEnum::INPUT;
 		vSlotPtr->hideName = vHideName;
 		vSlotPtr->type = uType::uTypeEnum::U_FLOW;
 		if (vIncSlotId)
 		{
-			vSlotPtr->pinID = NodeSlot::sGetNewSlotId();
+			vSlotPtr->pinID = BaseSlot::sGetNewSlotId();
 		}
 		vSlotPtr->index = (uint32_t)m_Inputs.size();
 		const auto& slotID = vSlotPtr->GetSlotID();
@@ -952,21 +952,21 @@ NodeSlotWeak BaseNode::AddInput(NodeSlotInputPtr vSlotPtr, bool vIncSlotId, bool
 		return m_Inputs.at(slotID);
 	}
 
-	return NodeSlotWeak();
+	return BaseSlotWeak();
 }
 
-NodeSlotWeak BaseNode::AddOutput(NodeSlotOutputPtr vSlotPtr, bool vIncSlotId, bool vHideName)
+BaseSlotWeak BaseNode::AddOutput(BaseSlotOutputPtr vSlotPtr, bool vIncSlotId, bool vHideName)
 {
 	if (vSlotPtr)
 	{
 		assert(!m_This.expired());
 		vSlotPtr->parentNode = m_This;
-		vSlotPtr->slotPlace = NodeSlot::PlaceEnum::OUTPUT;
+		vSlotPtr->slotPlace = BaseSlot::PlaceEnum::OUTPUT;
 		vSlotPtr->hideName = vHideName;
 		vSlotPtr->type = uType::uTypeEnum::U_FLOW;
 		if (vIncSlotId)
 		{
-			vSlotPtr->pinID = NodeSlot::sGetNewSlotId();
+			vSlotPtr->pinID = BaseSlot::sGetNewSlotId();
 		}
 		vSlotPtr->index = (uint32_t)m_Outputs.size();
 		const auto& slotID = vSlotPtr->GetSlotID();
@@ -975,7 +975,7 @@ NodeSlotWeak BaseNode::AddOutput(NodeSlotOutputPtr vSlotPtr, bool vIncSlotId, bo
 		return m_Outputs.at(slotID);
 	}
 
-	return NodeSlotWeak();
+	return BaseSlotWeak();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1274,7 +1274,7 @@ NodeLinkWeak BaseNode::FindLink(nd::LinkId vId)
 	return NodeLinkWeak();
 }
 
-NodeSlotWeak BaseNode::FindSlot(nd::PinId vId)
+BaseSlotWeak BaseNode::FindSlot(nd::PinId vId)
 {
 	if (vId)
 	{
@@ -1301,10 +1301,10 @@ NodeSlotWeak BaseNode::FindSlot(nd::PinId vId)
 		}
 	}
 	
-	return NodeSlotWeak();
+	return BaseSlotWeak();
 }
 
-NodeSlotWeak BaseNode::FindNodeSlotByName(BaseNodeWeak vNode, std::string vName)
+BaseSlotWeak BaseNode::FindBaseSlotByName(BaseNodeWeak vNode, std::string vName)
 {
 	if (!vNode.expired())
 	{
@@ -1328,10 +1328,10 @@ NodeSlotWeak BaseNode::FindNodeSlotByName(BaseNodeWeak vNode, std::string vName)
 		}
 	}
 
-	return NodeSlotWeak();
+	return BaseSlotWeak();
 }
 
-NodeSlotWeak BaseNode::FindNodeSlotById(nd::NodeId vNodeId, nd::PinId vSlotId)
+BaseSlotWeak BaseNode::FindBaseSlotById(nd::NodeId vNodeId, nd::PinId vSlotId)
 {
 	auto nodePtr = FindNode(vNodeId).lock();
 	if (nodePtr)
@@ -1353,14 +1353,14 @@ NodeSlotWeak BaseNode::FindNodeSlotById(nd::NodeId vNodeId, nd::PinId vSlotId)
 		}
 	}
 
-	return NodeSlotWeak();
+	return BaseSlotWeak();
 }
 
-std::vector<NodeSlotWeak> BaseNode::GetSlotsOfType(NodeSlot::PlaceEnum vPlace, std::string vType)
+std::vector<BaseSlotWeak> BaseNode::GetSlotsOfType(BaseSlot::PlaceEnum vPlace, std::string vType)
 {
-	std::vector<NodeSlotWeak> slots;
+	std::vector<BaseSlotWeak> slots;
 
-	if (vPlace == NodeSlot::PlaceEnum::INPUT)
+	if (vPlace == BaseSlot::PlaceEnum::INPUT)
 	{
 		for (const auto& pin : m_Inputs)
 		{
@@ -1370,7 +1370,7 @@ std::vector<NodeSlotWeak> BaseNode::GetSlotsOfType(NodeSlot::PlaceEnum vPlace, s
 			}
 		}
 	}
-	else if (vPlace == NodeSlot::PlaceEnum::OUTPUT)
+	else if (vPlace == BaseSlot::PlaceEnum::OUTPUT)
 	{
 		for (const auto& pin : m_Outputs)
 		{
@@ -1384,28 +1384,28 @@ std::vector<NodeSlotWeak> BaseNode::GetSlotsOfType(NodeSlot::PlaceEnum vPlace, s
 	return slots;
 }
 
-std::vector<NodeSlotWeak> BaseNode::GetInputSlotsOfType(std::string vType)
+std::vector<BaseSlotWeak> BaseNode::GetInputSlotsOfType(std::string vType)
 {
-	return GetSlotsOfType(NodeSlot::PlaceEnum::INPUT, vType);
+	return GetSlotsOfType(BaseSlot::PlaceEnum::INPUT, vType);
 }
 
-std::vector<NodeSlotWeak> BaseNode::GetOutputSlotsOfType(std::string vType)
+std::vector<BaseSlotWeak> BaseNode::GetOutputSlotsOfType(std::string vType)
 {
-	return GetSlotsOfType(NodeSlot::PlaceEnum::OUTPUT , vType);
+	return GetSlotsOfType(BaseSlot::PlaceEnum::OUTPUT , vType);
 }
 
-NodeSlotWeak BaseNode::AddPreDefinedInput(const NodeSlot& /*vNodeSlot*/)
+BaseSlotWeak BaseNode::AddPreDefinedInput(const BaseSlot& /*vBaseSlot*/)
 {
 	CTOOL_DEBUG_BREAK;
 	LogVarDebugError("BaseNode::AddPreDefinedInput => Some override is missing is seems");
-	return NodeSlotWeak();
+	return BaseSlotWeak();
 }
 
-NodeSlotWeak BaseNode::AddPreDefinedOutput(const NodeSlot& /*vNodeSlot*/)
+BaseSlotWeak BaseNode::AddPreDefinedOutput(const BaseSlot& /*vBaseSlot*/)
 {
 	CTOOL_DEBUG_BREAK;
 	LogVarDebugError("BaseNode::AddPreDefinedOutput => Some override is missing is seems");
-	return NodeSlotWeak();
+	return BaseSlotWeak();
 }
 
 void BaseNode::DoCreateLinkOrNode(BaseNodeState *vBaseNodeState)
@@ -1876,7 +1876,7 @@ bool BaseNode::DestroyChildNodeByIdIfAllowed(int vNodeID, bool vDestroy)
 	return res;
 }
 
-void BaseNode::DestroySlotOfAnyMap(NodeSlotWeak vSlot)
+void BaseNode::DestroySlotOfAnyMap(BaseSlotWeak vSlot)
 {
 	auto slotPtr = vSlot.lock();
 	if (slotPtr)
@@ -1927,7 +1927,7 @@ void BaseNode::AfterNodeXmlLoading()
 
 }
 
-void BaseNode::TreatNotification(const NotifyEvent& /*vEvent*/, const NodeSlotWeak& /*vEmitterSlot*/, const NodeSlotWeak& /*vReceiverSlot*/)
+void BaseNode::TreatNotification(const NotifyEvent& /*vEvent*/, const BaseSlotWeak& /*vEmitterSlot*/, const BaseSlotWeak& /*vReceiverSlot*/)
 {
 
 }
@@ -2107,7 +2107,7 @@ void BaseNode::DoLayout()
 //// GET LINKS / SLOTS ///////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-std::vector<NodeLinkWeak> BaseNode::GetLinksAssociatedToSlot(NodeSlotWeak vSlot)
+std::vector<NodeLinkWeak> BaseNode::GetLinksAssociatedToSlot(BaseSlotWeak vSlot)
 {
 	std::vector<NodeLinkWeak> res;
 
@@ -2135,9 +2135,9 @@ std::vector<NodeLinkWeak> BaseNode::GetLinksAssociatedToSlot(NodeSlotWeak vSlot)
 	return res;
 }
 
-std::vector<NodeSlotWeak> BaseNode::GetSlotsAssociatedToSlot(NodeSlotWeak vSlot)
+std::vector<BaseSlotWeak> BaseNode::GetSlotsAssociatedToSlot(BaseSlotWeak vSlot)
 {
-	std::vector<NodeSlotWeak> res;
+	std::vector<BaseSlotWeak> res;
 
 	if (!vSlot.expired())
 	{
@@ -2155,7 +2155,7 @@ std::vector<NodeSlotWeak> BaseNode::GetSlotsAssociatedToSlot(NodeSlotWeak vSlot)
 //// ADD/DELETE VISUAL LINKS (NO CHANGE BEHIND) //////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-bool BaseNode::AddLink(NodeSlotWeak vStart, NodeSlotWeak vEnd)
+bool BaseNode::AddLink(BaseSlotWeak vStart, BaseSlotWeak vEnd)
 {
 	if (!vStart.expired() && 
 		!vEnd.expired())
@@ -2289,7 +2289,7 @@ bool BaseNode::BreakLink(const uint32_t& vLinkId)
 	return false;
 }
 
-bool BaseNode::BreakAllLinksConnectedToSlot(NodeSlotWeak vSlot)
+bool BaseNode::BreakAllLinksConnectedToSlot(BaseSlotWeak vSlot)
 {
 	if (!vSlot.expired())
 	{
@@ -2342,7 +2342,7 @@ bool BaseNode::BreakAllLinksConnectedToSlot(NodeSlotWeak vSlot)
 	return false;
 }
 
-bool BaseNode::BreakLink(NodeSlotWeak vFrom, NodeSlotWeak vTo)
+bool BaseNode::BreakLink(BaseSlotWeak vFrom, BaseSlotWeak vTo)
 {
 	if (!vFrom.expired() &&
 		!vTo.expired())
@@ -2401,7 +2401,7 @@ bool BaseNode::BreakLink(NodeSlotWeak vFrom, NodeSlotWeak vTo)
 //// CONNECT / DISCONNECT SLOTS BEHIND ///////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-bool BaseNode::ConnectSlots(NodeSlotWeak vFrom, NodeSlotWeak vTo)
+bool BaseNode::ConnectSlots(BaseSlotWeak vFrom, BaseSlotWeak vTo)
 {
 	bool res = false;
 
@@ -2505,7 +2505,7 @@ bool BaseNode::ConnectSlots(NodeSlotWeak vFrom, NodeSlotWeak vTo)
 	return res;
 }
 
-void BaseNode::NotifyConnectionChangeOfThisSlot(NodeSlotWeak vSlot, bool vConnected) // ce solt a été connecté
+void BaseNode::NotifyConnectionChangeOfThisSlot(BaseSlotWeak vSlot, bool vConnected) // ce solt a été connecté
 {
 	UNUSED(vConnected);
 	if (!vSlot.expired())
@@ -2513,7 +2513,7 @@ void BaseNode::NotifyConnectionChangeOfThisSlot(NodeSlotWeak vSlot, bool vConnec
 		auto ptr = vSlot.lock();
 		if (ptr)
 		{
-			if (ptr->slotPlace == NodeSlot::PlaceEnum::INPUT)
+			if (ptr->slotPlace == BaseSlot::PlaceEnum::INPUT)
 			{
 				//if (!m_Code.m_Sections.empty())
 				{
@@ -2575,7 +2575,7 @@ void BaseNode::NotifyConnectionChangeOfThisSlot(NodeSlotWeak vSlot, bool vConnec
 //// PRIVATE /////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-bool BaseNode::CallSlotsOnConnectEvent(NodeSlotWeak vStart, NodeSlotWeak vEnd)
+bool BaseNode::CallSlotsOnConnectEvent(BaseSlotWeak vStart, BaseSlotWeak vEnd)
 {
 	bool res = false;
 
@@ -2606,7 +2606,7 @@ bool BaseNode::CallSlotsOnConnectEvent(NodeSlotWeak vStart, NodeSlotWeak vEnd)
 	return res;
 }
 
-bool BaseNode::CallSlotsOnDisConnectEvent(NodeSlotWeak vStart, NodeSlotWeak vEnd)
+bool BaseNode::CallSlotsOnDisConnectEvent(BaseSlotWeak vStart, BaseSlotWeak vEnd)
 {
 	auto startPtr = vStart.lock();
 	auto endPtr = vEnd.lock();
@@ -2643,7 +2643,7 @@ bool BaseNode::CallSlotsOnDisConnectEvent(NodeSlotWeak vStart, NodeSlotWeak vEnd
 //// SLOT CONNECTION TEST ////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-bool BaseNode::CanWeConnectSlots(NodeSlotWeak vFrom, NodeSlotWeak vTo)
+bool BaseNode::CanWeConnectSlots(BaseSlotWeak vFrom, BaseSlotWeak vTo)
 {
 	if (!vFrom.expired() &&
 		!vTo.expired())
@@ -2671,9 +2671,9 @@ bool BaseNode::CanWeConnectSlots(NodeSlotWeak vFrom, NodeSlotWeak vTo)
 //// SLOT SPLITTER ///////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-std::vector<NodeSlotWeak> BaseNode::InjectTypeInSlot(NodeSlotWeak vSlotToSplit, uType::uTypeEnum vType)
+std::vector<BaseSlotWeak> BaseNode::InjectTypeInSlot(BaseSlotWeak vSlotToSplit, uType::uTypeEnum vType)
 {
-	std::vector<NodeSlotWeak> res;
+	std::vector<BaseSlotWeak> res;
 
 	if (vType != uType::uTypeEnum::U_VOID)
 	{
@@ -2763,7 +2763,7 @@ std::string BaseNode::getXml(const std::string& vOffset, const std::string& vUse
 		res += vOffset + "\t<outputs>\n";
 
 		std::string outLeftSlot;
-		auto slotLeftPtr = NodeSlot::sSlotGraphOutputMouseLeft.lock();
+		auto slotLeftPtr = BaseSlot::sSlotGraphOutputMouseLeft.lock();
 		if (slotLeftPtr)
 		{
 			auto slotLeftParentNodePtr = slotLeftPtr->parentNode.lock();
@@ -2775,7 +2775,7 @@ std::string BaseNode::getXml(const std::string& vOffset, const std::string& vUse
 		}
 
 		std::string outMiddleSlot;
-		auto slotMiddlePtr = NodeSlot::sSlotGraphOutputMouseMiddle.lock();
+		auto slotMiddlePtr = BaseSlot::sSlotGraphOutputMouseMiddle.lock();
 		if (slotMiddlePtr)
 		{
 			auto slotMiddleParentNodePtr = slotMiddlePtr->parentNode.lock();
@@ -2787,7 +2787,7 @@ std::string BaseNode::getXml(const std::string& vOffset, const std::string& vUse
 		}
 
 		std::string outRightSlot;
-		auto slotRightPtr = NodeSlot::sSlotGraphOutputMouseMiddle.lock();
+		auto slotRightPtr = BaseSlot::sSlotGraphOutputMouseMiddle.lock();
 		if (slotRightPtr)
 		{
 			auto slotRightParentNodePtr = slotRightPtr->parentNode.lock();
@@ -2923,7 +2923,7 @@ bool BaseNode::setFromXml(tinyxml2::XMLElement* vElem, tinyxml2::XMLElement* vPa
 	}
 	else if (strParentName == "node")
 	{
-		NodeSlot slot;
+		BaseSlot slot;
 		if (strName == "slot")
 		{
 			for (const tinyxml2::XMLAttribute* attr = vElem->FirstAttribute(); attr != nullptr; attr = attr->Next())
@@ -2938,7 +2938,7 @@ bool BaseNode::setFromXml(tinyxml2::XMLElement* vElem, tinyxml2::XMLElement* vPa
 				else if (attName == "type")
 					slot.slotType = attValue;
 				else if (attName == "place")
-					slot.slotPlace = NodeSlot::sGetNodeSlotPlaceEnumFromString(attValue);
+					slot.slotPlace = BaseSlot::sGetBaseSlotPlaceEnumFromString(attValue);
 				else if (attName == "id")
 					slot.pinID = ez::ivariant(attValue).GetU();
 			}	
@@ -2946,7 +2946,7 @@ bool BaseNode::setFromXml(tinyxml2::XMLElement* vElem, tinyxml2::XMLElement* vPa
 			// not used
 			//const auto& _nodeID = this->GetNodeID();
 
-			if (slot.slotPlace == NodeSlot::PlaceEnum::INPUT)
+			if (slot.slotPlace == BaseSlot::PlaceEnum::INPUT)
 			{
 				if (m_InputSlotsInternalMode == NODE_INTERNAL_MODE_Enum::NODE_INTERNAL_MODE_FIXED)
 				{
@@ -2976,7 +2976,7 @@ bool BaseNode::setFromXml(tinyxml2::XMLElement* vElem, tinyxml2::XMLElement* vPa
 					AddPreDefinedInput(slot);
 				}
 			}
-			else if (slot.slotPlace == NodeSlot::PlaceEnum::OUTPUT)
+			else if (slot.slotPlace == BaseSlot::PlaceEnum::OUTPUT)
 			{
 				if (m_OutputSlotsInternalMode == NODE_INTERNAL_MODE_Enum::NODE_INTERNAL_MODE_FIXED)
 				{

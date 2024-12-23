@@ -18,24 +18,24 @@ limitations under the License.
 #pragma warning(disable : 4251)
 
 #include <headers/datasDef.h>
-#include <graph/Base/NodeSlot.h>
+#include <graph/Base/BaseSlot.h>
 
-class NodeSlotInput : public NodeSlot
+class BaseSlotInput : public BaseSlot
 {
 public:
-	static NodeSlotInputPtr Create();
-	static NodeSlotInputPtr Create(const std::string& vName);
-	static NodeSlotInputPtr Create(const std::string& vName, const std::string& vType);
-	static NodeSlotInputPtr Create(const std::string& vName, const std::string& vType, const bool& vHideName);
-	static NodeSlotInputPtr Create(const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget);
+	static BaseSlotInputPtr Create();
+	static BaseSlotInputPtr Create(const std::string& vName);
+	static BaseSlotInputPtr Create(const std::string& vName, const std::string& vType);
+	static BaseSlotInputPtr Create(const std::string& vName, const std::string& vType, const bool& vHideName);
+	static BaseSlotInputPtr Create(const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget);
 
 public:
-	explicit NodeSlotInput();
-	explicit NodeSlotInput(const std::string& vName);
-	explicit NodeSlotInput(const std::string& vName, const std::string& vType);
-	explicit NodeSlotInput(const std::string& vName, const std::string& vType, const bool& vHideName);
-	explicit NodeSlotInput(const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget);
-	~NodeSlotInput();
+	explicit BaseSlotInput();
+	explicit BaseSlotInput(const std::string& vName);
+	explicit BaseSlotInput(const std::string& vName, const std::string& vType);
+	explicit BaseSlotInput(const std::string& vName, const std::string& vType, const bool& vHideName);
+	explicit BaseSlotInput(const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget);
+	~BaseSlotInput();
 
 	void Init();
 	void Unit();

@@ -17,38 +17,38 @@ limitations under the License.
 #pragma once
 
 #include <SoGLSL/Graph/Graph.h>
-#include <SoGLSL/Graph/Base/NodeSlotInput.h>
+#include <SoGLSL/Graph/Base/BaseSlotInput.h>
 
-class NodeSlotCodeInput;
-typedef std::weak_ptr<NodeSlotCodeInput> NodeSlotCodeInputWeak;
-typedef std::shared_ptr<NodeSlotCodeInput> NodeSlotCodeInputPtr;
+class BaseSlotCodeInput;
+typedef std::weak_ptr<BaseSlotCodeInput> BaseSlotCodeInputWeak;
+typedef std::shared_ptr<BaseSlotCodeInput> BaseSlotCodeInputPtr;
 
-class NodeSlotCodeInput : 
-	public NodeSlotInput
+class BaseSlotCodeInput : 
+	public BaseSlotInput
 {
 public:
-	static NodeSlotCodeInputPtr Create(NodeSlotCodeInput vSlot);
-	static NodeSlotCodeInputPtr Create(const std::string& vName, const std::string& vType);
-	static NodeSlotCodeInputPtr Create(const std::string& vName, const std::string& vType, const bool& vHideName);
-	static NodeSlotCodeInputPtr Create(const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget);
+	static BaseSlotCodeInputPtr Create(BaseSlotCodeInput vSlot);
+	static BaseSlotCodeInputPtr Create(const std::string& vName, const std::string& vType);
+	static BaseSlotCodeInputPtr Create(const std::string& vName, const std::string& vType, const bool& vHideName);
+	static BaseSlotCodeInputPtr Create(const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget);
 
 public:
-	explicit NodeSlotCodeInput();
-	explicit NodeSlotCodeInput(const std::string& vName, const std::string& vType);
-	explicit NodeSlotCodeInput(const std::string& vName, const std::string& vType, const bool& vHideName);
-	explicit NodeSlotCodeInput(const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget);
-	~NodeSlotCodeInput();
+	explicit BaseSlotCodeInput();
+	explicit BaseSlotCodeInput(const std::string& vName, const std::string& vType);
+	explicit BaseSlotCodeInput(const std::string& vName, const std::string& vType, const bool& vHideName);
+	explicit BaseSlotCodeInput(const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget);
+	~BaseSlotCodeInput();
 
 	void Init();
 	void Unit();
 
-    void OnConnectEvent(NodeSlotWeak vOtherSlot) override;
-    void OnDisConnectEvent(NodeSlotWeak vOtherSlot) override;
+    void OnConnectEvent(BaseSlotWeak vOtherSlot) override;
+    void OnDisConnectEvent(BaseSlotWeak vOtherSlot) override;
 
 	void TreatNotification(
 		NotifyEvent vEvent,
-		const NodeSlotWeak& vEmitterSlot = NodeSlotWeak(),
-		const NodeSlotWeak& vReceiverSlot = NodeSlotWeak());
+		const BaseSlotWeak& vEmitterSlot = BaseSlotWeak(),
+		const BaseSlotWeak& vReceiverSlot = BaseSlotWeak());
 
 	void DrawDebugInfos();
 

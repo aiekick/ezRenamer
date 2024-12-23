@@ -17,7 +17,7 @@ limitations under the License.
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
-#include <SoGLSL/Graph/Base/NodeSlot.h>
+#include <SoGLSL/Graph/Base/BaseSlot.h>
 
 #include <utility>
 #include <SoGLSL/Graph/Base/BaseNode.h>
@@ -42,56 +42,56 @@ SlotColor::SlotColor()
 	AddSlotColor("DEPTH", ImVec4(0.2f, 0.7f, 0.6f, 1.0f));
 }
 
-ImVec4 SlotColor::GetSlotColor(const std::string& vNodeSlotType)
+ImVec4 SlotColor::GetSlotColor(const std::string& vBaseSlotType)
 {
 	ImVec4 res = ImVec4(0.8f, 0.8f, 0.0f, 1.0f);
 
-	if (m_ColorSlots.find(vNodeSlotType) != m_ColorSlots.end())
+	if (m_ColorSlots.find(vBaseSlotType) != m_ColorSlots.end())
 	{
-		res = m_ColorSlots.at(vNodeSlotType);
+		res = m_ColorSlots.at(vBaseSlotType);
 	}
 
 	return res;
 }
 
-void SlotColor::AddSlotColor(const std::string& vNodeSlotType, const ImVec4& vSlotColor)
+void SlotColor::AddSlotColor(const std::string& vBaseSlotType, const ImVec4& vSlotColor)
 {
-	m_ColorSlots[vNodeSlotType] = vSlotColor;
+	m_ColorSlots[vBaseSlotType] = vSlotColor;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //// STATIC //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-NodeSlotWeak NodeSlot::sSlotGraphOutputMouseLeft;
-ImVec4 NodeSlot::sSlotGraphOutputMouseLeftColor;
-NodeSlotWeak NodeSlot::sSlotGraphOutputMouseMiddle;
-ImVec4 NodeSlot::sSlotGraphOutputMouseMiddleColor;
-NodeSlotWeak NodeSlot::sSlotGraphOutputMouseRight;
-ImVec4 NodeSlot::sSlotGraphOutputMouseRightColor;
+BaseSlotWeak BaseSlot::sSlotGraphOutputMouseLeft;
+ImVec4 BaseSlot::sSlotGraphOutputMouseLeftColor;
+BaseSlotWeak BaseSlot::sSlotGraphOutputMouseMiddle;
+ImVec4 BaseSlot::sSlotGraphOutputMouseMiddleColor;
+BaseSlotWeak BaseSlot::sSlotGraphOutputMouseRight;
+ImVec4 BaseSlot::sSlotGraphOutputMouseRightColor;
 
-std::string NodeSlot::sGetStringFromNodeSlotPlaceEnum(const NodeSlot::PlaceEnum& vPlaceEnum)
+std::string BaseSlot::sGetStringFromBaseSlotPlaceEnum(const BaseSlot::PlaceEnum& vPlaceEnum)
 {
-	static std::array<std::string, (uint32_t)NodeSlot::PlaceEnum::Count> NodeSlotPlaceString = {
+	static std::array<std::string, (uint32_t)BaseSlot::PlaceEnum::Count> BaseSlotPlaceString = {
 		"NONE",
 		"INPUT",
 		"OUTPUT",
 	};
-	if (vPlaceEnum != NodeSlot::PlaceEnum::Count)
-		return NodeSlotPlaceString[(int)vPlaceEnum];
-	LogVarDebugError("Error, one NodeSlotvNodeSlot::PlaceEnumEnum have no corresponding string, return \"None\"");
+	if (vPlaceEnum != BaseSlot::PlaceEnum::Count)
+		return BaseSlotPlaceString[(int)vPlaceEnum];
+	LogVarDebugError("Error, one BaseSlotvBaseSlot::PlaceEnumEnum have no corresponding string, return \"None\"");
 	return "NONE";
 }
 
-NodeSlot::PlaceEnum NodeSlot::sGetNodeSlotPlaceEnumFromString(const std::string& vNodeSlotPlaceString)
+BaseSlot::PlaceEnum BaseSlot::sGetBaseSlotPlaceEnumFromString(const std::string& vBaseSlotPlaceString)
 {
-	if (vNodeSlotPlaceString == "NONE") return NodeSlot::PlaceEnum::NONE;
-	else if (vNodeSlotPlaceString == "INPUT") return NodeSlot::PlaceEnum::INPUT;
-	else if (vNodeSlotPlaceString == "OUTPUT") return NodeSlot::PlaceEnum::OUTPUT;
-	return NodeSlot::PlaceEnum::NONE;
+	if (vBaseSlotPlaceString == "NONE") return BaseSlot::PlaceEnum::NONE;
+	else if (vBaseSlotPlaceString == "INPUT") return BaseSlot::PlaceEnum::INPUT;
+	else if (vBaseSlotPlaceString == "OUTPUT") return BaseSlot::PlaceEnum::OUTPUT;
+	return BaseSlot::PlaceEnum::NONE;
 }
 
-size_t NodeSlot::sGetNewSlotId()
+size_t BaseSlot::sGetNewSlotId()
 {
 	//#define SLOT_ID_OFFSET 100000
 	//return SLOT_ID_OFFSET + (++BaseNode::freeNodeId);
@@ -99,7 +99,7 @@ size_t NodeSlot::sGetNewSlotId()
 }
 
 // static are null when a plugin is loaded
-SlotColor* NodeSlot::sGetSlotColors(SlotColor* vCopy, bool vForce)
+SlotColor* BaseSlot::sGetSlotColors(SlotColor* vCopy, bool vForce)
 {
 	static SlotColor _SlotColor;
 	static SlotColor* _SlotColor_copy = nullptr;
@@ -110,21 +110,21 @@ SlotColor* NodeSlot::sGetSlotColors(SlotColor* vCopy, bool vForce)
 	return &_SlotColor;
 }
 
-NodeSlotPtr NodeSlot::Create(NodeSlot vSlot)
+BaseSlotPtr BaseSlot::Create(BaseSlot vSlot)
 {
-	auto res = std::make_shared<NodeSlot>(vSlot);
+	auto res = std::make_shared<BaseSlot>(vSlot);
 	res->m_This = res;
 	return res;
 }
 
-std::string NodeSlot::sGetSlotNameFromStageAndName(const std::string& vStage, const std::string& vName) {
+std::string BaseSlot::sGetSlotNameFromStageAndName(const std::string& vStage, const std::string& vName) {
     if (!vStage.empty() && !vName.empty()) {
         return ez::toStr("%s_%s", vStage.c_str(), vName.c_str());
 	}
     return {};
 }
 
-std::pair<std::string, std::string> NodeSlot::sGetStageAndNameFromSlotName(const std::string& vSlotName) {
+std::pair<std::string, std::string> BaseSlot::sGetStageAndNameFromSlotName(const std::string& vSlotName) {
     std::pair<std::string, std::string> res;
     auto pos = vSlotName.find('_');  // slot names are like STAGE_NAME
     if (pos != std::string::npos) {
@@ -138,18 +138,18 @@ std::pair<std::string, std::string> NodeSlot::sGetStageAndNameFromSlotName(const
 //// NODESLOT CLASS //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-NodeSlot::NodeSlot()
+BaseSlot::BaseSlot()
 {
 	pinID = sGetNewSlotId();
 }
 
-NodeSlot::NodeSlot(std::string vName)
+BaseSlot::BaseSlot(std::string vName)
 {
 	pinID = sGetNewSlotId();
 	name = vName;
 }
 
-NodeSlot::NodeSlot(std::string vName, std::string vType)
+BaseSlot::BaseSlot(std::string vName, std::string vType)
 {
 	pinID = sGetNewSlotId();
 	name = vName;
@@ -159,7 +159,7 @@ NodeSlot::NodeSlot(std::string vName, std::string vType)
 	//stamp.typeStamp = ConvertUniformsTypeEnumToString(type);
 }
 
-NodeSlot::NodeSlot(std::string vName, std::string vType, bool vHideName)
+BaseSlot::BaseSlot(std::string vName, std::string vType, bool vHideName)
 {
 	pinID = sGetNewSlotId();
 	name = vName;
@@ -170,7 +170,7 @@ NodeSlot::NodeSlot(std::string vName, std::string vType, bool vHideName)
 	hideName = vHideName;
 }
 
-NodeSlot::NodeSlot(std::string vName, std::string vType, bool vHideName, bool vShowWidget)
+BaseSlot::BaseSlot(std::string vName, std::string vType, bool vHideName, bool vShowWidget)
 {
 	pinID = sGetNewSlotId();
 	name = vName;
@@ -182,17 +182,17 @@ NodeSlot::NodeSlot(std::string vName, std::string vType, bool vHideName, bool vS
 	showWidget = vShowWidget;
 }
 
-NodeSlot::~NodeSlot() = default;
+BaseSlot::~BaseSlot() = default;
 
-void NodeSlot::Init()
+void BaseSlot::Init()
 {
 
 }
 
-void NodeSlot::Unit()
+void BaseSlot::Unit()
 {
 	// ici pas besoin du assert sur le m_This 
-	// car NodeSlot peut etre isntancié à l'ancienne en copie local donc sans shared_ptr
+	// car BaseSlot peut etre isntancié à l'ancienne en copie local donc sans shared_ptr
 	// donc pour gagner du temps on va checker le this, si expiré on va pas plus loins
 	if (!m_This.expired())
 	{
@@ -216,7 +216,7 @@ void NodeSlot::Unit()
 }
 
 // name : toto, stamp : vec3(vec4) => result : vec3 toto(vec4)
-std::string NodeSlot::GetFullStamp()
+std::string BaseSlot::GetFullStamp()
 {
 	std::string res;
 
@@ -233,7 +233,7 @@ std::string NodeSlot::GetFullStamp()
 	return res;
 }
 
-void NodeSlot::NotifyConnectionChangeToParent(bool vConnected) // va contacter le parent pour lui dire que ce slot est connecté a un autre
+void BaseSlot::NotifyConnectionChangeToParent(bool vConnected) // va contacter le parent pour lui dire que ce slot est connecté a un autre
 {
 	assert(!m_This.expired());
 	if (!parentNode.expired())
@@ -246,7 +246,7 @@ void NodeSlot::NotifyConnectionChangeToParent(bool vConnected) // va contacter l
 	}
 }
 
-bool NodeSlot::CanWeConnectToSlot(NodeSlotWeak vSlot)
+bool BaseSlot::CanWeConnectToSlot(BaseSlotWeak vSlot)
 {
 	if (!parentNode.expired())
 	{
@@ -261,14 +261,14 @@ bool NodeSlot::CanWeConnectToSlot(NodeSlotWeak vSlot)
 	return false;
 }
 
-uint32_t NodeSlot::GetSlotID() const
+uint32_t BaseSlot::GetSlotID() const
 {
 	return (uint32_t)pinID.Get();
 }
 
-std::vector<NodeSlotWeak> NodeSlot::InjectTypeInSlot(uType::uTypeEnum vType)
+std::vector<BaseSlotWeak> BaseSlot::InjectTypeInSlot(uType::uTypeEnum vType)
 {
-	std::vector<NodeSlotWeak> res;
+	std::vector<BaseSlotWeak> res;
 
 	if (!parentNode.expired())
 	{
@@ -283,11 +283,11 @@ std::vector<NodeSlotWeak> NodeSlot::InjectTypeInSlot(uType::uTypeEnum vType)
 	return res;
 }
 
-void NodeSlot::DrawContent(BaseNodeState* vBaseNodeState)
+void BaseSlot::DrawContent(BaseNodeState* vBaseNodeState)
 {
 	if (vBaseNodeState && !hidden)
 	{
-		if (slotPlace == NodeSlot::PlaceEnum::INPUT)
+		if (slotPlace == BaseSlot::PlaceEnum::INPUT)
 		{
 			nd::BeginPin(pinID, nd::PinKind::Input);
 			{
@@ -313,7 +313,7 @@ void NodeSlot::DrawContent(BaseNodeState* vBaseNodeState)
 			}
 			nd::EndPin();
 		}
-		else if (slotPlace == NodeSlot::PlaceEnum::OUTPUT)
+		else if (slotPlace == BaseSlot::PlaceEnum::OUTPUT)
 		{
 			nd::BeginPin(pinID, nd::PinKind::Output);
 			{
@@ -342,7 +342,7 @@ void NodeSlot::DrawContent(BaseNodeState* vBaseNodeState)
 	}
 }
 
-void NodeSlot::DrawSlot(BaseNodeState* vBaseNodeState, ImVec2 vSlotSize, ImVec2 vSlotOffset)
+void BaseSlot::DrawSlot(BaseNodeState* vBaseNodeState, ImVec2 vSlotSize, ImVec2 vSlotOffset)
 {
 	if (vBaseNodeState)
 	{
@@ -373,7 +373,7 @@ void NodeSlot::DrawSlot(BaseNodeState* vBaseNodeState, ImVec2 vSlotSize, ImVec2 
 			auto draw_list = ImGui::GetWindowDrawList();
 			if (draw_list)
 			{
-				DrawNodeSlot(draw_list, slotCenter, vBaseNodeState, connected, u_color, u_color);
+				DrawBaseSlot(draw_list, slotCenter, vBaseNodeState, connected, u_color, u_color);
 			}
 
 			if (ImGui::IsItemHovered())
@@ -402,17 +402,17 @@ void NodeSlot::DrawSlot(BaseNodeState* vBaseNodeState, ImVec2 vSlotSize, ImVec2 
 	}
 }
 
-bool NodeSlot::IsAnInput()
+bool BaseSlot::IsAnInput()
 {
-	return slotPlace == NodeSlot::PlaceEnum::INPUT;
+	return slotPlace == BaseSlot::PlaceEnum::INPUT;
 }
 
-bool NodeSlot::IsAnOutput()
+bool BaseSlot::IsAnOutput()
 {
-	return slotPlace == NodeSlot::PlaceEnum::OUTPUT;
+	return slotPlace == BaseSlot::PlaceEnum::OUTPUT;
 }
 
-void NodeSlot::Notify(const NotifyEvent& vEvent, const NodeSlotWeak& vEmitterSlot, const NodeSlotWeak& vReceiverSlot)
+void BaseSlot::Notify(const NotifyEvent& vEvent, const BaseSlotWeak& vEmitterSlot, const BaseSlotWeak& vReceiverSlot)
 {
     // one notification can be :
     // - from input to output : Front
@@ -432,18 +432,18 @@ void NodeSlot::Notify(const NotifyEvent& vEvent, const NodeSlotWeak& vEmitterSlo
         // also to the LMR selected output slots
 
         // Left
-        if (vEmitterSlot.lock() == NodeSlot::sSlotGraphOutputMouseLeft.lock()) {
-            BaseNode::SelectForGraphOutput_Callback(NodeSlot::sSlotGraphOutputMouseLeft, ImGuiMouseButton_Left);
+        if (vEmitterSlot.lock() == BaseSlot::sSlotGraphOutputMouseLeft.lock()) {
+            BaseNode::SelectForGraphOutput_Callback(BaseSlot::sSlotGraphOutputMouseLeft, ImGuiMouseButton_Left);
         }
 
         // Middle
-        if (vEmitterSlot.lock() == NodeSlot::sSlotGraphOutputMouseMiddle.lock()) {
-            BaseNode::SelectForGraphOutput_Callback(NodeSlot::sSlotGraphOutputMouseLeft, ImGuiMouseButton_Middle);
+        if (vEmitterSlot.lock() == BaseSlot::sSlotGraphOutputMouseMiddle.lock()) {
+            BaseNode::SelectForGraphOutput_Callback(BaseSlot::sSlotGraphOutputMouseLeft, ImGuiMouseButton_Middle);
         }
 
         // Right
-        if (vEmitterSlot.lock() == NodeSlot::sSlotGraphOutputMouseRight.lock()) {
-            BaseNode::SelectForGraphOutput_Callback(NodeSlot::sSlotGraphOutputMouseLeft, ImGuiMouseButton_Right);
+        if (vEmitterSlot.lock() == BaseSlot::sSlotGraphOutputMouseRight.lock()) {
+            BaseNode::SelectForGraphOutput_Callback(BaseSlot::sSlotGraphOutputMouseLeft, ImGuiMouseButton_Right);
         }
     } else  // receiving notification from other slots
     {
@@ -472,50 +472,50 @@ void NodeSlot::Notify(const NotifyEvent& vEvent, const NodeSlotWeak& vEmitterSlo
     }
 }
 
-void NodeSlot::SendNotification(const std::string& vSlotType, const NotifyEvent& vEvent) {
+void BaseSlot::SendNotification(const std::string& vSlotType, const NotifyEvent& vEvent) {
     auto nodePtr = parentNode.lock();
     if (nodePtr) {
         nodePtr->SendFrontNotification(vSlotType, vEvent);
     }
 }
 
-void NodeSlot::OnConnectEvent(NodeSlotWeak vOtherSlot) {
+void BaseSlot::OnConnectEvent(BaseSlotWeak vOtherSlot) {
 #ifdef _DEBUG
-    // LogVarInfo("NodeSlot::OnConnectEvent catched by the slot \"%s\", some class not implement it. maybe its wanted", name.c_str());
+    // LogVarInfo("BaseSlot::OnConnectEvent catched by the slot \"%s\", some class not implement it. maybe its wanted", name.c_str());
 #endif
 }
 
-void NodeSlot::OnDisConnectEvent(NodeSlotWeak vOtherSlot) {
+void BaseSlot::OnDisConnectEvent(BaseSlotWeak vOtherSlot) {
 #ifdef _DEBUG
-    // LogVarInfo("NodeSlot::OnDisConnectEvent catched by the slot \"%s\", some class not implement it. maybe its wanted", name.c_str());
+    // LogVarInfo("BaseSlot::OnDisConnectEvent catched by the slot \"%s\", some class not implement it. maybe its wanted", name.c_str());
 #endif
 }
 
-void NodeSlot::TreatNotification(const NotifyEvent& vEvent, const NodeSlotWeak& vEmitterSlot, const NodeSlotWeak& vReceiverSlot) {
+void BaseSlot::TreatNotification(const NotifyEvent& vEvent, const BaseSlotWeak& vEmitterSlot, const BaseSlotWeak& vReceiverSlot) {
 #ifdef _DEBUG
-    LogVarInfo("NodeSlot::TreatNotification catched by the slot \"%s\", some class not implement it. maybe its wanted", name.c_str());
+    LogVarInfo("BaseSlot::TreatNotification catched by the slot \"%s\", some class not implement it. maybe its wanted", name.c_str());
 #endif
 }
 
-void NodeSlot::SendFrontNotification(const NotifyEvent& vEvent) {
+void BaseSlot::SendFrontNotification(const NotifyEvent& vEvent) {
 #ifdef _DEBUG
-    LogVarInfo("NodeSlot::SendFrontNotification catched by the slot \"%s\", some class not implement it. maybe its wanted", name.c_str());
+    LogVarInfo("BaseSlot::SendFrontNotification catched by the slot \"%s\", some class not implement it. maybe its wanted", name.c_str());
 #endif
 }
 
-void NodeSlot::SendBackNotification(const NotifyEvent& vEvent) {
+void BaseSlot::SendBackNotification(const NotifyEvent& vEvent) {
 #ifdef _DEBUG
-    LogVarInfo("NodeSlot::SendBackNotification catched by the slot \"%s\", some class not implement it. maybe its wanted", name.c_str());
+    LogVarInfo("BaseSlot::SendBackNotification catched by the slot \"%s\", some class not implement it. maybe its wanted", name.c_str());
 #endif
 }
 
-void NodeSlot::MouseDoubleClickedOnSlot(const ImGuiMouseButton& vMouseButton) {
+void BaseSlot::MouseDoubleClickedOnSlot(const ImGuiMouseButton& vMouseButton) {
 #ifdef _DEBUG
-    LogVarInfo("NodeSlot::MouseDoubleClickedOnSlot catched by the slot \"%s\", some class not implement it. maybe its wanted", name.c_str());
+    LogVarInfo("BaseSlot::MouseDoubleClickedOnSlot catched by the slot \"%s\", some class not implement it. maybe its wanted", name.c_str());
 #endif
 }
 
-bool NodeSlot::RemoveConnectedSlot(NodeSlotWeak vOtherSlot) {
+bool BaseSlot::RemoveConnectedSlot(BaseSlotWeak vOtherSlot) {
     auto ptr = vOtherSlot.lock();
     if (ptr) {
         auto it = linkedSlots.begin();
@@ -549,7 +549,7 @@ bool NodeSlot::RemoveConnectedSlot(NodeSlotWeak vOtherSlot) {
     return false;
 }
 
-void NodeSlot::DrawDebugInfos() {
+void BaseSlot::DrawDebugInfos() {
     ImGui::Text("--------------------");
     ImGui::Text("Slot %s", name.c_str());
     ImGui::Text(IsAnInput() ? "Input" : "Output");
@@ -560,7 +560,7 @@ void NodeSlot::DrawDebugInfos() {
 //// PRIVATE /////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void NodeSlot::DrawInputWidget(BaseNodeState* vBaseNodeState) {
+void BaseSlot::DrawInputWidget(BaseNodeState* vBaseNodeState) {
     if (vBaseNodeState && !parentNode.expired()) {
         assert(!m_This.expired());
         auto ptr = parentNode.lock();
@@ -570,7 +570,7 @@ void NodeSlot::DrawInputWidget(BaseNodeState* vBaseNodeState) {
     }
 }
 
-void NodeSlot::DrawOutputWidget(BaseNodeState* vBaseNodeState) {
+void BaseSlot::DrawOutputWidget(BaseNodeState* vBaseNodeState) {
     if (vBaseNodeState && !parentNode.expired()) {
         assert(!m_This.expired());
         auto ptr = parentNode.lock();
@@ -580,14 +580,14 @@ void NodeSlot::DrawOutputWidget(BaseNodeState* vBaseNodeState) {
     }
 }
 
-void NodeSlot::DrawSlotText(ImDrawList* vDrawList, ImVec2 vCenter, BaseNodeState* vBaseNodeState, bool vConnected, ImU32 vColor, ImU32 vInnerColor) {
+void BaseSlot::DrawSlotText(ImDrawList* vDrawList, ImVec2 vCenter, BaseNodeState* vBaseNodeState, bool vConnected, ImU32 vColor, ImU32 vInnerColor) {
     if (vBaseNodeState) {
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
         if (draw_list) {
             std::string slotUType;
             std::string slotName;
 
-            if (slotPlace == NodeSlot::PlaceEnum::INPUT) {
+            if (slotPlace == BaseSlot::PlaceEnum::INPUT) {
                 slotName = slotType;
 
                 if (vBaseNodeState->debug_mode) {
@@ -622,7 +622,7 @@ void NodeSlot::DrawSlotText(ImDrawList* vDrawList, ImVec2 vCenter, BaseNodeState
                     ImGui::RenderFrame(min, max, ImGui::GetColorU32(ImVec4(0.1f, 0.1f, 0.1f, 1.0f)));
                     draw_list->AddText(ImVec2(min.x, pos.y - txtSize.y * 0.55f), ImColor(200, 200, 200, 255), beg);
                 }
-            } else if (slotPlace == NodeSlot::PlaceEnum::OUTPUT) {
+            } else if (slotPlace == BaseSlot::PlaceEnum::OUTPUT) {
                 slotName = slotType;
 
                 if (vBaseNodeState->debug_mode) {
@@ -641,7 +641,7 @@ void NodeSlot::DrawSlotText(ImDrawList* vDrawList, ImVec2 vCenter, BaseNodeState
         }
     }
 }
-void NodeSlot::DrawNodeSlot(ImDrawList* vDrawList, ImVec2 vCenter, BaseNodeState* vBaseNodeState, bool vConnected, ImU32 vColor, ImU32 vInnerColor) {
+void BaseSlot::DrawBaseSlot(ImDrawList* vDrawList, ImVec2 vCenter, BaseNodeState* vBaseNodeState, bool vConnected, ImU32 vColor, ImU32 vInnerColor) {
     UNUSED(vInnerColor);
     UNUSED(vConnected);
 
@@ -656,19 +656,19 @@ void NodeSlot::DrawNodeSlot(ImDrawList* vDrawList, ImVec2 vCenter, BaseNodeState
             vDrawList->AddNgon(vCenter, slotRadius + 2.0f, ImGui::GetColorU32(_color), 24, 2.5f);
         }
 
-        auto slotOutputMouseLeftPtr = NodeSlot::sSlotGraphOutputMouseLeft.lock();  // blue
+        auto slotOutputMouseLeftPtr = BaseSlot::sSlotGraphOutputMouseLeft.lock();  // blue
         if (slotOutputMouseLeftPtr && slotOutputMouseLeftPtr == m_This.lock()) {
-            vDrawList->AddNgon(vCenter, slotRadius + 2.0f, ImGui::GetColorU32(NodeSlot::sSlotGraphOutputMouseLeftColor), 24, 2.5f);
+            vDrawList->AddNgon(vCenter, slotRadius + 2.0f, ImGui::GetColorU32(BaseSlot::sSlotGraphOutputMouseLeftColor), 24, 2.5f);
         }
 
-        auto slotOutputMouseMiddlePtr = NodeSlot::sSlotGraphOutputMouseMiddle.lock();  // green
+        auto slotOutputMouseMiddlePtr = BaseSlot::sSlotGraphOutputMouseMiddle.lock();  // green
         if (slotOutputMouseMiddlePtr && slotOutputMouseMiddlePtr == m_This.lock()) {
-            vDrawList->AddNgon(vCenter, slotRadius + 2.0f, ImGui::GetColorU32(NodeSlot::sSlotGraphOutputMouseMiddleColor), 24, 2.5f);
+            vDrawList->AddNgon(vCenter, slotRadius + 2.0f, ImGui::GetColorU32(BaseSlot::sSlotGraphOutputMouseMiddleColor), 24, 2.5f);
         }
 
-        auto slotOutputMouseRightPtr = NodeSlot::sSlotGraphOutputMouseRight.lock();  // red
+        auto slotOutputMouseRightPtr = BaseSlot::sSlotGraphOutputMouseRight.lock();  // red
         if (slotOutputMouseRightPtr && slotOutputMouseRightPtr == m_This.lock()) {
-            vDrawList->AddNgon(vCenter, slotRadius + 2.0f, ImGui::GetColorU32(NodeSlot::sSlotGraphOutputMouseRightColor), 24, 2.5f);
+            vDrawList->AddNgon(vCenter, slotRadius + 2.0f, ImGui::GetColorU32(BaseSlot::sSlotGraphOutputMouseRightColor), 24, 2.5f);
         }
     }
 }
@@ -677,7 +677,7 @@ void NodeSlot::DrawNodeSlot(ImDrawList* vDrawList, ImVec2 vCenter, BaseNodeState
 //// CONFIGURATION ///////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-std::string NodeSlot::getXml(const std::string& vOffset, const std::string& vUserDatas) {
+std::string BaseSlot::getXml(const std::string& vOffset, const std::string& vUserDatas) {
     std::string res;
 
     res += vOffset +
@@ -686,13 +686,13 @@ std::string NodeSlot::getXml(const std::string& vOffset, const std::string& vUse
                index,
                name.c_str(),
                slotType.c_str(),
-               sGetStringFromNodeSlotPlaceEnum(slotPlace).c_str(),
+               sGetStringFromBaseSlotPlaceEnum(slotPlace).c_str(),
                (uint32_t)GetSlotID());
 
     return res;
 }
 
-bool NodeSlot::setFromXml(tinyxml2::XMLElement* vElem, tinyxml2::XMLElement* vParent, const std::string& vUserDatas) {
+bool BaseSlot::setFromXml(tinyxml2::XMLElement* vElem, tinyxml2::XMLElement* vParent, const std::string& vUserDatas) {
     // The value of this child identifies the name of this element
     std::string strName;
     std::string strValue;
@@ -708,7 +708,7 @@ bool NodeSlot::setFromXml(tinyxml2::XMLElement* vElem, tinyxml2::XMLElement* vPa
         uint32_t _index = 0U;
         std::string _name;
         std::string _type = "NONE";
-        NodeSlot::PlaceEnum _place = NodeSlot::PlaceEnum::NONE;
+        BaseSlot::PlaceEnum _place = BaseSlot::PlaceEnum::NONE;
         uint32_t _pinId = 0U;
 
         for (const tinyxml2::XMLAttribute* attr = vElem->FirstAttribute(); attr != nullptr; attr = attr->Next()) {
@@ -722,7 +722,7 @@ bool NodeSlot::setFromXml(tinyxml2::XMLElement* vElem, tinyxml2::XMLElement* vPa
             else if (attName == "type")
                 _type = attValue;
             else if (attName == "place")
-                _place = sGetNodeSlotPlaceEnumFromString(attValue);
+                _place = sGetBaseSlotPlaceEnumFromString(attValue);
             else if (attName == "id")
                 _pinId = ez::ivariant(attValue).GetU();
         }

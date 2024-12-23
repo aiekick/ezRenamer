@@ -40,7 +40,7 @@ void BaseSlot::notifyConnectionChangeToParent(bool vConnected) {  // va contacte
     }
 }
 
-bool BaseSlot::canWeConnectToSlot(NodeSlotWeak vSlot) {
+bool BaseSlot::canWeConnectToSlot(BaseSlotWeak vSlot) {
     if (!getParentNode().expired()) {
         auto parentNodePtr = getParentNode().lock();
         if (parentNodePtr) {
@@ -117,7 +117,7 @@ void BaseSlot::drawSlot(ImVec2 vSlotSize, ImVec2 vSlotOffset) {
 
         auto u_color = ImGui::GetColorU32(baseSlotDatas.color);
 
-        m_drawNodeSlot(slotCenter, baseSlotDatas.connected, u_color, u_color);
+        m_drawBaseSlot(slotCenter, baseSlotDatas.connected, u_color, u_color);
 
         if (ImGui::IsItemHovered()) {
             baseSlotDatas.highLighted = true;
@@ -146,7 +146,7 @@ bool BaseSlot::isAnOutput() {
     return getDatas<BaseSlotDatas>().dir == ez::SlotDir::OUTPUT;
 }
 
-void BaseSlot::notify(const rnm::NotifyEvent& vEvent, const NodeSlotWeak& vEmitterSlot, const NodeSlotWeak& /*vReceiverSlot*/) {
+void BaseSlot::notify(const rnm::NotifyEvent& vEvent, const BaseSlotWeak& vEmitterSlot, const BaseSlotWeak& /*vReceiverSlot*/) {
     // one notification can be :
     // - from input to output : Front
     // - from output to input : Back
@@ -205,19 +205,19 @@ void BaseSlot::notify(const rnm::NotifyEvent& vEvent, const NodeSlotWeak& vEmitt
     }
 }
 
-void BaseSlot::onConnectEvent(const NodeSlotWeak& /*vOtherSlot*/) {
+void BaseSlot::onConnectEvent(const BaseSlotWeak& /*vOtherSlot*/) {
 #ifdef _DEBUG
     LogVarInfo("BaseSlot::OnConnectEvent catched by the slot \"%s\", some class not implement it. maybe its wanted", getDatas<BaseSlotDatas>().name.c_str());
 #endif
 }
 
-void BaseSlot::onDisConnectEvent(const NodeSlotWeak& /*vOtherSlot*/) {
+void BaseSlot::onDisConnectEvent(const BaseSlotWeak& /*vOtherSlot*/) {
 #ifdef _DEBUG
     LogVarInfo("BaseSlot::OnDisConnectEvent catched by the slot \"%s\", some class not implement it. maybe its wanted", getDatas<BaseSlotDatas>().name.c_str());
 #endif
 }
 
-void BaseSlot::treatNotification(const rnm::NotifyEvent& /*vEvent*/, const NodeSlotWeak& /*vEmitterSlot*/, const NodeSlotWeak& /*vReceiverSlot*/) {
+void BaseSlot::treatNotification(const rnm::NotifyEvent& /*vEvent*/, const BaseSlotWeak& /*vEmitterSlot*/, const BaseSlotWeak& /*vReceiverSlot*/) {
 #ifdef _DEBUG
     LogVarInfo("BaseSlot::TreatNotification catched by the slot \"%s\", some class not implement it. maybe its wanted", getDatas<BaseSlotDatas>().name.c_str());
 #endif
@@ -327,7 +327,7 @@ void BaseSlot::m_drawSlotText(const ImVec2& /*vCenter*/, bool /*vConnected*/, Im
     }
 }
 
-void BaseSlot::m_drawNodeSlot(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor) {
+void BaseSlot::m_drawBaseSlot(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor) {
     UNUSED(vInnerColor);
     UNUSED(vConnected);
 
@@ -373,7 +373,7 @@ ez::xml::Nodes BaseSlot::getXmlNodes(const std::string& /*vUserDatas*/) {
                index,
                name.c_str(),
                slotType.c_str(),
-               sGetStringFromNodeSlotPlaceEnum(slotPlace).c_str(),
+               sGetStringFromBaseSlotPlaceEnum(slotPlace).c_str(),
                (uint32_t)GetSlotID());*/
     return node.getChildren();
 }
@@ -402,7 +402,7 @@ bool BaseSlot::setFromXmlNodes(const ez::xml::Node& /*vNode*/, const ez::xml::No
             else if (attName == "type")
                 _type = attValue;
             else if (attName == "place")
-                _place = sGetNodeSlotPlaceEnumFromString(attValue);
+                _place = sGetBaseSlotPlaceEnumFromString(attValue);
             else if (attName == "id")
                 _pinId = ez::ivariant(attValue).GetU();
         }

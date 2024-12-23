@@ -37,7 +37,7 @@ std::vector<rnm::PluginModuleInfos> PluginManager::GetPluginModulesInfos() const
         if (plugin.second) {
             auto pluginInstancePtr = plugin.second->get().lock();
             if (pluginInstancePtr != nullptr) {
-                auto lib_entrys = pluginInstancePtr->GetModulesInfos();
+                auto lib_entrys = pluginInstancePtr->getModulesInfos();
                 if (!lib_entrys.empty()) {
                     res.insert(res.end(), lib_entrys.begin(), lib_entrys.end());
                 }
@@ -54,7 +54,7 @@ rnm::PluginModulePtr PluginManager::CreatePluginModule(const std::string& vPlugi
             if (plugin.second) {
                 auto pluginInstancePtr = plugin.second->get().lock();
                 if (pluginInstancePtr != nullptr) {
-                    auto ptr = pluginInstancePtr->CreateModule(vPluginNodeName);
+                    auto ptr = pluginInstancePtr->createModule(vPluginNodeName);
                     if (ptr != nullptr) {
                         return ptr;
                     }
@@ -71,7 +71,7 @@ std::vector<rnm::PluginSettingsConfig> PluginManager::GetPluginSettings() const 
         if (plugin.second) {
             auto pluginInstancePtr = plugin.second->get().lock();
             if (pluginInstancePtr) {
-                auto _pluginSettings = pluginInstancePtr->GetSettings();
+                auto _pluginSettings = pluginInstancePtr->getSettings();
                 if (!_pluginSettings.empty()) {
                     pluginSettings.insert(pluginSettings.end(), _pluginSettings.begin(), _pluginSettings.end());
                 }
@@ -107,35 +107,10 @@ void PluginManager::m_LoadPlugin(const fs::directory_entry& vEntry) {
                                 LogVarDebugError("Plugin %s fail to load", ps.name.c_str());
                             }
                         } else {
-                            auto pluginInstancePtr = resPtr->get().lock();
-                            if (pluginInstancePtr) {
-                                char spaceBuffer[40 + 1] = "";
-                                spaceBuffer[0] = '\0';
-
-                                std::string name = pluginInstancePtr->GetName();
-                                if (name.size() < 15U) {
-                                    size_t of = 15U - name.size();
-                                    memset(spaceBuffer, 32, of);  // 32 is space code in ASCII table
-                                    spaceBuffer[of] = '\0';
-                                    name += spaceBuffer;
-                                } else {
-                                    name = name.substr(0, 15U);
-                                }
-
-                                std::string version = pluginInstancePtr->GetVersion();
-                                if (version.size() < 10U) {
-                                    size_t of = 10U - version.size();
-                                    memset(spaceBuffer, 32, of);  // 32 is space code in ASCII table
-                                    spaceBuffer[of] = '\0';
-                                    version += spaceBuffer;
-                                } else {
-                                    version = version.substr(0, 10U);
-                                }
-
-                                std::string desc = pluginInstancePtr->GetDescription();
+                            auto ptr = resPtr->get().lock();
+                            if (ptr != nullptr) {
+                                m_Plugins[ps.name] = resPtr;
                             }
-
-                            m_Plugins[ps.name] = resPtr;
                         }
                     }
                 }
@@ -153,8 +128,8 @@ void PluginManager::m_DisplayLoadedPlugins() {
             if (plugin.second != nullptr) {
                 auto plugin_instance_ptr = plugin.second->get().lock();
                 if (plugin_instance_ptr != nullptr) {
-                    max_name_size = ez::maxi(max_name_size, plugin_instance_ptr->GetName().size() + minimal_space);
-                    max_vers_size = ez::maxi(max_vers_size, plugin_instance_ptr->GetVersion().size() + minimal_space);
+                    max_name_size = ez::maxi(max_name_size, plugin_instance_ptr->getName().size() + minimal_space);
+                    max_vers_size = ez::maxi(max_vers_size, plugin_instance_ptr->getVersion().size() + minimal_space);
                 }
             }
         }
@@ -162,11 +137,11 @@ void PluginManager::m_DisplayLoadedPlugins() {
             if (plugin.second != nullptr) {
                 auto plugin_instance_ptr = plugin.second->get().lock();
                 if (plugin_instance_ptr != nullptr) {
-                    const auto& name = plugin_instance_ptr->GetName();
+                    const auto& name = plugin_instance_ptr->getName();
                     const auto& name_space = std::string(max_name_size - name.size(), ' ');  // 32 is a space in ASCII
-                    const auto& vers = plugin_instance_ptr->GetVersion();
+                    const auto& vers = plugin_instance_ptr->getVersion();
                     const auto& vers_space = std::string(max_vers_size - vers.size(), ' ');  // 32 is a space in ASCII
-                    const auto& desc = plugin_instance_ptr->GetDescription();
+                    const auto& desc = plugin_instance_ptr->getDescription();
                     LogVarLightInfo("Plugin loaded : %s%sv%s%s(%s)",  //
                         name.c_str(), name_space.c_str(),             //
                         vers.c_str(), vers_space.c_str(),             //

@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright 2024 Stephane Cuillerdier (aka aiekick)
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,21 +31,21 @@ class BaseNode;
 typedef std::weak_ptr<BaseNode> BaseNodeWeak;
 typedef std::shared_ptr<BaseNode> BaseNodePtr;
 
-class NodeSlot;
-typedef std::weak_ptr<NodeSlot> NodeSlotWeak;
-typedef std::shared_ptr<NodeSlot> NodeSlotPtr;
+class BaseSlot;
+typedef std::weak_ptr<BaseSlot> BaseSlotWeak;
+typedef std::shared_ptr<BaseSlot> BaseSlotPtr;
 
-class NodeLink;
-typedef std::weak_ptr<NodeLink> NodeLinkWeak;
-typedef std::shared_ptr<NodeLink> NodeLinkPtr;
+class BaseLink;
+typedef std::weak_ptr<BaseLink> BaseLinkWeak;
+typedef std::shared_ptr<BaseLink> BaseLinkPtr;
 
-class NodeSlotInput;
-typedef std::weak_ptr<NodeSlotInput> NodeSlotInputWeak;
-typedef std::shared_ptr<NodeSlotInput> NodeSlotInputPtr;
+class BaseSlotInput;
+typedef std::weak_ptr<BaseSlotInput> BaseSlotInputWeak;
+typedef std::shared_ptr<BaseSlotInput> BaseSlotInputPtr;
 
-class NodeSlotOutput;
-typedef std::weak_ptr<NodeSlotOutput> NodeSlotOutputWeak;
-typedef std::shared_ptr<NodeSlotOutput> NodeSlotOutputPtr;
+class BaseSlotOutput;
+typedef std::weak_ptr<BaseSlotOutput> BaseSlotOutputWeak;
+typedef std::shared_ptr<BaseSlotOutput> BaseSlotOutputPtr;
 
 typedef std::set<std::string> FilesSet;
 typedef void* UserDatas;
@@ -108,13 +108,13 @@ struct PluginModuleInfos {
 struct ISettings : public IXmlSettings {
 public:
     // get the categroy path of the settings for the mebnu display. ex: "plugins/apis"
-    virtual SettingsCategoryPath GetCategory() const = 0;
+    virtual SettingsCategoryPath getCategory() const = 0;
     // will be called by the loader for inform the pluign than he must load somethings if any
-    virtual bool LoadSettings() = 0;
+    virtual bool loadSettings() = 0;
     // will be called by the saver for inform the pluign than he must save somethings if any, by ex: temporary vars
-    virtual bool SaveSettings() = 0;
+    virtual bool saveSettings() = 0;
     // will draw custom settings via imgui
-    virtual bool DrawSettings() = 0;
+    virtual bool drawSettings() = 0;
 };
 
 typedef std::shared_ptr<ISettings> ISettingsPtr;
@@ -128,32 +128,32 @@ struct PluginSettingsConfig {
 struct PluginInterface {
     PluginInterface() = default;
     virtual ~PluginInterface() = default;
-    virtual bool Init() = 0;
-    virtual void Unit() = 0;
-    virtual uint32_t GetMinimalCashMeVersionSupported() const = 0;
-    virtual uint32_t GetVersionMajor() const = 0;
-    virtual uint32_t GetVersionMinor() const = 0;
-    virtual uint32_t GetVersionBuild() const = 0;
-    virtual std::string GetName() const = 0;
-    virtual std::string GetAuthor() const = 0;
-    virtual std::string GetVersion() const = 0;
-    virtual std::string GetContact() const = 0;
-    virtual std::string GetDescription() const = 0;
-    virtual std::vector<PluginModuleInfos> GetModulesInfos() const = 0;
-    virtual PluginModulePtr CreateModule(const std::string& vPluginModuleName) = 0;
-    virtual std::vector<PluginSettingsConfig> GetSettings() const = 0;
+    virtual bool init() = 0;
+    virtual void unit() = 0;
+    virtual uint32_t getMinimalCashMeVersionSupported() const = 0;
+    virtual uint32_t getVersionMajor() const = 0;
+    virtual uint32_t getVersionMinor() const = 0;
+    virtual uint32_t getVersionBuild() const = 0;
+    virtual std::string getName() const = 0;
+    virtual std::string getAuthor() const = 0;
+    virtual std::string getVersion() const = 0;
+    virtual std::string getContact() const = 0;
+    virtual std::string getDescription() const = 0;
+    virtual std::vector<PluginModuleInfos> getModulesInfos() const = 0;
+    virtual PluginModulePtr createModule(const std::string& vPluginModuleName) = 0;
+    virtual std::vector<PluginSettingsConfig> getSettings() const = 0;
 };
 
 class NodeInterface {
 protected:
-    BaseNodeWeak m_ParentNode;  // node parent dans le cas d'un ndoe enfant d'un graph
+    BaseNodeWeak m_parentNode;  // node parent dans le cas d'un node enfant d'un graph
 
 public:
-    void SetParentNode(BaseNodeWeak vBaseNodeWeak = BaseNodeWeak()) { m_ParentNode = vBaseNodeWeak; }
-    BaseNodeWeak GetParentNode() { return m_ParentNode; }
-    virtual bool DrawNodeWidget(const uint32_t& vFrame) = 0;
-    virtual void BeforeNodeXmlLoading() {}
-    virtual void AfterNodeXmlLoading() {}
+    void setParentNode(BaseNodeWeak vBaseNodeWeak = BaseNodeWeak()) { m_parentNode = vBaseNodeWeak; }
+    BaseNodeWeak getParentNode() { return m_parentNode; }
+    virtual bool drawNodeWidget(const uint32_t& vFrame) = 0;
+    virtual void beforeNodeXmlLoading() {}
+    virtual void afterNodeXmlLoading() {}
 };
 
 template <typename T>
@@ -178,19 +178,19 @@ public:
 struct ImGuiContext;
 class GuiInterface {
 public:
-    virtual bool DrawWidgets(const uint32_t& vFrame, ImGuiContext* vpCtx) = 0;
+    virtual bool drawWidgets(const uint32_t& vFrame) = 0;
 };
 
 typedef std::string NotifyEvent;
 class NotifyInterface {
 public:
-    virtual void notify(const NotifyEvent& vEvent, const NodeSlotWeak& vEmitterSlot, const NodeSlotWeak& vReceiverSlot) = 0;
+    virtual void notify(const NotifyEvent& vEvent, const BaseSlotWeak& vEmitterSlot, const BaseSlotWeak& vReceiverSlot) = 0;
 };
 
 class NotifierInterface {
 public:
     /// Treat an event (to be herited)
-    virtual void treatNotification(const NotifyEvent& vEvent, const NodeSlotWeak& vEmitterSlot, const NodeSlotWeak& vReceiverSlot) = 0;
+    virtual void treatNotification(const NotifyEvent& vEvent, const BaseSlotWeak& vEmitterSlot, const BaseSlotWeak& vReceiverSlot) = 0;
 
     /// Send a event in front (to be herited)
     virtual void sendFrontNotification(const NotifyEvent& vEvent) = 0;
@@ -203,9 +203,9 @@ class TaskInterface {
 protected:
     // to compare to current frame
     // to know is the execution was already done
-    uint32_t m_lastExecutedFrame = 0U;
-    bool m_askForOneExecution = false;
-    bool m_executionOnDemand = false;
+    uint32_t m_lastExecutedFrame{0U};
+    bool m_askForOneExecution{false};
+    bool m_executionOnDemand{false};
 
 protected:
     // only for execution on demand

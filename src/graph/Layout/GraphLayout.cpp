@@ -20,8 +20,8 @@ limitations under the License.
 #include <SoGLSL/Graph/Layout/GraphLayout.h>
 #include <SoGLSL/Graph/Base/BaseNode.h>
 #include <ImWidgets.h>
-#include <SoGLSL/Graph/Base/NodeSlotInput.h>
-#include <SoGLSL/Graph/Base/NodeSlotOutput.h>
+#include <SoGLSL/Graph/Base/BaseSlotInput.h>
+#include <SoGLSL/Graph/Base/BaseSlotOutput.h>
 
 /////////////////////////////////////////////////////////////////////////////////////
 //// STATIC /////////////////////////////////////////////////////////////////////////

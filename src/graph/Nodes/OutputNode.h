@@ -60,7 +60,7 @@ public:
 	std::string getXml(const std::string& vOffset, const std::string& vUserDatas = "") override;
 	bool setFromXml(tinyxml2::XMLElement* vElem, tinyxml2::XMLElement* vParent, const std::string& vUserDatas) override;
 
-	NodeSlotWeak AddPreDefinedInput(const NodeSlot& vNodeSlot) override;
+	BaseSlotWeak AddPreDefinedInput(const BaseSlot& vBaseSlot) override;
 	void BeforeNodeXmlLoading() override;
 	void AfterNodeXmlLoading() override;
 

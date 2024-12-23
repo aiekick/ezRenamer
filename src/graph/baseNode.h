@@ -23,10 +23,10 @@ class BaseNode  //
       public rnm::NodeInterface { 
 
 public:
-    struct NodeConfig : public ez::NodeDatas {
+    struct BaseNodeDatas : public ez::NodeDatas {
         struct NodeLayout {
-            bool used = false;                  // utilis� dans le code ou non
-            bool hidden = false;                // visibilit� du node
+            bool used = false;                  // utilise dans le code ou non
+            bool hidden = false;                // visibilite du node
             ez::ivec2 cell = ez::ivec2(-1);     // layout x:column, y:row
             bool inserted = false;              // pour voir si il y a des doublon dasn des colonnes
             bool rootUsed = false;              // ce node est le root
@@ -37,7 +37,7 @@ public:
     };
 
 public:  // Static
-    static BaseNodePtr create(const CommonStyle& vStyle, const NodeConfig& vNodeDatas) {
+    static BaseNodePtr create(const BaseStyle& vStyle, const BaseNodeDatas& vNodeDatas) {
         auto node_ptr = std::make_shared<BaseNode>(vStyle, vNodeDatas);
         node_ptr->m_setThis(node_ptr);
         if (!node_ptr->init()) {
@@ -52,13 +52,13 @@ public:  // Static
     }
 
 private:  // Common
-    const CommonStyle& m_commonStyle;
+    const BaseStyle& m_baseStyle;
 
 private:  // Node
     ImVec2 m_pos{};
     ImVec2 m_size{};
     nd::NodeId nodeID{};
-    NodeConfig m_nodeConfig{};
+    BaseNodeDatas m_nodeConfig{};
     std::string m_nodeTitle{"Node"};
     ImU32 m_nodeHeaderColor{IM_COL32(100, 0, 0, 200)};
     ImRect m_headerRect{};
@@ -76,21 +76,21 @@ private:  // popups
     nd::NodeId m_contextMenuNodeId{};
     nd::LinkId m_contextMenuLinkId{};
 
-
 public: // Normal
-    template <typename T, typename = std::enable_if<std::is_base_of<NodeConfig, T>::value>>
-    explicit BaseNode(const CommonStyle& vStyle, const T& vDatas) : m_commonStyle(vStyle), ez::Node(std::make_shared<T>(vDatas)) {}
+    template <typename T, typename = std::enable_if<std::is_base_of<BaseNodeDatas, T>::value>>
+    explicit BaseNode(const BaseStyle& vStyle, const T& vDatas) : m_baseStyle(vStyle), ez::Node(vDatas) {}
 
-    void InitGraph(const nd::Style& vStyle = nd::Style());
-    void UnitGraph();
+    bool drawWidgets(const uint32_t& vFrame) override;
+    bool drawNodeWidget(const uint32_t& vFrame) override;
 
-    bool drawGraph();
-    bool drawNode();
-    ez::RetCodes connectSlots(ez::SlotWeak vFrom, ez::SlotWeak vTo);
+    ez::xml::Nodes getXmlNodes(const std::string& vUserDatas = "") override;
+    // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
+    bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
+
 
 public:  // Template
     template <typename U, typename = std::enable_if<std::is_base_of<ez::Node, U>::value>>
-    std::weak_ptr<U> createChildNode(const CommonStyle& vStyle, const NodeConfig& vNodeDatas) {
+    std::weak_ptr<U> createChildNode(const BaseStyle& vStyle, const BaseNodeDatas& vNodeDatas) {
         auto node_ptr = std::make_shared<U>(vStyle, vNodeDatas);
         if (!node_ptr->init()) {
             node_ptr.reset();
@@ -103,7 +103,7 @@ public:  // Template
     }
 
     template <typename U, typename = std::enable_if<std::is_base_of<ez::Slot, U>::value>>
-    std::weak_ptr<U> addSlot(const CommonStyle& vStyle, const BaseSlot::BaseSlotDatas& vSlotDatas) {
+    std::weak_ptr<U> addSlot(const BaseStyle& vStyle, const BaseSlot::BaseSlotDatas& vSlotDatas) {
         auto slot_ptr = std::make_shared<U>(vStyle, vSlotDatas);
         if (!slot_ptr->init()) {
             slot_ptr.reset();
@@ -125,10 +125,5 @@ private: // Node
     bool m_drawFooter();
     bool m_drawEnd();
     void m_displayInfosOnTopOfTheNode();
-
-private: // Graph
-    BaseNodeWeak m_getParentGraph();
-    BaseNodePtr m_getParentGraphPtr();
-    bool m_drawGraphNodes();
 };
 

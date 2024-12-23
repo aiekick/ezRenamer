@@ -36,7 +36,7 @@ limitations under the License.
 #include <list>
 
 class BaseNode;
-class NodeSlot;
+class BaseSlot;
 
 struct ColumnContainerStruct
 {

@@ -19,8 +19,8 @@ limitations under the License.
 
 #include <SoGLSL/Nodes/SceneMergerNode.h>
 #include <SoGLSL/Modules/SceneMergerModule.h>
-#include <SoGLSL/Graph/Slots/NodeSlotShaderPassInput.h>
-#include <SoGLSL/Graph/Slots/NodeSlotTextureOutput.h>
+#include <SoGLSL/Graph/Slots/BaseSlotShaderPassInput.h>
+#include <SoGLSL/Graph/Slots/BaseSlotTextureOutput.h>
 
 #ifdef PROFILER_INCLUDE
 #include <Gaia/gaia.h>
@@ -78,9 +78,9 @@ bool SceneMergerNode::Init(GaiApi::VulkanCorePtr vVulkanCorePtr)
 
 	name = "Scene Merger";
 
-	AddInput(NodeSlotShaderPassInput::Create(""), false, true);
+	AddInput(BaseSlotShaderPassInput::Create(""), false, true);
 
-	AddOutput(NodeSlotTextureOutput::Create("", 0), false, true);
+	AddOutput(BaseSlotTextureOutput::Create("", 0), false, true);
 
 	m_SceneMergerModulePtr = SceneMergerModule::Create(vVulkanCorePtr, m_This);
 	if (m_SceneMergerModulePtr)
@@ -303,20 +303,20 @@ bool SceneMergerNode::setFromXml(tinyxml2::XMLElement* vElem, tinyxml2::XMLEleme
 	return true;
 }
 
-NodeSlotWeak SceneMergerNode::AddPreDefinedInput(const NodeSlot& vNodeSlot)
+BaseSlotWeak SceneMergerNode::AddPreDefinedInput(const BaseSlot& vBaseSlot)
 {
-	if (vNodeSlot.slotType == "SHADER_PASS")
+	if (vBaseSlot.slotType == "SHADER_PASS")
 	{
-		auto slot_ptr = NodeSlotShaderPassInput::Create("");
+		auto slot_ptr = BaseSlotShaderPassInput::Create("");
 		if (slot_ptr)
 		{
 			slot_ptr->parentNode = m_This;
-			slot_ptr->slotPlace = NodeSlot::PlaceEnum::INPUT;
+			slot_ptr->slotPlace = BaseSlot::PlaceEnum::INPUT;
 			slot_ptr->hideName = true;
 			slot_ptr->type = uType::uTypeEnum::U_FLOW;
-			slot_ptr->index = vNodeSlot.index;
-			slot_ptr->pinID = vNodeSlot.pinID;
-			const auto& slotID = vNodeSlot.GetSlotID();
+			slot_ptr->index = vBaseSlot.index;
+			slot_ptr->pinID = vBaseSlot.pinID;
+			const auto& slotID = vBaseSlot.GetSlotID();
 
 
 			// pour eviter que des slots aient le meme id qu'un nodePtr
@@ -329,10 +329,10 @@ NodeSlotWeak SceneMergerNode::AddPreDefinedInput(const NodeSlot& vNodeSlot)
 	else
 	{
 		CTOOL_DEBUG_BREAK;
-		LogVarError("node slot is of type %s.. must be of type SHADER_PASS", vNodeSlot.slotType.c_str());
+		LogVarError("node slot is of type %s.. must be of type SHADER_PASS", vBaseSlot.slotType.c_str());
 	}
 
-	return NodeSlotWeak();
+	return BaseSlotWeak();
 }
 
 void SceneMergerNode::BeforeNodeXmlLoading()
@@ -421,7 +421,7 @@ void SceneMergerNode::ReorganizeSlots(const std::vector<uint32_t>& vSlotsToErase
 			// 3) we add an orphan slot if needed in 2)
 			if (need_to_add_a_orphan_slot)
 			{
-				AddInput(NodeSlotShaderPassInput::Create(""), false, true);
+				AddInput(BaseSlotShaderPassInput::Create(""), false, true);
 			}
 
 			LogVarLightInfo("--------------------------------");

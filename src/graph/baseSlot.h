@@ -41,10 +41,10 @@ public:
     };
 
 public:  // Static
-    static BaseSlotPtr create(const CommonStyle& vStyle, const BaseSlotDatas& vSlotDatas);    
+    static BaseSlotPtr create(const BaseStyle& vStyle, const BaseSlotDatas& vSlotDatas);    
     
 private:  // Common
-    const CommonStyle& m_commonStyle;
+    const BaseStyle& m_baseStyle;
 
 private:
     ImVec2 m_pos;
@@ -53,7 +53,7 @@ private:
 
 public:
     template <typename T, typename = std::enable_if<std::is_base_of<BaseSlotDatas, T>::value>>
-    explicit BaseSlot(const CommonStyle& vStyle, const T& vDatas) : m_commonStyle(vStyle), ez::Slot(std::make_shared<T>(vDatas)) {}
+    explicit BaseSlot(const BaseStyle& vStyle, const T& vDatas) : m_baseStyle(vStyle), ez::Slot(std::make_shared<T>(vDatas)) {}
 
     void setRadius(const float vRadius);
     void setColor(const ImVec4& vColor);
@@ -67,18 +67,18 @@ public:
     bool isAnOutput();
 
     void notifyConnectionChangeToParent(bool vConnected);
-    bool canWeConnectToSlot(NodeSlotWeak vSlot);
+    bool canWeConnectToSlot(BaseSlotWeak vSlot);
 
-    void notify(const rnm::NotifyEvent& vEvent, const NodeSlotWeak& vEmitterSlot = {}, const NodeSlotWeak& vReceiverSlot = {}) override;
+    void notify(const rnm::NotifyEvent& vEvent, const BaseSlotWeak& vEmitterSlot = {}, const BaseSlotWeak& vReceiverSlot = {}) override;
 
     /// When a OnConnectEvent event is detected (to be herited)
-    virtual void onConnectEvent(const NodeSlotWeak& vOtherSlot);
+    virtual void onConnectEvent(const BaseSlotWeak& vOtherSlot);
 
     /// When a OnDisConnectEvent event is detected (to be herited)
-    virtual void onDisConnectEvent(const NodeSlotWeak& vOtherSlot);
+    virtual void onDisConnectEvent(const BaseSlotWeak& vOtherSlot);
 
     /// Treat an event (to be herited)
-    void treatNotification(const rnm::NotifyEvent& vEvent, const NodeSlotWeak& vEmitterSlot = {}, const NodeSlotWeak& vReceiverSlot = {}) override;
+    void treatNotification(const rnm::NotifyEvent& vEvent, const BaseSlotWeak& vEmitterSlot = {}, const BaseSlotWeak& vReceiverSlot = {}) override;
 
     /// Send a event in front (to be herited)
     void sendFrontNotification(const rnm::NotifyEvent& vEvent) override;
@@ -90,7 +90,7 @@ public:
     //virtual void mouseDoubleClickedOnSlot(const ImGuiMouseButton& vMouseButton);
 
     /// will remove the slot from the list linekdSLots
-    //bool removeConnectedSlot(const NodeSlotWeak& vOtherSlot);
+    //bool removeConnectedSlot(const BaseSlotWeak& vOtherSlot);
 
     void drawDebugInfos();
 
@@ -102,5 +102,5 @@ private:
     void m_drawInputWidget();
     void m_drawOutputWidget();
     void m_drawSlotText(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
-    void m_drawNodeSlot(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
+    void m_drawBaseSlot(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
 };

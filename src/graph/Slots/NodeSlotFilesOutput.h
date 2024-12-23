@@ -17,27 +17,27 @@ limitations under the License.
 #pragma once
 
 #include <SoGLSL/Graph/Graph.h>
-#include <SoGLSL/Graph/Base/NodeSlotOutput.h>
+#include <SoGLSL/Graph/Base/BaseSlotOutput.h>
 
-class NodeSlotCodeOutput;
-typedef std::weak_ptr<NodeSlotCodeOutput> NodeSlotCodeOutputWeak;
-typedef std::shared_ptr<NodeSlotCodeOutput> NodeSlotCodeOutputPtr;
+class BaseSlotCodeOutput;
+typedef std::weak_ptr<BaseSlotCodeOutput> BaseSlotCodeOutputWeak;
+typedef std::shared_ptr<BaseSlotCodeOutput> BaseSlotCodeOutputPtr;
 
-class NodeSlotCodeOutput : public NodeSlotOutput {
+class BaseSlotCodeOutput : public BaseSlotOutput {
 public:
-    static NodeSlotCodeOutputPtr Create(NodeSlotCodeOutput vSlot);
-    static NodeSlotCodeOutputPtr Create(const std::string& vName, const std::string& vType);
-    static NodeSlotCodeOutputPtr Create(const std::string& vName, const std::string& vType, const bool& vHideName);
-    static NodeSlotCodeOutputPtr Create(
+    static BaseSlotCodeOutputPtr Create(BaseSlotCodeOutput vSlot);
+    static BaseSlotCodeOutputPtr Create(const std::string& vName, const std::string& vType);
+    static BaseSlotCodeOutputPtr Create(const std::string& vName, const std::string& vType, const bool& vHideName);
+    static BaseSlotCodeOutputPtr Create(
         const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget);
 
 public:
-    explicit NodeSlotCodeOutput();
-    explicit NodeSlotCodeOutput(const std::string& vName, const std::string& vType);
-    explicit NodeSlotCodeOutput(const std::string& vName, const std::string& vType, const bool& vHideName);
-    explicit NodeSlotCodeOutput(
+    explicit BaseSlotCodeOutput();
+    explicit BaseSlotCodeOutput(const std::string& vName, const std::string& vType);
+    explicit BaseSlotCodeOutput(const std::string& vName, const std::string& vType, const bool& vHideName);
+    explicit BaseSlotCodeOutput(
         const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget);
-    ~NodeSlotCodeOutput();
+    ~BaseSlotCodeOutput();
 
     void Init();
     void Unit();

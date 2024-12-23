@@ -1,159 +1,186 @@
-#include <graph/baseNode.h>
-#include <graph/baseSlot.h>
+#include <graph/baseGraph.h>
 #include <ezlibs/ezLog.hpp>
+#include <imguipack/3rdparty/imgui_node_editor/imgui_node_editor_internal.h>
 
-bool BaseNode::drawGraph() {
-    bool ret = false;
-    if (m_canvas.begin("##Canvas", ImGui::GetContentRegionAvail())) {
-        m_drawGraphNodes();
-        m_canvas.end();
-    }
-    return ret;
-}
+bool BaseGraph::drawGraph() {
+    nd::SetCurrentEditor(m_pCanvas);
 
-bool BaseNode::drawNode() {
-    if (m_drawBegin()) {
-        m_drawHeader();
-        m_drawNodeContent();
-        m_drawFooter();
-        m_drawEnd();
-    }
-    m_size = ImGui::GetItemRectSize();
-    m_pos = ImGui::GetItemRectMin();
-    if (ImGui::IsItemHovered()) {
-        if (ImGui::IsMouseClicked(0)) {  // bouton gauche click
-        }
-    }
-    return false;
-}
+    //DrawNodeGraphStyleMenu();
 
-ez::RetCodes BaseNode::connectSlots(ez::SlotWeak vFrom, ez::SlotWeak vTo) {
-    return m_connectSlots(vFrom, vTo);
-}
+    nd::Begin("GraphNode");
 
-bool BaseNode::m_drawNodeHeader() {
-    ImGui::Text(" %s", m_nodeTitle.c_str());
-    return false;
-}
-
-bool BaseNode::m_drawNodeContent() {
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ImGui::GetStyle().ItemSpacing.x, 0));
-    ImGui::BeginHorizontal("content");
-    ImGui::Spring(0, 0);
-    ImGui::BeginVertical("inputs", ImVec2(0, 0), 0.0f);
-    for (auto& p_slot : m_getInputsRef()) {  // slots
-        std::static_pointer_cast<BaseSlot>(p_slot)->draw();
-    }
-    ImGui::EndVertical();
-    ImGui::Spring(1, 5.0f);  // pour que BeginVertical soi poussé au bout
-    ImGui::BeginVertical("outputs", ImVec2(0, 0), 1.0f);  // 1.0f pour que l'interieur soit aligné sur la fin
-    for (auto& p_slot : m_getOutputsRef()) {              // slots
-        std::static_pointer_cast<BaseSlot>(p_slot)->draw();
-    }
-    ImGui::EndVertical();
-    ImGui::EndHorizontal();
-    ImGui::PopStyleVar();
-    return false;
-}
-
-bool BaseNode::m_drawNodeInputSlots() {
-    return false;
-}
-
-bool BaseNode::m_drawNodeOutputSlots() {
-    return false;
-}
-
-BaseNodeWeak BaseNode::m_getParentGraph() {
-    return std::dynamic_pointer_cast<BaseNode>(getParentNode().lock());
-}
-
-BaseNodePtr BaseNode::m_getParentGraphPtr() {
-    return m_getParentGraph().lock();
-}
-
-bool BaseNode::m_drawGraphNodes() {
-    bool ret = false;
-    auto* drawListPtr = ImGui::GetWindowDrawList();
-    if (drawListPtr != nullptr) {
-        drawListPtr->ChannelsSplit(3);
-        for (auto& node_ptr : getNodes()) {
-            auto base_node_ptr = std::dynamic_pointer_cast<BaseNode>(node_ptr);
-            if (base_node_ptr != nullptr) {
-                ret |= base_node_ptr->drawNode();
+    /*m_BaseNodeState.itemPushId = 1;
+    if (!m_ChildNodes.empty()) {
+        for (auto& node : m_ChildNodes) {
+            auto nodePtr = node.second;
+            if (nodePtr) {
+                nodePtr->DrawNode(&m_BaseNodeState);
             }
         }
-        drawListPtr->ChannelsMerge();
+
+        DrawLinks(&m_BaseNodeState);
+
+        DoCreateLinkOrNode(&m_BaseNodeState);
+        DoDeleteLinkOrNode(&m_BaseNodeState);
+        DoShorcutsOnNode(&m_BaseNodeState);
     }
-    return ret;
+
+    DoPopups(&m_BaseNodeState);*/
+
+    /*nd::Suspend();
+    ImVec2 smp = ImGui::GetMousePos();
+    ImVec2 cmp = nd::ScreenToCanvas(smp);
+    ImGui::SetTooltip("Screen Mouse Pos : %.1f %.1f\nCanvas Mouse Pos : %.1f %.1f\nCanvas offset : %.1f %.1f / %.1f %.1f", smp.x, smp.y, cmp.x, cmp.y, co1.x, co1.y,
+    co2.x, co2.y); nd::Resume();*/
+
+    nd::End();
+    nd::SetCurrentEditor(nullptr);
+
+    //DoGraphActions(&m_BaseNodeState);
+    return false;
 }
 
-bool BaseNode::m_drawBegin() {
-    ImGui::PushID(this);
-    ImGui::BeginGroup();
-    m_canvas.setExternalChannel(ImGui::GetWindowDrawList()->_Splitter._Current);
-    ImGui::BeginVertical("node");
+bool BaseGraph::drawNodeWidget(const uint32_t& vFrame) {
+    return false;
+}
+
+bool BaseGraph::drawWidgets(const uint32_t& vFrame) {
+    return false;
+}
+
+void BaseGraph::m_init() {
+    nd::Config config;
+    m_pCanvas = nd::CreateEditor(&config);
+    if (m_pCanvas != nullptr) {
+        nd::SetCurrentEditor(m_pCanvas);
+        nd::GetStyle() = m_baseStyle.graphStyle;
+        nd::EnableShortcuts(true);
+    }
+}
+
+void BaseGraph::m_unit() {
+    nd::SetCurrentEditor(m_pCanvas);
+    nd::DestroyEditor(m_pCanvas);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+////// GAPH NAVIGATION ///////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+void BaseGraph::zoomToContent() const {
+    if (m_pCanvas) {
+        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
+        ax::NodeEditor::NavigateToContent(true);
+    }
+}
+
+void BaseGraph::navigateToContent() const {
+    if (m_pCanvas) {
+        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
+        ax::NodeEditor::NavigateToContent(false);
+    }
+}
+
+void BaseGraph::zoomToSelection() const {
+    if (m_pCanvas) {
+        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
+        ax::NodeEditor::NavigateToSelection(true);
+    }
+}
+
+void BaseGraph::navigateToSelection() const {
+    if (m_pCanvas) {
+        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
+        ax::NodeEditor::NavigateToSelection(false);
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+////// CANVAS QUERY //////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+ImVec2 BaseGraph::getMousePos() const {
+    // return ImGui::GetMousePosOnOpeningCurrentPopup();
+    return ImGui::GetMousePos();
+}
+
+ImVec2 BaseGraph::getCanvasOffset() const {
+    if (m_pCanvas) {
+        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
+        return ax::NodeEditor::GetCanvasOffset();
+    }
+
+    return ImVec2(0, 0);
+}
+
+float BaseGraph::getCanvasScale() const {
+    if (m_pCanvas) {
+        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
+        return ax::NodeEditor::GetCanvasScale();
+    }
+
+    return 1.0f;
+}
+
+void BaseGraph::setCanvasOffset(const ImVec2& vOffset) {
+    if (m_pCanvas) {
+        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
+        ax::NodeEditor::SetCanvasOffset(vOffset);
+    }
+}
+
+void BaseGraph::setCanvasScale(const float& vScale) {
+    if (m_pCanvas) {
+        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
+        ax::NodeEditor::SetCanvasScale(vScale);
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+////// COPY / PASTE / DUPLICATE //////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+void BaseGraph::copySelectedNodes() {
+    /*
+    auto countSelectecdNodes = ax::NodeEditor::GetSelectedObjectCount();
+    m_NodesToCopy.resize(countSelectecdNodes);
+    ax::NodeEditor::GetActionContextNodes(m_NodesToCopy.data(), (int)m_NodesToCopy.size());
+    SetChanged();
+
+    // calcul du point de centre de tout ces nodes
+    // sa servira d'offset avec le point de destinatiion
+    m_BaseCopyOffset = ImVec2(0, 0);
+    for (const auto& id : m_NodesToCopy) {
+        m_BaseCopyOffset += ax::NodeEditor::GetNodePosition(id) * 0.5f;
+    }
+    */
+}
+
+void BaseGraph::pasteNodesAtMousePos() {
+    /*
+    ax::NodeEditor::Suspend();  // necessaire pour avoir le bon MousePos
+    auto newOffset = ax::NodeEditor::ScreenToCanvas(ImGui::GetMousePos()) - m_BaseCopyOffset;
+    ax::NodeEditor::Resume();
+    DuplicateSelectedNodes(newOffset);
+    */
+}
+
+void BaseGraph::duplicateSelectedNodes(ImVec2 vOffset) {
+    /*
+    for (auto& it : m_NodesToCopy) {
+        DuplicateNode((uint32_t)it.Get(), vOffset);
+        SetChanged();
+    }
+    m_NodesToCopy.clear();
+    */
+}
+
+ez::xml::Nodes BaseGraph::getXmlNodes(const std::string& /*vUserDatas*/) {
+    ez::xml::Node node;
+    return node.getChildren();
+}
+
+// return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
+bool BaseGraph::setFromXmlNodes(const ez::xml::Node& /*vNode*/, const ez::xml::Node& /*vParent*/, const std::string& /*vUserDatas*/) {
     return true;
-}
-
-bool BaseNode::m_drawHeader() {
-    ImGui::BeginHorizontal("header");
-    ImGui::Spring(1, 5.0f);
-    ImGui::TextUnformatted(getDatas<NodeConfig>().name.c_str());
-    ImGui::Spring(1, 5.0f);
-    // ImGui::Dummy(ImVec2(0, 24));
-    ImGui::EndHorizontal();
-    m_headerRect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
-    return false;
-}
-
-bool BaseNode::m_drawFooter() {
-    return false;
-}
-
-bool BaseNode::m_drawEnd() {
-    ImGui::EndVertical();
-    ImGui::EndGroup();
-    if (ImGui::IsItemVisible()) {
-        auto drawList = ImGui::GetWindowDrawList();  // GetNodeBackgroundDrawList(nodeID);
-        if (drawList) {
-            ImGuiContext& g = *GImGui;
-            const auto itemRect = g.LastItemData.Rect;
-            drawList->AddRectFilled(itemRect.Min, itemRect.Max, ImGui::GetColorU32(ImVec4(0.2, 0.5, 0.2, 0.8)), 2.0f, ImDrawFlags_RoundCornersAll);
-            if (m_headerRect.GetSize().y > 0.0f) {
-                const ImVec4 NodePadding = getDatas<NodeConfig>().padding;
-                const auto halfBorderWidth = 50.0f;
-
-                auto alpha = static_cast<int>(255 * ImGui::GetStyle().Alpha);
-
-                drawList->AddLine(
-                    ImVec2(m_headerRect.Min.x - (NodePadding.x - halfBorderWidth), m_headerRect.Max.y - 0.5f),
-                    ImVec2(m_headerRect.Max.x + (NodePadding.z - halfBorderWidth), m_headerRect.Max.y - 0.5f),
-                    ImColor(255, 255, 255, 96 * alpha / (3 * 255)),
-                    1.0f);
-            }
-
-            m_displayInfosOnTopOfTheNode();
-        } else {
-            LogVarDebugInfo("why drawList is null ?? in BaseNode::DrawEnd");
-        }
-    }
-    ImGui::PopID();
-    return false;
-}
-
-void BaseNode::m_displayInfosOnTopOfTheNode() {
-    auto drawList = ImGui::GetWindowDrawList();  // GetNodeBackgroundDrawList(nodeID);
-    if (drawList) {
-        char debugBuffer[255] = "\0";
-        snprintf(
-            debugBuffer,
-            254,
-            "Used(%s)\nCell(%i, %i)" /*\nPos(%.1f, %.1f)\nSize(%.1f, %.1f)*/,
-            (getDatas<NodeConfig>().used ? "true" : "false"),
-            getDatas<NodeConfig>().cell.x,
-            getDatas<NodeConfig>().cell.y /*, pos.x, pos.y, size.x, size.y*/);
-        ImVec2 txtSize = ImGui::CalcTextSize(debugBuffer);
-        drawList->AddText(m_pos - ImVec2(0, txtSize.y), ImGui::GetColorU32(ImGuiCol_Text), debugBuffer);
-    }
 }

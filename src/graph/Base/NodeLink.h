@@ -27,12 +27,12 @@ limitations under the License.
 namespace nd = ax::NodeEditor;
 
 class BaseNode;
-class NodeSlot;
+class BaseSlot;
 class NodeLink
 {
 public:
-	NodeSlotWeak in;
-	NodeSlotWeak out;
+	BaseSlotWeak in;
+	BaseSlotWeak out;
 	uint32_t linkId = 0;
 	ImColor color = ImColor(255, 255, 0, 255);
 	float thick = 2.0f;

@@ -18,21 +18,21 @@ class BaseNode;
 typedef std::weak_ptr<BaseNode> BaseNodeWeak;
 typedef std::shared_ptr<BaseNode> BaseNodePtr;
 
-class NodeSlot;
-typedef std::weak_ptr<NodeSlot> NodeSlotWeak;
-typedef std::shared_ptr<NodeSlot> NodeSlotPtr;
+class BaseSlot;
+typedef std::weak_ptr<BaseSlot> BaseSlotWeak;
+typedef std::shared_ptr<BaseSlot> BaseSlotPtr;
 
 class NodeLink;
 typedef std::weak_ptr<NodeLink> NodeLinkWeak;
 typedef std::shared_ptr<NodeLink> NodeLinkPtr;
 
-class NodeSlotInput;
-typedef std::weak_ptr<NodeSlotInput> NodeSlotInputWeak;
-typedef std::shared_ptr<NodeSlotInput> NodeSlotInputPtr;
+class BaseSlotInput;
+typedef std::weak_ptr<BaseSlotInput> BaseSlotInputWeak;
+typedef std::shared_ptr<BaseSlotInput> BaseSlotInputPtr;
 
-class NodeSlotOutput;
-typedef std::weak_ptr<NodeSlotOutput> NodeSlotOutputWeak;
-typedef std::shared_ptr<NodeSlotOutput> NodeSlotOutputPtr;
+class BaseSlotOutput;
+typedef std::weak_ptr<BaseSlotOutput> BaseSlotOutputWeak;
+typedef std::shared_ptr<BaseSlotOutput> BaseSlotOutputPtr;
 
 typedef std::set<std::string> FilesSet;
 typedef void* SlotUserDatas;

@@ -160,7 +160,7 @@ struct BaseNodeState
 	bool showFunctionParametersSlots = true;
 	bool showFunctionSlots = true;
 
-	NodeSlotWeak linkFromSlot; // quand on prend un lien depuis un slot
+	BaseSlotWeak linkFromSlot; // quand on prend un lien depuis un slot
 	
 	BaseNodeWeak node_to_open;
 	BaseNodeWeak node_to_select;
@@ -188,7 +188,7 @@ public:
 
 public: // links
 	std::unordered_map<uint32_t, NodeLinkPtr> m_Links; // linkId, link // for search query
-	std::unordered_map<uint32_t, std::set<uint32_t>> m_LinksDico; // NodeSlot Ptr, linkId // for search query
+	std::unordered_map<uint32_t, std::set<uint32_t>> m_LinksDico; // BaseSlot Ptr, linkId // for search query
 
 public: // static
 	static uint32_t freeNodeId;
@@ -199,11 +199,11 @@ public: // static
 	static std::function<void(const BaseNodeWeak&)> sOpenGraphCallback; // open graph
 	static void OpenGraph_Callback(const BaseNodeWeak& vNode);
 
-	static std::function<void(const NodeSlotWeak&, const ImGuiMouseButton&)> sSelectSlotCallback; // select for be the graph output
-	static void SelectSlot_Callback(const NodeSlotWeak& vSlot, const ImGuiMouseButton&);
+	static std::function<void(const BaseSlotWeak&, const ImGuiMouseButton&)> sSelectSlotCallback; // select for be the graph output
+	static void SelectSlot_Callback(const BaseSlotWeak& vSlot, const ImGuiMouseButton&);
 
-	static std::function<void(const NodeSlotWeak&, const ImGuiMouseButton&)> sSelectForGraphOutputCallback; // select for be the graph output
-	static void SelectForGraphOutput_Callback(const NodeSlotWeak& vSlot, const ImGuiMouseButton&);
+	static std::function<void(const BaseSlotWeak&, const ImGuiMouseButton&)> sSelectForGraphOutputCallback; // select for be the graph output
+	static void SelectForGraphOutput_Callback(const BaseSlotWeak& vSlot, const ImGuiMouseButton&);
 
 	static std::function<void(const std::string&)> sOpenCodeCallback; // open code
 	static void OpenCode_Callback(const std::string& vCode);
@@ -251,7 +251,7 @@ public:
 	// duing loading new slot pin id are created and msut repalce slot pins form the xml
 	// but the pin from xml must be saved for create the links from xml
 	// so the frist is those from xml and the second is those from new slot pin
-	std::unordered_map<NodeSlot::PlaceEnum, std::unordered_map<uint32_t, uint32_t>> m_SlotPinsFromXMLToNew;
+	std::unordered_map<BaseSlot::PlaceEnum, std::unordered_map<uint32_t, uint32_t>> m_SlotPinsFromXMLToNew;
 
 public: // used by layout
 	ImVec2 pos; // position absolue du node
@@ -278,8 +278,8 @@ public: // glslang and links
 	std::unordered_map<uint32_t, BaseNodePtr> m_ChildNodes; // node du graphn  // for query only
 	//std::string m_lastChildNodeName; // le nom du dernier node pour le layout
 	
-	std::map<uint32_t, NodeSlotInputPtr> m_Inputs; // for display, need order
-	std::map<uint32_t, NodeSlotOutputPtr> m_Outputs; // for display, need order
+	std::map<uint32_t, BaseSlotInputPtr> m_Inputs; // for display, need order
+	std::map<uint32_t, BaseSlotOutputPtr> m_Outputs; // for display, need order
 
 	std::set<uint32_t> m_NodeIdToDelete; // node selected to delete
 
@@ -304,7 +304,7 @@ public:
 	std::unordered_map<std::string, uint32_t> m_NodeStamps; // bd des signatures (de fonctions, params, return, etc..) for query only
 
 public:
-	std::string m_NodeGraphConfigFile;
+	std::string m_NodeBaseGraphDatasFile;
 	nd::Style m_Style;
 	GaiApi::VulkanCorePtr m_VulkanCorePtr = nullptr;
 
@@ -352,7 +352,7 @@ public:
 	/// <param name="vEvent"></param>
 	/// <param name="vEmitterSlot"></param>
 	/// <param name="vReceiverSlot"></param>
-	virtual void TreatNotification(const NotifyEvent& vEvent, const NodeSlotWeak& vEmitterSlot = NodeSlotWeak(), const NodeSlotWeak& vReceiverSlot = NodeSlotWeak());
+	virtual void TreatNotification(const NotifyEvent& vEvent, const BaseSlotWeak& vEmitterSlot = BaseSlotWeak(), const BaseSlotWeak& vReceiverSlot = BaseSlotWeak());
 
 	/// <summary>
 	/// send notification in front (output to input)
@@ -429,28 +429,28 @@ public:
 	BaseNodeWeak FindNodeByName(std::string vName);
 	std::vector<BaseNodeWeak> GetPublicNodes();		// les Public nodes sont les nodes exposé dans le parents, c'est PUBLIC_ puis non du node
 	NodeLinkWeak FindLink(nd::LinkId vId);
-	NodeSlotWeak FindSlot(nd::PinId vId);
-	NodeSlotWeak FindNodeSlotByName(BaseNodeWeak vNode, std::string vName);
-	NodeSlotWeak FindNodeSlotById(nd::NodeId vNodeId, nd::PinId vSlotId);
+	BaseSlotWeak FindSlot(nd::PinId vId);
+	BaseSlotWeak FindBaseSlotByName(BaseNodeWeak vNode, std::string vName);
+	BaseSlotWeak FindBaseSlotById(nd::NodeId vNodeId, nd::PinId vSlotId);
 
 	/// <summary>
 	/// ca retourner la liste des slots d'un type particulier et d'une place particuliere
 	/// </summary>
-	std::vector<NodeSlotWeak> GetSlotsOfType(NodeSlot::PlaceEnum vPlace, std::string vType);
+	std::vector<BaseSlotWeak> GetSlotsOfType(BaseSlot::PlaceEnum vPlace, std::string vType);
 
 	/// <summary>
 	/// va retourne la liste des input slot d'un type particulier
 	/// </summary>
-	std::vector<NodeSlotWeak> GetInputSlotsOfType(std::string vType);
+	std::vector<BaseSlotWeak> GetInputSlotsOfType(std::string vType);
 
 	/// <summary>
 	/// va retourne la liste des output slot d'un type particulier
 	/// </summary>
-	std::vector<NodeSlotWeak> GetOutputSlotsOfType(std::string vType);
+	std::vector<BaseSlotWeak> GetOutputSlotsOfType(std::string vType);
 
 	// for add an input or output during xml loading in INTERNAL_MODE_DYNAMIC
-	virtual NodeSlotWeak AddPreDefinedInput(const NodeSlot& vNodeSlot);
-	virtual NodeSlotWeak AddPreDefinedOutput(const NodeSlot& vNodeSlot);
+	virtual BaseSlotWeak AddPreDefinedInput(const BaseSlot& vBaseSlot);
+	virtual BaseSlotWeak AddPreDefinedOutput(const BaseSlot& vBaseSlot);
 
 	// add nodes
 	BaseNodeWeak AddChildNode(BaseNodePtr vNode, bool vIncNodeId = false);
@@ -461,7 +461,7 @@ public:
 	// node removal
 	void DestroyChildNode(BaseNodeWeak vNode);
 	bool DestroyChildNodeByIdIfAllowed(int vNodeID, bool vDestroy);
-	void DestroySlotOfAnyMap(NodeSlotWeak vSlot);
+	void DestroySlotOfAnyMap(BaseSlotWeak vSlot);
 
 	// delete node finally
 	void DestroyNodesIfAnys(); // a executer apres le rendu de imgui
@@ -473,8 +473,8 @@ public:
 	void AfterNodeXmlLoading() override;
 
 public: // Add slots 
-	NodeSlotWeak AddInput(NodeSlotInputPtr vSlotPtr, bool vIncSlotId = false, bool vHideName = true);
-	NodeSlotWeak AddOutput(NodeSlotOutputPtr  vSlotPtr, bool vIncSlotId = false, bool vHideName = true);
+	BaseSlotWeak AddInput(BaseSlotInputPtr vSlotPtr, bool vIncSlotId = false, bool vHideName = true);
+	BaseSlotWeak AddOutput(BaseSlotOutputPtr  vSlotPtr, bool vIncSlotId = false, bool vHideName = true);
 
 public:
 	void DoLayout();
@@ -482,8 +482,8 @@ public:
 public: // shader gen related stuff
 	virtual std::string GetNodeCode(bool vRecursChilds = false);
 	virtual void CompilGeneratedCode();
-	//virtual void JustConnectedBySlots(NodeSlotWeak vStartSlot, NodeSlotWeak vEndSlot);
-	//virtual void JustDisConnectedBySlots(NodeSlotWeak vStartSlot, NodeSlotWeak vEndSlot);
+	//virtual void JustConnectedBySlots(BaseSlotWeak vStartSlot, BaseSlotWeak vEndSlot);
+	//virtual void JustDisConnectedBySlots(BaseSlotWeak vStartSlot, BaseSlotWeak vEndSlot);
 	bool IsCodeDirty();
 	void SetCodeDirty(bool vFlag);
 	
@@ -508,31 +508,31 @@ private: // utils
 	std::string GetAvailableNodeStamp(const std::string& vNodeStamp);
 
 public: // Get Links / Slots
-	std::vector<NodeLinkWeak> GetLinksAssociatedToSlot(NodeSlotWeak vSlot);
-	std::vector<NodeSlotWeak> GetSlotsAssociatedToSlot(NodeSlotWeak vSlot);
+	std::vector<NodeLinkWeak> GetLinksAssociatedToSlot(BaseSlotWeak vSlot);
+	std::vector<BaseSlotWeak> GetSlotsAssociatedToSlot(BaseSlotWeak vSlot);
 
 public: // ADD/DELETE LINKS
-	bool AddLink(NodeSlotWeak vStart, NodeSlotWeak vEnd);
-	bool BreakLink(NodeSlotWeak vFrom, NodeSlotWeak vTo);
-	bool BreakAllLinksConnectedToSlot(NodeSlotWeak vSlot);
+	bool AddLink(BaseSlotWeak vStart, BaseSlotWeak vEnd);
+	bool BreakLink(BaseSlotWeak vFrom, BaseSlotWeak vTo);
+	bool BreakAllLinksConnectedToSlot(BaseSlotWeak vSlot);
 	
 private:
 	bool BreakLink(const uint32_t& vLinkId);
 
 public: // CONNECT / DISCONNECT SLOTS BEHIND
-	bool ConnectSlots(NodeSlotWeak vFrom, NodeSlotWeak vTo);
+	bool ConnectSlots(BaseSlotWeak vFrom, BaseSlotWeak vTo);
 
-	virtual void NotifyConnectionChangeOfThisSlot(NodeSlotWeak vSlot, bool vConnected); // ce solt a été connecté/déconnecté
+	virtual void NotifyConnectionChangeOfThisSlot(BaseSlotWeak vSlot, bool vConnected); // ce solt a été connecté/déconnecté
 
 private: // connect / disconnect events
-	bool CallSlotsOnConnectEvent(NodeSlotWeak vStart, NodeSlotWeak vEnd);
-	bool CallSlotsOnDisConnectEvent(NodeSlotWeak vStart, NodeSlotWeak vEnd);
+	bool CallSlotsOnConnectEvent(BaseSlotWeak vStart, BaseSlotWeak vEnd);
+	bool CallSlotsOnDisConnectEvent(BaseSlotWeak vStart, BaseSlotWeak vEnd);
 
 public: // test if slot connection possible for have rule node
-	virtual bool CanWeConnectSlots(NodeSlotWeak vFrom, NodeSlotWeak vTo);
+	virtual bool CanWeConnectSlots(BaseSlotWeak vFrom, BaseSlotWeak vTo);
 
 public: // slot splitter
-	virtual std::vector<NodeSlotWeak> InjectTypeInSlot(NodeSlotWeak vSlotToSplit, uType::uTypeEnum vType);
+	virtual std::vector<BaseSlotWeak> InjectTypeInSlot(BaseSlotWeak vSlotToSplit, uType::uTypeEnum vType);
 
 public: // ImGui
 	void DrawStyleMenu(); // ImGui
@@ -549,9 +549,9 @@ public: // pane
 	virtual void DrawProperties(BaseNodeState* vBaseNodeState);
 
 public: // draw nodes widgets (can be caleed from external)
-	virtual void DrawInputWidget(BaseNodeState *vBaseNodeState, NodeSlotWeak vSlot);
-	virtual void DrawOutputWidget(BaseNodeState *vBaseNodeState, NodeSlotWeak vSlot);
-	virtual void DrawContextMenuForSlot(BaseNodeState *vBaseNodeState, NodeSlotWeak vSlot);
+	virtual void DrawInputWidget(BaseNodeState *vBaseNodeState, BaseSlotWeak vSlot);
+	virtual void DrawOutputWidget(BaseNodeState *vBaseNodeState, BaseSlotWeak vSlot);
+	virtual void DrawContextMenuForSlot(BaseNodeState *vBaseNodeState, BaseSlotWeak vSlot);
 	virtual void DrawContextMenuForNode(BaseNodeState *vBaseNodeState);
 	virtual void DrawCustomContextMenuForNode(BaseNodeState *vBaseNodeState);
 

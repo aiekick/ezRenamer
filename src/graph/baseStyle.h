@@ -2,7 +2,7 @@
 
 #include <ImGuiPack.h>
 
-struct CommonStyle {
+struct BaseStyle {
     // node
     float DEFAULT_WIDTH = 100.0f;
     float WINDOW_PADDING = 10.0f;

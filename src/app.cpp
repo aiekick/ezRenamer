@@ -9,6 +9,7 @@
 #include <ezlibs/ezApp.hpp>
 #include <ezlibs/ezFile.hpp>
 #include <ezlibs/ezLog.hpp>
+#include <ezlibs/ezFigFont.hpp> 
 
 // messaging
 #define MESSAGING_CODE_INFOS 0
@@ -27,13 +28,7 @@
 int App::run(int argc, char** argv) {
     ez::App app(argc, argv);
     // https://patorjk.com/software/taag/#p=display&h=1&v=0&f=Big&t=ezRenamer%20v0.1
-    std::cout << u8R"(             _____                                                      ___    __ 
-            |  __ \                                                    / _ \  /_ |
-   ___  ____| |__) | ___  _ __    __ _  _ __ ___    ___  _ __  __   __| | | |  | |
-  / _ \|_  /|  _  / / _ \| '_ \  / _` || '_ ` _ \  / _ \| '__| \ \ / /| | | |  | |
- |  __/ / / | | \ \|  __/| | | || (_| || | | | | ||  __/| |     \ V / | |_| |_ | |
-  \___|/___||_|  \_\\___||_| |_| \__,_||_| |_| |_| \___||_|      \_/   \___/(_)|_| 
-)" << std::endl;
+    std::cout << ezRenamer_FigFont_Verion << std::endl;
     std::cout << "-----------" << std::endl;
     LogVarLightInfo("[[ %s Beta v%s ]]", ezRenamer_Label, ezRenamer_BuildId);
     Messaging::Instance()->AddCategory(MESSAGING_CODE_INFOS, "Info(s)", MESSAGING_LABEL_INFOS, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));

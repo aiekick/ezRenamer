@@ -34,15 +34,15 @@ private:
 
 public:
 	SlotColor();
-	ImVec4 GetSlotColor(const std::string& vNodeSlotType);
-	void AddSlotColor(const std::string& vNodeSlotType, const ImVec4& vSlotColor);
+	ImVec4 GetSlotColor(const std::string& vBaseSlotType);
+	void AddSlotColor(const std::string& vBaseSlotType, const ImVec4& vSlotColor);
 };
 
 struct ImRect;
 class BaseNode;
 class UniformWidgetBase;
 struct BaseNodeState;
-class NodeSlot :
+class BaseSlot :
 	public conf::ConfigAbstract
 {
 public:
@@ -55,19 +55,19 @@ public:
 	};
 
 public:
-	static NodeSlotWeak sSlotGraphOutputMouseLeft;
+	static BaseSlotWeak sSlotGraphOutputMouseLeft;
 	static ImVec4 sSlotGraphOutputMouseLeftColor;
-	static NodeSlotWeak sSlotGraphOutputMouseMiddle;
+	static BaseSlotWeak sSlotGraphOutputMouseMiddle;
 	static ImVec4 sSlotGraphOutputMouseMiddleColor;
-	static NodeSlotWeak sSlotGraphOutputMouseRight;
+	static BaseSlotWeak sSlotGraphOutputMouseRight;
 	static ImVec4 sSlotGraphOutputMouseRightColor;
 
 public:
-	static std::string sGetStringFromNodeSlotPlaceEnum(const PlaceEnum& vPlaceEnum);
-	static PlaceEnum sGetNodeSlotPlaceEnumFromString(const std::string& vNodeSlotPlaceString);
+	static std::string sGetStringFromBaseSlotPlaceEnum(const PlaceEnum& vPlaceEnum);
+	static PlaceEnum sGetBaseSlotPlaceEnumFromString(const std::string& vBaseSlotPlaceString);
 	static size_t sGetNewSlotId();
 	static SlotColor* sGetSlotColors(SlotColor* vCopy = nullptr, bool vForce = false); // static are null when a plugin is loaded
-    static NodeSlotPtr Create(NodeSlot vSlot);
+    static BaseSlotPtr Create(BaseSlot vSlot);
 
 	/// <summary>
 	/// will get a slot name like STAGE_SLOTNAME from STAGE and SLOTNAME
@@ -83,11 +83,11 @@ public:
     static std::pair<std::string, std::string> sGetStageAndNameFromSlotName(const std::string& vSlotName);
 
 public:
-	NodeSlotWeak m_This;
+	BaseSlotWeak m_This;
 
 public:
 	std::string slotType = "NONE";
-	NodeSlot::PlaceEnum slotPlace = NodeSlot::PlaceEnum::INPUT;
+	BaseSlot::PlaceEnum slotPlace = BaseSlot::PlaceEnum::INPUT;
 
 public:
 	nd::PinId pinID = 0;
@@ -101,7 +101,7 @@ public:
 	ImVec4 color = ImVec4(0.8f, 0.8f, 0.0f, 1.0f);
 	bool colorIsSet = false;
 	uType::uTypeEnum type = uType::uTypeEnum::U_VOID;
-	std::vector<NodeSlotWeak> linkedSlots;
+	std::vector<BaseSlotWeak> linkedSlots;
 	BaseNodeWeak parentNode;
 	std::weak_ptr<UniformWidgetBase> uniform;
 	uint32_t fboAttachmentId = 0;
@@ -140,12 +140,12 @@ private:
 	bool m_Selected = false; // will select visually the slot, signify he is the output of the graph
 
 public:
-	explicit NodeSlot();
-	explicit NodeSlot(std::string vName);
-	explicit NodeSlot(std::string vName, std::string vType);
-	explicit NodeSlot(std::string vName, std::string vType, bool vHideName);
-	explicit NodeSlot(std::string vName, std::string vType, bool vHideName, bool vShowWidget);
-	~NodeSlot();
+	explicit BaseSlot();
+	explicit BaseSlot(std::string vName);
+	explicit BaseSlot(std::string vName, std::string vType);
+	explicit BaseSlot(std::string vName, std::string vType, bool vHideName);
+	explicit BaseSlot(std::string vName, std::string vType, bool vHideName, bool vShowWidget);
+	~BaseSlot();
 
 	void Init();
 	void Unit();
@@ -153,12 +153,12 @@ public:
 	std::string GetFullStamp();
 
 	void NotifyConnectionChangeToParent(bool vConnected); // va contacter le parent pour lui dire que ce solt est connecté a un autre
-	bool CanWeConnectToSlot(NodeSlotWeak vSlot);
+	bool CanWeConnectToSlot(BaseSlotWeak vSlot);
 
 	uint32_t GetSlotID() const;
 
 	// splitter
-	std::vector<NodeSlotWeak> InjectTypeInSlot(uType::uTypeEnum vType);
+	std::vector<BaseSlotWeak> InjectTypeInSlot(uType::uTypeEnum vType);
 
 	std::string getXml(const std::string& vOffset, const std::string& vUserDatas = "") override;
 	bool setFromXml(tinyxml2::XMLElement* vElem, tinyxml2::XMLElement* vParent, const std::string& vUserDatas = "") override;
@@ -169,7 +169,7 @@ public:
 	bool IsAnInput();
 	bool IsAnOutput();
 
-	void Notify(const NotifyEvent& vEvent, const NodeSlotWeak& vEmitterSlot = NodeSlotWeak(), const NodeSlotWeak& vReceiverSlot = NodeSlotWeak());
+	void Notify(const NotifyEvent& vEvent, const BaseSlotWeak& vEmitterSlot = BaseSlotWeak(), const BaseSlotWeak& vReceiverSlot = BaseSlotWeak());
 	void SendNotification(const std::string& vSlotType, const NotifyEvent& vEvent);
 
 	/// <summary>
@@ -177,14 +177,14 @@ public:
 	/// </summary>
 	/// <param name="vOtherSlot">the slot to OnConnectEvent to</param>
 	/// todo : to rename in onConnectEvent
-	virtual void OnConnectEvent(NodeSlotWeak vOtherSlot);
+	virtual void OnConnectEvent(BaseSlotWeak vOtherSlot);
 
 	/// <summary>
 	/// When a OnDisConnectEvent event is detected (to be herited)
 	/// </summary>
 	/// <param name="vOtherSlot">the slot to OnDisConnectEvent to</param>
 	/// todo : to rename in onDisConnectEvent
-	virtual void OnDisConnectEvent(NodeSlotWeak vOtherSlot);
+	virtual void OnDisConnectEvent(BaseSlotWeak vOtherSlot);
 
 	/// <summary>
 	/// Treat an event (to be herited)
@@ -192,7 +192,7 @@ public:
 	/// <param name="vEvent"></param>
 	/// <param name="vEmitterSlot"></param>
 	/// <param name="vReceiverSlot"></param>
-	virtual void TreatNotification(const NotifyEvent& vEvent, const NodeSlotWeak& vEmitterSlot = NodeSlotWeak(), const NodeSlotWeak& vReceiverSlot = NodeSlotWeak());
+	virtual void TreatNotification(const NotifyEvent& vEvent, const BaseSlotWeak& vEmitterSlot = BaseSlotWeak(), const BaseSlotWeak& vReceiverSlot = BaseSlotWeak());
 	
 	/// <summary>
 	/// Send a event in front (to be herited)
@@ -217,7 +217,7 @@ public:
 	/// </summary>
 	/// <param name="vOtherSlot"></param>
 	/// <returns>true if removed something</returns>
-	bool RemoveConnectedSlot(NodeSlotWeak vOtherSlot);
+	bool RemoveConnectedSlot(BaseSlotWeak vOtherSlot);
 
 	void DrawDebugInfos();
 
@@ -225,5 +225,5 @@ private:
 	void DrawInputWidget(BaseNodeState *vBaseNodeState);
 	void DrawOutputWidget(BaseNodeState *vBaseNodeState);
 	void DrawSlotText(ImDrawList* vDrawList, ImVec2 vCenter, BaseNodeState* vBaseNodeState, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
-	void DrawNodeSlot(ImDrawList* vDrawList, ImVec2 vCenter, BaseNodeState* vBaseNodeState, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
+	void DrawBaseSlot(ImDrawList* vDrawList, ImVec2 vCenter, BaseNodeState* vBaseNodeState, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
 };*/

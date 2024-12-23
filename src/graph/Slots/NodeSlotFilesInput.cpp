@@ -19,7 +19,7 @@ limitations under the License.
 
 #include <SoGLSL/Headers/SoGLSLDefs.h>
 #include <SoGLSL/Graph/Base/BaseNode.h>
-#include <SoGLSL/Graph/Slots/NodeSlotCodeInput.h>
+#include <SoGLSL/Graph/Slots/BaseSlotCodeInput.h>
 #include <SoGLSL/Interfaces/SlotCodeInputInterface.h>
 #include <SoGLSL/Interfaces/SlotCodeOutputInterface.h>
 
@@ -30,28 +30,28 @@ static const float slotIconSize = 15.0f;
 //// STATIC //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-NodeSlotCodeInputPtr NodeSlotCodeInput::Create(NodeSlotCodeInput vSlot) {
-    auto res = std::make_shared<NodeSlotCodeInput>(vSlot);
+BaseSlotCodeInputPtr BaseSlotCodeInput::Create(BaseSlotCodeInput vSlot) {
+    auto res = std::make_shared<BaseSlotCodeInput>(vSlot);
     res->m_This = res;
     return res;
 }
 
-NodeSlotCodeInputPtr NodeSlotCodeInput::Create(const std::string& vName, const std::string& vType) {
-    auto res = std::make_shared<NodeSlotCodeInput>(vName, vType);
+BaseSlotCodeInputPtr BaseSlotCodeInput::Create(const std::string& vName, const std::string& vType) {
+    auto res = std::make_shared<BaseSlotCodeInput>(vName, vType);
     res->m_This = res;
     return res;
 }
 
-NodeSlotCodeInputPtr NodeSlotCodeInput::Create(
+BaseSlotCodeInputPtr BaseSlotCodeInput::Create(
     const std::string& vName, const std::string& vType, const bool& vHideName) {
-    auto res = std::make_shared<NodeSlotCodeInput>(vName, vType, vHideName);
+    auto res = std::make_shared<BaseSlotCodeInput>(vName, vType, vHideName);
     res->m_This = res;
     return res;
 }
 
-NodeSlotCodeInputPtr NodeSlotCodeInput::Create(
+BaseSlotCodeInputPtr BaseSlotCodeInput::Create(
     const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget) {
-    auto res = std::make_shared<NodeSlotCodeInput>(vName, vType, vHideName, vShowWidget);
+    auto res = std::make_shared<BaseSlotCodeInput>(vName, vType, vHideName, vShowWidget);
     res->m_This = res;
     return res;
 }
@@ -60,40 +60,40 @@ NodeSlotCodeInputPtr NodeSlotCodeInput::Create(
 //// NODESLOT CLASS //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-NodeSlotCodeInput::NodeSlotCodeInput() : NodeSlotInput("", "") {
+BaseSlotCodeInput::BaseSlotCodeInput() : BaseSlotInput("", "") {
     pinID = sGetNewSlotId();
     color = sGetSlotColors()->GetSlotColor(slotType);
     colorIsSet = true;
 }
 
-NodeSlotCodeInput::NodeSlotCodeInput(const std::string& vName, const std::string& vType) : NodeSlotInput(vName, vType) {
+BaseSlotCodeInput::BaseSlotCodeInput(const std::string& vName, const std::string& vType) : BaseSlotInput(vName, vType) {
     pinID = sGetNewSlotId();
     color = sGetSlotColors()->GetSlotColor(slotType);
     colorIsSet = true;
 }
 
-NodeSlotCodeInput::NodeSlotCodeInput(const std::string& vName, const std::string& vType, const bool& vHideName)
-    : NodeSlotInput(vName, vType, vHideName) {
+BaseSlotCodeInput::BaseSlotCodeInput(const std::string& vName, const std::string& vType, const bool& vHideName)
+    : BaseSlotInput(vName, vType, vHideName) {
     pinID = sGetNewSlotId();
     color = sGetSlotColors()->GetSlotColor(slotType);
     colorIsSet = true;
 }
 
-NodeSlotCodeInput::NodeSlotCodeInput(
+BaseSlotCodeInput::BaseSlotCodeInput(
     const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget)
-    : NodeSlotInput(vName, vType, vHideName, vShowWidget) {
+    : BaseSlotInput(vName, vType, vHideName, vShowWidget) {
     pinID = sGetNewSlotId();
     color = sGetSlotColors()->GetSlotColor(slotType);
     colorIsSet = true;
 }
 
-NodeSlotCodeInput::~NodeSlotCodeInput() = default;
+BaseSlotCodeInput::~BaseSlotCodeInput() = default;
 
-void NodeSlotCodeInput::Init() {}
+void BaseSlotCodeInput::Init() {}
 
-void NodeSlotCodeInput::Unit() {
+void BaseSlotCodeInput::Unit() {
     // ici pas besoin du assert sur le m_This
-    // car NodeSlotCodeInput peut etre isntancié à l'ancienne en copie local donc sans shared_ptr
+    // car BaseSlotCodeInput peut etre isntancié à l'ancienne en copie local donc sans shared_ptr
     // donc pour gagner du temps on va checker le this, si expiré on va pas plus loins
     if (!m_This.expired()) {
         if (!parentNode.expired()) {
@@ -111,7 +111,7 @@ void NodeSlotCodeInput::Unit() {
     }
 }
 
-void NodeSlotCodeInput::OnConnectEvent(NodeSlotWeak vOtherSlot) {
+void BaseSlotCodeInput::OnConnectEvent(BaseSlotWeak vOtherSlot) {
     auto endSlotPtr = vOtherSlot.lock();
     if (endSlotPtr) {
         auto parentNodePtr = dynamic_pointer_cast<SlotCodeInputInterface>(parentNode.lock());
@@ -124,7 +124,7 @@ void NodeSlotCodeInput::OnConnectEvent(NodeSlotWeak vOtherSlot) {
     }
 }
 
-void NodeSlotCodeInput::OnDisConnectEvent(NodeSlotWeak vOtherSlot) {
+void BaseSlotCodeInput::OnDisConnectEvent(BaseSlotWeak vOtherSlot) {
     auto endSlotPtr = vOtherSlot.lock();
     if (endSlotPtr) {
         auto parentNodePtr = dynamic_pointer_cast<SlotCodeInputInterface>(parentNode.lock());
@@ -134,8 +134,8 @@ void NodeSlotCodeInput::OnDisConnectEvent(NodeSlotWeak vOtherSlot) {
     }
 }
 
-void NodeSlotCodeInput::TreatNotification(
-    NotifyEvent vEvent, const NodeSlotWeak& vEmitterSlot, const NodeSlotWeak& vReceiverSlot) {
+void BaseSlotCodeInput::TreatNotification(
+    NotifyEvent vEvent, const BaseSlotWeak& vEmitterSlot, const BaseSlotWeak& vReceiverSlot) {
     if (vEvent == CodeUpdateDone) {
         auto emiterSlotPtr = vEmitterSlot.lock();
         if (emiterSlotPtr) {
@@ -156,7 +156,7 @@ void NodeSlotCodeInput::TreatNotification(
     }
 }
 
-void NodeSlotCodeInput::DrawDebugInfos() {
+void BaseSlotCodeInput::DrawDebugInfos() {
     ImGui::Text("--------------------");
     ImGui::Text("Slot %s", name.c_str());
     ImGui::Text(IsAnInput() ? "Input" : "Output");
@@ -167,17 +167,17 @@ void NodeSlotCodeInput::DrawDebugInfos() {
 //// CONFIGURATION ///////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-std::string NodeSlotCodeInput::getXml(const std::string& vOffset, const std::string& /*vUserDatas*/) {
+std::string BaseSlotCodeInput::getXml(const std::string& vOffset, const std::string& /*vUserDatas*/) {
     std::string res;
 
     res += vOffset + ez::toStr("<slot index=\"%u\" name=\"%s\" type=\"%s\" place=\"%s\" id=\"%u\"/>\n", index,
-                         name.c_str(), slotType.c_str(), NodeSlot::sGetStringFromNodeSlotPlaceEnum(slotPlace).c_str(),
+                         name.c_str(), slotType.c_str(), BaseSlot::sGetStringFromBaseSlotPlaceEnum(slotPlace).c_str(),
                          (uint32_t)pinID.Get());
 
     return res;
 }
 
-bool NodeSlotCodeInput::setFromXml(
+bool BaseSlotCodeInput::setFromXml(
     tinyxml2::XMLElement* vElem, tinyxml2::XMLElement* vParent, const std::string& /*vUserDatas*/) {
     // The value of this child identifies the name of this element
     std::string strName;
@@ -194,7 +194,7 @@ bool NodeSlotCodeInput::setFromXml(
         uint32_t _index = 0U;
         std::string _name;
         std::string _type = "NONE";
-        auto _place = NodeSlot::PlaceEnum::NONE;
+        auto _place = BaseSlot::PlaceEnum::NONE;
         uint32_t _pinId = 0U;
 
         for (const tinyxml2::XMLAttribute* attr = vElem->FirstAttribute(); attr != nullptr; attr = attr->Next()) {
@@ -208,7 +208,7 @@ bool NodeSlotCodeInput::setFromXml(
             else if (attName == "type")
                 _type = attValue;
             else if (attName == "place")
-                _place = NodeSlot::sGetNodeSlotPlaceEnumFromString(attValue);
+                _place = BaseSlot::sGetBaseSlotPlaceEnumFromString(attValue);
             else if (attName == "id")
                 _pinId = ez::ivariant(attValue).GetU();
         }

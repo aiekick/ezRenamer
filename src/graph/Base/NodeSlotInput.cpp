@@ -17,7 +17,7 @@ limitations under the License.
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <SoGLSL/Graph/Base/NodeSlotInput.h>
+#include <SoGLSL/Graph/Base/BaseSlotInput.h>
 
 #include <utility>
 #include <SoGLSL/Graph/Base/BaseNode.h>
@@ -27,37 +27,37 @@ static const float slotIconSize = 15.0f;
 //// STATIC //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-NodeSlotInputPtr NodeSlotInput::Create()
+BaseSlotInputPtr BaseSlotInput::Create()
 {
-	auto res = std::make_shared<NodeSlotInput>();
+	auto res = std::make_shared<BaseSlotInput>();
 	res->m_This = res;
 	return res;
 }
 
-NodeSlotInputPtr NodeSlotInput::Create(const std::string& vName)
+BaseSlotInputPtr BaseSlotInput::Create(const std::string& vName)
 {
-	auto res = std::make_shared<NodeSlotInput>(vName);
+	auto res = std::make_shared<BaseSlotInput>(vName);
 	res->m_This = res;
 	return res;
 }
 
-NodeSlotInputPtr NodeSlotInput::Create(const std::string& vName, const std::string& vType)
+BaseSlotInputPtr BaseSlotInput::Create(const std::string& vName, const std::string& vType)
 {
-	auto res = std::make_shared<NodeSlotInput>(vName, vType);
+	auto res = std::make_shared<BaseSlotInput>(vName, vType);
 	res->m_This = res;
 	return res;
 }
 
-NodeSlotInputPtr NodeSlotInput::Create(const std::string& vName, const std::string& vType, const bool& vHideName)
+BaseSlotInputPtr BaseSlotInput::Create(const std::string& vName, const std::string& vType, const bool& vHideName)
 {
-	auto res = std::make_shared<NodeSlotInput>(vName, vType, vHideName);
+	auto res = std::make_shared<BaseSlotInput>(vName, vType, vHideName);
 	res->m_This = res;
 	return res;
 }
 
-NodeSlotInputPtr NodeSlotInput::Create(const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget)
+BaseSlotInputPtr BaseSlotInput::Create(const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget)
 {
-	auto res = std::make_shared<NodeSlotInput>(vName, vType, vHideName, vShowWidget);
+	auto res = std::make_shared<BaseSlotInput>(vName, vType, vHideName, vShowWidget);
 	res->m_This = res;
 	return res;
 }
@@ -66,58 +66,58 @@ NodeSlotInputPtr NodeSlotInput::Create(const std::string& vName, const std::stri
 //// NODESLOT CLASS //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-NodeSlotInput::NodeSlotInput()
-	: NodeSlot()
+BaseSlotInput::BaseSlotInput()
+	: BaseSlot()
 {
 	pinID = sGetNewSlotId();
-	slotPlace = NodeSlot::PlaceEnum::INPUT;
+	slotPlace = BaseSlot::PlaceEnum::INPUT;
 }
 
-NodeSlotInput::NodeSlotInput(const std::string& vName)
-	: NodeSlot(vName)
+BaseSlotInput::BaseSlotInput(const std::string& vName)
+	: BaseSlot(vName)
 {
 	pinID = sGetNewSlotId();
-	slotPlace = NodeSlot::PlaceEnum::INPUT;
+	slotPlace = BaseSlot::PlaceEnum::INPUT;
 }
 
-NodeSlotInput::NodeSlotInput(const std::string& vName, const std::string& vType)
-	: NodeSlot(vName, vType)
+BaseSlotInput::BaseSlotInput(const std::string& vName, const std::string& vType)
+	: BaseSlot(vName, vType)
 {
 	pinID = sGetNewSlotId();
-	slotPlace = NodeSlot::PlaceEnum::INPUT;
+	slotPlace = BaseSlot::PlaceEnum::INPUT;
 	color = sGetSlotColors()->GetSlotColor(slotType);
 	colorIsSet = true;
 }
 
-NodeSlotInput::NodeSlotInput(const std::string& vName, const std::string& vType, const bool& vHideName)
-	: NodeSlot(vName, vType, vHideName)
+BaseSlotInput::BaseSlotInput(const std::string& vName, const std::string& vType, const bool& vHideName)
+	: BaseSlot(vName, vType, vHideName)
 {
 	pinID = sGetNewSlotId();
-	slotPlace = NodeSlot::PlaceEnum::INPUT;
+	slotPlace = BaseSlot::PlaceEnum::INPUT;
 	color = sGetSlotColors()->GetSlotColor(slotType);
 	colorIsSet = true;
 }
 
-NodeSlotInput::NodeSlotInput(const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget)
-	: NodeSlot(vName, vType, vHideName, vShowWidget)
+BaseSlotInput::BaseSlotInput(const std::string& vName, const std::string& vType, const bool& vHideName, const bool& vShowWidget)
+	: BaseSlot(vName, vType, vHideName, vShowWidget)
 {
 	pinID = sGetNewSlotId();
-	slotPlace = NodeSlot::PlaceEnum::INPUT;
+	slotPlace = BaseSlot::PlaceEnum::INPUT;
 	color = sGetSlotColors()->GetSlotColor(slotType);
 	colorIsSet = true;
 }
 
-NodeSlotInput::~NodeSlotInput() = default;
+BaseSlotInput::~BaseSlotInput() = default;
 
-void NodeSlotInput::Init()
+void BaseSlotInput::Init()
 {
 	
 }
 
-void NodeSlotInput::Unit()
+void BaseSlotInput::Unit()
 {
 	// ici pas besoin du assert sur le m_This 
-	// car NodeSlotInput peut etre isntancié à l'ancienne en copie local donc sans shared_ptr
+	// car BaseSlotInput peut etre isntancié à l'ancienne en copie local donc sans shared_ptr
 	// donc pour gagner du temps on va checker le this, si expiré on va pas plus loins
 	if (!m_This.expired())
 	{
@@ -140,7 +140,7 @@ void NodeSlotInput::Unit()
 	}
 }
 
-void NodeSlotInput::DrawDebugInfos()
+void BaseSlotInput::DrawDebugInfos()
 {
 	ImGui::Text("--------------------");
 	ImGui::Text("Slot %s", name.c_str());

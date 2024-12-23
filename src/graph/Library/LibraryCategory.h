@@ -19,7 +19,7 @@ limitations under the License.
 
 #include <SoGLSL/Graph/Graph.h>
 #include <ctools/cTools.h>
-#include <SoGLSL/Graph/Base/NodeSlot.h>
+#include <SoGLSL/Graph/Base/BaseSlot.h>
 #include <SoGLSL/Headers/SoGLSLDefs.h>
 #include <unordered_map>
 #include <map>
@@ -54,7 +54,7 @@ public:
 	std::string categoryPath;
 
 	// func from slot
-	NodeSlot nodeSlot;
+	BaseSlot nodeSlot;
 };
 
 typedef std::pair<std::string, LibraryItem> LibraryEntry;
