@@ -6,7 +6,7 @@ bool BaseGraph::drawGraph() {
     nd::SetCurrentEditor(m_pCanvas);
 
     //DrawNodeGraphStyleMenu();
-
+    
     nd::Begin("GraphNode");
 
     /*m_BaseNodeState.itemPushId = 1;
