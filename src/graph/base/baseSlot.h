@@ -6,8 +6,8 @@
 #include <ezlibs/ezGraph.hpp>
 #include <ezlibs/ezXmlConfig.hpp>
 
-#include <graph/baseStyle.h>
-#include <graph/baseSlot.h>
+#include "baseStyle.h"
+#include "baseSlot.h"
 
 #include <unordered_map>
 #include <map>
@@ -41,10 +41,10 @@ public:
     };
 
 public:  // Static
-    static BaseSlotPtr create(const BaseStyle& vStyle, const BaseSlotDatas& vSlotDatas);    
+    static BaseSlotPtr create(const BaseStyle& vParentStyle, const BaseSlotDatas& vSlotDatas);    
     
 private:  // Common
-    const BaseStyle& m_baseStyle;
+    const BaseStyle& m_parentStyle;
 
 private:
     ImVec2 m_pos;
@@ -53,7 +53,9 @@ private:
 
 public:
     template <typename T, typename = std::enable_if<std::is_base_of<BaseSlotDatas, T>::value>>
-    explicit BaseSlot(const BaseStyle& vStyle, const T& vDatas) : m_baseStyle(vStyle), ez::Slot(std::make_shared<T>(vDatas)) {}
+    explicit BaseSlot(const BaseStyle& vParentStyle, const T& vDatas) : m_parentStyle(vParentStyle), ez::Slot(std::make_shared<T>(vDatas)) {
+        pinID = getUuid();
+    }
 
     void setRadius(const float vRadius);
     void setColor(const ImVec4& vColor);

@@ -1,5 +1,4 @@
-#include <graph/baseNode.h>
-#include <graph/baseSlot.h>
+#include "baseNode.h"
 #include <ezlibs/ezLog.hpp>
 
 bool BaseNode::drawWidgets(const uint32_t& vFrame) {
@@ -8,6 +7,23 @@ bool BaseNode::drawWidgets(const uint32_t& vFrame) {
 
 bool BaseNode::drawNodeWidget(const uint32_t& vFrame) {
     return false;
+}
+
+bool BaseNode::drawNode() {
+    bool change = false;
+    if (m_drawBegin()) {
+        change |= m_drawHeader();
+        change |= m_drawNodeContent();
+        change |= m_drawFooter();
+        change |= m_drawEnd();
+    }
+    m_size = ImGui::GetItemRectSize();
+    m_pos = ImGui::GetItemRectMin();
+    if (ImGui::IsItemHovered()) {
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+        }
+    }
+    return change;
 }
 
 ez::xml::Nodes BaseNode::getXmlNodes(const std::string& vUserDatas) {
@@ -21,24 +37,22 @@ bool BaseNode::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& 
 }
 
 bool BaseNode::m_drawNodeContent() {
-    /*
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ImGui::GetStyle().ItemSpacing.x, 0));
     ImGui::BeginHorizontal("content");
     ImGui::Spring(0, 0);
     ImGui::BeginVertical("inputs", ImVec2(0, 0), 0.0f);
-    for (auto& p_slot : m_getInputsRef()) {  // slots
+    for (auto& p_slot : m_getInputSlotsRef()) {  // slots
         std::static_pointer_cast<BaseSlot>(p_slot)->draw();
     }
     ImGui::EndVertical();
     ImGui::Spring(1, 5.0f);  // pour que BeginVertical soi poussé au bout
     ImGui::BeginVertical("outputs", ImVec2(0, 0), 1.0f);  // 1.0f pour que l'interieur soit aligné sur la fin
-    for (auto& p_slot : m_getOutputsRef()) {              // slots
+    for (auto& p_slot : m_getOutputSlotsRef()) {          // slots
         std::static_pointer_cast<BaseSlot>(p_slot)->draw();
     }
     ImGui::EndVertical();
     ImGui::EndHorizontal();
     ImGui::PopStyleVar();
-    */
     return false;
 }
 
@@ -51,9 +65,8 @@ bool BaseNode::m_drawNodeOutputSlots() {
 }
 
 bool BaseNode::m_drawBegin() {
-    ImGui::PushID(this);
-    ImGui::BeginGroup();
-    //m_canvas.setExternalChannel(ImGui::GetWindowDrawList()->_Splitter._Current);
+    nd::BeginNode(nodeID);
+    ImGui::PushID(nodeID.AsPointer());
     ImGui::BeginVertical("node");
     return true;
 }
@@ -63,7 +76,7 @@ bool BaseNode::m_drawHeader() {
     ImGui::Spring(1, 5.0f);
     ImGui::TextUnformatted(getDatas<BaseNodeDatas>().name.c_str());
     ImGui::Spring(1, 5.0f);
-    // ImGui::Dummy(ImVec2(0, 24));
+    ImGui::Dummy(ImVec2(0, 24));
     ImGui::EndHorizontal();
     m_headerRect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     return false;
@@ -75,19 +88,17 @@ bool BaseNode::m_drawFooter() {
 
 bool BaseNode::m_drawEnd() {
     ImGui::EndVertical();
-    ImGui::EndGroup();
+    nd::EndNode();
     if (ImGui::IsItemVisible()) {
-        auto drawList = ImGui::GetWindowDrawList();  // GetNodeBackgroundDrawList(nodeID);
+        auto drawList = nd::GetNodeBackgroundDrawList(nodeID);
         if (drawList) {
             ImGuiContext& g = *GImGui;
             const auto itemRect = g.LastItemData.Rect;
-            drawList->AddRectFilled(itemRect.Min, itemRect.Max, ImGui::GetColorU32(ImVec4(0.2, 0.5, 0.2, 0.8)), 2.0f, ImDrawFlags_RoundCornersAll);
+            drawList->AddRectFilled(itemRect.Min, itemRect.Max, ImGui::GetColorU32(ImVec4(0.2, 0.5, 0.2, 0.8)), nd::GetStyle().NodeRounding, ImDrawFlags_RoundCornersAll);
             if (m_headerRect.GetSize().y > 0.0f) {
-                const ImVec4 NodePadding;// = getDatas<BaseNodeDatas>().padding;
-                const auto halfBorderWidth = 50.0f;
-
+                const ImVec4 NodePadding = nd::GetStyle().NodePadding;
+                const auto halfBorderWidth = nd::GetStyle().NodeBorderWidth * 0.5f;
                 auto alpha = static_cast<int>(255 * ImGui::GetStyle().Alpha);
-
                 drawList->AddLine(
                     ImVec2(m_headerRect.Min.x - (NodePadding.x - halfBorderWidth), m_headerRect.Max.y - 0.5f),
                     ImVec2(m_headerRect.Max.x + (NodePadding.z - halfBorderWidth), m_headerRect.Max.y - 0.5f),
@@ -105,19 +116,11 @@ bool BaseNode::m_drawEnd() {
 }
 
 void BaseNode::m_displayInfosOnTopOfTheNode() {
-    auto drawList = ImGui::GetWindowDrawList();  // GetNodeBackgroundDrawList(nodeID);
+    auto drawList = nd::GetNodeBackgroundDrawList(nodeID);
     if (drawList) {
-        char debugBuffer[255] = "\0";
-        /*
-        snprintf(
-            debugBuffer,
-            254,
-            "Used(%s)\nCell(%i, %i)",
-            (getDatas<BaseNodeDatas>().used ? "true" : "false"),
-            getDatas<BaseNodeDatas>().cell.x,
-            getDatas<BaseNodeDatas>().cell.y);
-        */
-        ImVec2 txtSize = ImGui::CalcTextSize(debugBuffer);
-        drawList->AddText(m_pos - ImVec2(0, txtSize.y), ImGui::GetColorU32(ImGuiCol_Text), debugBuffer);
+        auto datas = getDatas<BaseNodeDatas>();
+        const std::string& debugInfos = ez::str::toStr("Used(%s)\nCell(%i, %i)", datas.layout.used, datas.layout.cell.x, datas.layout.cell.y);
+        ImVec2 txtSize = ImGui::CalcTextSize(debugInfos.c_str());
+        drawList->AddText(m_pos - ImVec2(0, txtSize.y), ImGui::GetColorU32(ImGuiCol_Text), debugInfos.c_str());
     }
 }

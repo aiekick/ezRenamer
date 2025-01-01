@@ -6,11 +6,23 @@
 #include <ezlibs/ezGraph.hpp>
 #include <ezlibs/ezXmlConfig.hpp>
 
-#include <graph/baseStyle.h>
-#include <graph/baseNode.h>
-#include <graph/baseSlot.h>
+#include "baseStyle.h"
+#include "baseNode.h"
+#include "baseSlot.h"
 
 #include <unordered_map>
+
+class NodeLink;
+typedef std::shared_ptr<NodeLink> NodeLinkPtr;
+typedef std::weak_ptr<NodeLink> NodeLinkWeak;
+
+struct NodeLink {
+    BaseSlotWeak in;
+    BaseSlotWeak out;
+    uint32_t linkId = 0;
+    ImColor color = ImColor(255, 255, 0, 255);
+    float thick = 2.0f;
+};
 
 class BaseGraph;
 typedef std::shared_ptr<BaseGraph> BaseGraphPtr;
@@ -23,11 +35,12 @@ class BaseGraph  //
       public rnm::NodeInterface { 
 
 public:
-    struct BaseGraphDatas : public ez::GraphDatas {};
+    struct BaseGraphDatas : public ez::GraphDatas {
+    };
 
 public:  // Static
-    static BaseGraphPtr create(const BaseStyle& vStyle, const BaseGraphDatas& vNodeDatas) {
-        auto node_ptr = std::make_shared<BaseGraph>(vStyle, vNodeDatas);
+    static BaseGraphPtr create(const BaseStyle& vParentStyle, const BaseGraphDatas& vNodeDatas) {
+        auto node_ptr = std::make_shared<BaseGraph>(vParentStyle, vNodeDatas);
         node_ptr->m_setThis(node_ptr);
         if (!node_ptr->init()) {
             node_ptr.reset();
@@ -36,15 +49,20 @@ public:  // Static
     }
 
 private:  // Common
-    const BaseStyle& m_baseStyle;
+    const BaseStyle& m_parentStyle;
 
 private: // Graph
     nd::EditorContext* m_pCanvas{nullptr};
+    ImVec2 m_openPopupPosition;
+    nd::NodeId m_contextMenuNodeId = 0;
+    nd::PinId m_contextMenuSlotId = 0;
+    nd::LinkId m_contextMenuLinkId = 0;
+    std::unordered_map<ez::Uuid, NodeLinkPtr> m_links;  // linkId, link // for search query
 
 public: // Normal
     template <typename T, typename = std::enable_if<std::is_base_of<BaseGraphDatas, T>::value>>
-    explicit BaseGraph(const BaseStyle& vStyle, const T& vDatas) //
-        : m_baseStyle(vStyle), ez::Graph(std::make_shared<T>(vDatas)) {
+    explicit BaseGraph(const BaseStyle& vParentStyle, const T& vDatas) //
+        : m_parentStyle(vParentStyle), ez::Graph(std::make_shared<T>(vDatas)) {
         m_init();
     }
     ~BaseGraph() { m_unit(); }
@@ -76,8 +94,8 @@ public: // Normal
 
 public:  // Template
     template <typename U, typename = std::enable_if<std::is_base_of<ez::Node, U>::value>>
-    std::weak_ptr<U> createChildNode(const BaseStyle& vStyle, const BaseNode::BaseNodeDatas& vNodeDatas) {
-        auto node_ptr = std::make_shared<U>(vStyle, vNodeDatas);
+    std::weak_ptr<U> createChildNode(const BaseStyle& vParentStyle, const BaseNode::BaseNodeDatas& vNodeDatas) {
+        auto node_ptr = std::make_shared<U>(vParentStyle, vNodeDatas);
         if (!node_ptr->init()) {
             node_ptr.reset();
         } else {
@@ -91,6 +109,11 @@ public:  // Template
 private: // Graph
     void m_init();
     void m_unit();
-
+    void m_drawPopups();
+    void m_drawCheckNodePopup();
+    void m_drawCheckSlotPopup();
+    void m_drawCheckLinkPopup();
+    void m_drawNewNodePopup();
+    void m_drawLinks();
 };
 

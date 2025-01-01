@@ -1,8 +1,8 @@
 #pragma once
 
 #include <imguipack/ImGuiPack.h>
-#include <graph/baseStyle.h>
-#include <graph/baseGraph.h>
+#include <graph/base/baseStyle.h>
+#include <graph/base/baseGraph.h>
 
 #include <memory>
 #include <functional>
@@ -12,7 +12,7 @@ private: // Static
     static std::unique_ptr<NodeManager> m_singleton;
 
 private: // Normal
-    BaseStyle m_baseStyle;
+    BaseStyle m_graphStyle;
     BaseGraph::BaseGraphDatas m_graphConfig;
     BaseGraphPtr m_graphPtr = nullptr;
     std::map<std::string, ImVec4> m_ColorSlots;

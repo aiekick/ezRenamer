@@ -1,4 +1,4 @@
-#include <graph/baseGraph.h>
+#include "baseGraph.h"
 #include <ezlibs/ezLog.hpp>
 #include <imguipack/3rdparty/imgui_node_editor/imgui_node_editor_internal.h>
 
@@ -9,29 +9,23 @@ bool BaseGraph::drawGraph() {
     
     nd::Begin("GraphNode");
 
-    /*m_BaseNodeState.itemPushId = 1;
-    if (!m_ChildNodes.empty()) {
-        for (auto& node : m_ChildNodes) {
-            auto nodePtr = node.second;
-            if (nodePtr) {
-                nodePtr->DrawNode(&m_BaseNodeState);
-            }
+    if (!getNodes().empty()) {
+        for (auto& p_node : getNodesRef()) {
+            std::static_pointer_cast<BaseNode>(p_node)->drawNode();
         }
 
-        DrawLinks(&m_BaseNodeState);
+        m_drawLinks();
 
-        DoCreateLinkOrNode(&m_BaseNodeState);
-        DoDeleteLinkOrNode(&m_BaseNodeState);
-        DoShorcutsOnNode(&m_BaseNodeState);
+        //DoCreateLinkOrNode(&m_BaseNodeState);
+        //DoDeleteLinkOrNode(&m_BaseNodeState);
+        //DoShorcutsOnNode(&m_BaseNodeState);
     }
 
-    DoPopups(&m_BaseNodeState);*/
+    m_drawPopups();
 
-    /*nd::Suspend();
-    ImVec2 smp = ImGui::GetMousePos();
-    ImVec2 cmp = nd::ScreenToCanvas(smp);
-    ImGui::SetTooltip("Screen Mouse Pos : %.1f %.1f\nCanvas Mouse Pos : %.1f %.1f\nCanvas offset : %.1f %.1f / %.1f %.1f", smp.x, smp.y, cmp.x, cmp.y, co1.x, co1.y,
-    co2.x, co2.y); nd::Resume();*/
+    nd::Suspend();
+    // draw command
+    nd::Resume();
 
     nd::End();
     nd::SetCurrentEditor(nullptr);
@@ -53,7 +47,7 @@ void BaseGraph::m_init() {
     m_pCanvas = nd::CreateEditor(&config);
     if (m_pCanvas != nullptr) {
         nd::SetCurrentEditor(m_pCanvas);
-        nd::GetStyle() = m_baseStyle.graphStyle;
+        nd::GetStyle() = m_parentStyle.style;
         nd::EnableShortcuts(true);
     }
 }
@@ -61,6 +55,55 @@ void BaseGraph::m_init() {
 void BaseGraph::m_unit() {
     nd::SetCurrentEditor(m_pCanvas);
     nd::DestroyEditor(m_pCanvas);
+}
+
+void BaseGraph::m_drawPopups() {
+    nd::Suspend();
+    if (nd::ShowNodeContextMenu(&m_contextMenuNodeId)) {
+        ImGui::OpenPopup("NodeContextMenu");
+        m_openPopupPosition = ImGui::GetMousePos();
+    } else if (nd::ShowPinContextMenu(&m_contextMenuSlotId)) {
+        ImGui::OpenPopup("SlotContextMenu");
+        m_openPopupPosition = ImGui::GetMousePos();
+    } else if (nd::ShowLinkContextMenu(&m_contextMenuLinkId)) {
+        ImGui::OpenPopup("LinkContextMenu");
+        m_openPopupPosition = ImGui::GetMousePos();
+    } else if (nd::ShowBackgroundContextMenu()) {
+        ImGui::OpenPopup("CreateNewNode");
+        m_openPopupPosition = ImGui::GetMousePos();
+    }
+    m_drawCheckNodePopup();
+    m_drawCheckSlotPopup();
+    m_drawCheckLinkPopup();
+    m_drawNewNodePopup();
+
+    nd::Resume();
+}
+
+void BaseGraph::m_drawCheckNodePopup() {
+
+}
+
+void BaseGraph::m_drawCheckSlotPopup() {
+
+}
+
+void BaseGraph::m_drawCheckLinkPopup() {
+
+}
+
+void BaseGraph::m_drawNewNodePopup() {
+
+}
+
+void BaseGraph::m_drawLinks() {
+    for (const auto& link : m_links) {
+        auto inPtr = link.second->in.lock();
+        auto outPtr = link.second->out.lock();
+        if (inPtr && outPtr) {
+            //nd::Link(link.first, inPtr->pinID, outPtr->pinID, inPtr->color, link.second->thick);
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////

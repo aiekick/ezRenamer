@@ -1,9 +1,9 @@
-#include <graph/baseSlot.h>
+#include "baseSlot.h"
 #include <ezlibs/ezLog.hpp>
 #include <graph/nodeManager.h>
 
-BaseSlotPtr BaseSlot::create(const BaseStyle& vStyle, const BaseSlotDatas& vSlotDatas) {
-    auto slot_ptr = std::make_shared<BaseSlot>(vStyle, vSlotDatas);
+BaseSlotPtr BaseSlot::create(const BaseStyle& vParentStyle, const BaseSlotDatas& vSlotDatas) {
+    auto slot_ptr = std::make_shared<BaseSlot>(vParentStyle, vSlotDatas);
     slot_ptr->m_setThis(slot_ptr);
     if (!slot_ptr->init()) {
         slot_ptr.reset();

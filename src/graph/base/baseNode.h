@@ -6,8 +6,8 @@
 #include <ezlibs/ezGraph.hpp>
 #include <ezlibs/ezXmlConfig.hpp>
 
-#include <graph/baseStyle.h>
-#include <graph/baseSlot.h>
+#include "baseStyle.h"
+#include "baseSlot.h"
 
 #include <unordered_map>
 
@@ -37,8 +37,8 @@ public:
     };
 
 public:  // Static
-    static BaseNodePtr create(const BaseStyle& vStyle, const BaseNodeDatas& vNodeDatas) {
-        auto node_ptr = std::make_shared<BaseNode>(vStyle, vNodeDatas);
+    static BaseNodePtr create(const BaseStyle& vParentStyle, const BaseNodeDatas& vNodeDatas) {
+        auto node_ptr = std::make_shared<BaseNode>(vParentStyle, vNodeDatas);
         node_ptr->m_setThis(node_ptr);
         if (!node_ptr->init()) {
             node_ptr.reset();
@@ -51,14 +51,14 @@ public:  // Static
         return ++freeId;
     }
 
-private:  // Common
-    const BaseStyle& m_baseStyle;
+private:  // Style
+    const BaseStyle& m_parentStyle;
+    BaseStyle m_nodeStyle;
 
 private:  // Node
     ImVec2 m_pos{};
     ImVec2 m_size{};
     nd::NodeId nodeID{};
-    BaseNodeDatas m_nodeConfig{};
     std::string m_nodeTitle{"Node"};
     ImU32 m_nodeHeaderColor{IM_COL32(100, 0, 0, 200)};
     ImRect m_headerRect{};
@@ -78,10 +78,14 @@ private:  // popups
 
 public: // Normal
     template <typename T, typename = std::enable_if<std::is_base_of<BaseNodeDatas, T>::value>>
-    explicit BaseNode(const BaseStyle& vStyle, const T& vDatas) : m_baseStyle(vStyle), ez::Node(vDatas) {}
+    explicit BaseNode(const BaseStyle& vParentStyle, const T& vDatas) : m_parentStyle(vParentStyle), ez::Node(vDatas) {
+        nodeID = getUuid();
+    }
 
     bool drawWidgets(const uint32_t& vFrame) override;
     bool drawNodeWidget(const uint32_t& vFrame) override;
+
+    bool drawNode();
 
     ez::xml::Nodes getXmlNodes(const std::string& vUserDatas = "") override;
     // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
@@ -90,7 +94,7 @@ public: // Normal
 
 public:  // Template
     template <typename U, typename = std::enable_if<std::is_base_of<ez::Node, U>::value>>
-    std::weak_ptr<U> createChildNode(const BaseStyle& vStyle, const BaseNodeDatas& vNodeDatas) {
+    std::weak_ptr<U> createChildNode(const BaseStyle& vParentStyle, const BaseNodeDatas& vNodeDatas) {
         auto node_ptr = std::make_shared<U>(vStyle, vNodeDatas);
         if (!node_ptr->init()) {
             node_ptr.reset();
@@ -103,8 +107,8 @@ public:  // Template
     }
 
     template <typename U, typename = std::enable_if<std::is_base_of<ez::Slot, U>::value>>
-    std::weak_ptr<U> addSlot(const BaseStyle& vStyle, const BaseSlot::BaseSlotDatas& vSlotDatas) {
-        auto slot_ptr = std::make_shared<U>(vStyle, vSlotDatas);
+    std::weak_ptr<U> addSlot(const BaseStyle& vParentStyle, const BaseSlot::BaseSlotDatas& vSlotDatas) {
+        auto slot_ptr = std::make_shared<U>(vParentStyle, vSlotDatas);
         if (!slot_ptr->init()) {
             slot_ptr.reset();
         } else {
