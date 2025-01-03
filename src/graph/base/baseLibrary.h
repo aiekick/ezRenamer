@@ -7,19 +7,26 @@
 
 class BaseLibrary {
 public:
+    enum class NodeSource { INTERNAL = 0, PLUGIN, Count };
     typedef std::string NodeLabel;
     typedef std::string NodeType;
     typedef std::string NodePath;
     typedef ez::fvec4 NodeColor;
     typedef std::string CategoryName;
     struct LibraryEntry {
+        NodeSource nodeSource;
         NodePath nodePath;  // can be a path like cat0/cat1/node
         NodeLabel nodeLabel;
         NodeType nodeType;
         NodeColor nodeColor;
         LibraryEntry() = default;
-        LibraryEntry(const NodePath& vNodePath, const NodeLabel& vNodeLabel, const NodeType& vNodeType, const NodeColor& vNodeColor = {})
-            : nodePath(vNodePath), nodeLabel(vNodeLabel), nodeType(vNodeType), nodeColor(vNodeColor) {}
+        LibraryEntry(
+            const NodePath& vNodePath,
+            const NodeLabel& vNodeLabel,
+            const NodeType& vNodeType,
+            const NodeSource vNodeSource = NodeSource::PLUGIN,
+            const NodeColor& vNodeColor = {})
+            : nodePath(vNodePath), nodeLabel(vNodeLabel), nodeType(vNodeType), nodeSource(vNodeSource), nodeColor(vNodeColor) {}
     };
 
 private:

@@ -99,14 +99,31 @@ public:  // Normal
     void setBgRightClickAction(const BasicActionFunctor& vFunctor);
 
 public:  // Template
-    template <typename U, typename = std::enable_if<std::is_base_of<ez::Node, U>::value>>
-    std::weak_ptr<U> createChildNode(const BaseStyle& vParentStyle, const BaseNode::BaseNodeDatas& vNodeDatas) {
-        auto node_ptr = std::make_shared<U>(vParentStyle, vNodeDatas);
+    template <typename U, typename = std::enable_if<std::is_base_of<BaseNode, U>::value>>
+    std::shared_ptr<U> createChildNode(const BaseNode::BaseNodeDatas& vNodeDatas) {
+        auto node_ptr = std::make_shared<U>(m_parentStyle, vNodeDatas);
         if (!node_ptr->init()) {
             node_ptr.reset();
         } else {
             if (m_addNode(node_ptr) != ez::RetCodes::SUCCESS) {
                 node_ptr.reset();
+            } else {
+                nd::SetNodePosition(node_ptr->m_nodeID, m_openPopupPosition);
+            }
+        }
+        return node_ptr;
+    }
+
+    template <typename U, typename = std::enable_if<std::is_base_of<BaseNode, U>::value>>
+    std::shared_ptr<U> createChildNode() {
+        auto node_ptr = std::make_shared<U>(m_parentStyle);
+        if (!node_ptr->init()) {
+            node_ptr.reset();
+        } else {
+            if (m_addNode(node_ptr) != ez::RetCodes::SUCCESS) {
+                node_ptr.reset();
+            } else {
+                nd::SetNodePosition(node_ptr->m_nodeID, m_openPopupPosition);
             }
         }
         return node_ptr;
@@ -116,9 +133,6 @@ private:  // Graph
     void m_init();
     void m_unit();
     void m_drawPopups();
-    void m_drawCheckNodePopup();
-    void m_drawCheckSlotPopup();
-    void m_drawCheckLinkPopup();
     void m_drawBgContextMenuPopup();
     void m_drawLinks();
 };

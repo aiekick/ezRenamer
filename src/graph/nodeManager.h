@@ -33,4 +33,6 @@ public:
 
 private:
     bool m_showLibrary();
+    void m_createInternalNode(const BaseLibrary::LibraryEntry& vLibraryEntry);
+    void m_createPluginNode(const BaseLibrary::LibraryEntry& vLibraryEntry);
 };

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <graph/base/baseStyle.h>
 #include <graph/base/baseNode.h>
 
 /*
@@ -14,4 +15,8 @@ the preview of all
 the finale renaming is done by the app
 
 */
-class FileNameRenamerNode : public BaseNode {};
+class FileNameRenamerNode : public BaseNode {
+private:
+public:
+    explicit FileNameRenamerNode(const BaseStyle& vParentStyle) : BaseNode(vParentStyle, ez::NodeDatas("File renamer", "FILE_NAME_RENAMER_NODE")) {}
+};

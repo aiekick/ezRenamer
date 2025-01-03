@@ -21,6 +21,7 @@ class BaseNode  //
       public rnm::GuiInterface,
       public rnm::TaskInterface,
       public rnm::NodeInterface { 
+    friend class BaseGraph;
 
 public:
     struct BaseNodeDatas : public ez::NodeDatas {
@@ -58,7 +59,7 @@ private:  // Style
 private:  // Node
     ImVec2 m_pos{};
     ImVec2 m_size{};
-    nd::NodeId nodeID{};
+    nd::NodeId m_nodeID{};
     std::string m_nodeTitle{"Node"};
     ImU32 m_nodeHeaderColor{IM_COL32(100, 0, 0, 200)};
     ImRect m_headerRect{};
@@ -79,7 +80,7 @@ private:  // popups
 public: // Normal
     template <typename T, typename = std::enable_if<std::is_base_of<BaseNodeDatas, T>::value>>
     explicit BaseNode(const BaseStyle& vParentStyle, const T& vDatas) : m_parentStyle(vParentStyle), ez::Node(vDatas) {
-        nodeID = getUuid();
+        m_nodeID = getUuid();
     }
 
     bool drawWidgets(const uint32_t& vFrame) override;
@@ -90,7 +91,6 @@ public: // Normal
     ez::xml::Nodes getXmlNodes(const std::string& vUserDatas = "") override;
     // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
     bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
-
 
 public:  // Template
     template <typename U, typename = std::enable_if<std::is_base_of<ez::Node, U>::value>>

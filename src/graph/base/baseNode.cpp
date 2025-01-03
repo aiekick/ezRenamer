@@ -65,8 +65,8 @@ bool BaseNode::m_drawNodeOutputSlots() {
 }
 
 bool BaseNode::m_drawBegin() {
-    nd::BeginNode(nodeID);
-    ImGui::PushID(nodeID.AsPointer());
+    nd::BeginNode(m_nodeID);
+    ImGui::PushID(m_nodeID.AsPointer());
     ImGui::BeginVertical("node");
     return true;
 }
@@ -90,7 +90,7 @@ bool BaseNode::m_drawEnd() {
     ImGui::EndVertical();
     nd::EndNode();
     if (ImGui::IsItemVisible()) {
-        auto drawList = nd::GetNodeBackgroundDrawList(nodeID);
+        auto drawList = nd::GetNodeBackgroundDrawList(m_nodeID);
         if (drawList) {
             ImGuiContext& g = *GImGui;
             const auto itemRect = g.LastItemData.Rect;
@@ -121,7 +121,7 @@ bool BaseNode::m_drawEnd() {
 }
 
 void BaseNode::m_displayInfosOnTopOfTheNode() {
-    auto drawList = nd::GetNodeBackgroundDrawList(nodeID);
+    auto drawList = nd::GetNodeBackgroundDrawList(m_nodeID);
     if (drawList) {
         auto datas = getDatas<BaseNodeDatas>();
         const std::string& debugInfos = ez::str::toStr("Used(%s)\nCell(%i, %i)", datas.layout.used, datas.layout.cell.x, datas.layout.cell.y);

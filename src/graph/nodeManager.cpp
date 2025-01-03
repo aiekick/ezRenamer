@@ -34,20 +34,19 @@ bool NodeManager::init() {
     addSlotColor("FILES", ImVec4(0.5f, 0.5f, 0.9f, 1.0f));
     addSlotColor("TOKEN", ImVec4(0.9f, 0.9f, 0.1f, 1.0f));
 
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("base", "Input files", "INPUT_FILE_NODE"));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("base", "Input text", "INPUT_TEXT_NODE"));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("base", "File path name splitter", "SPLIT_FILE_PATH_NODE"));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("base", "File path name Renamer", "FILE_NAME_RENAMER_NODE"));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("base", "Input files", "INPUT_FILE_NODE", BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("base", "Input text", "INPUT_TEXT_NODE", BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("base", "File path name splitter", "FILE_PATH_SPLITTER_NODE", BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("base", "File path name Renamer", "FILE_NAME_RENAMER_NODE", BaseLibrary::NodeSource::INTERNAL));
 
     m_graphPtr = BaseGraph::create(m_graphStyle, m_graphConfig);
     m_graphPtr->setBgRightClickAction([this](const BaseGraphWeak& vGraph) { m_showLibrary(); });
     BaseNode::BaseNodeDatas nodeDatas;
     nodeDatas.name = "TestNode";
-    auto node = m_graphPtr->createChildNode<BaseNode>(m_graphStyle, nodeDatas);
-    auto ptr = node.lock();
-    if (ptr != nullptr) {
-        ptr->addSlot<BaseSlot>(m_graphStyle, BaseSlot::BaseSlotDatas("in0", "base", ez::SlotDir::INPUT));
-        ptr->addSlot<BaseSlot>(m_graphStyle, BaseSlot::BaseSlotDatas("out0", "base", ez::SlotDir::OUTPUT));
+    auto node_ptr = m_graphPtr->createChildNode<BaseNode>(nodeDatas);
+    if (node_ptr != nullptr) {
+        node_ptr->addSlot<BaseSlot>(m_graphStyle, BaseSlot::BaseSlotDatas("in0", "base", ez::SlotDir::INPUT));
+        node_ptr->addSlot<BaseSlot>(m_graphStyle, BaseSlot::BaseSlotDatas("out0", "base", ez::SlotDir::OUTPUT));
     }
     return true;
 }
@@ -76,8 +75,27 @@ bool NodeManager::m_showLibrary() {
     bool ret = false;
     BaseLibrary::LibraryEntry entry;
     if (m_baseLibrary.showMenu(entry)) {
-        // create the node
-        ret = true;
+        if (entry.nodeSource == BaseLibrary::NodeSource::INTERNAL) {
+             m_createInternalNode(entry);
+        } else if (entry.nodeSource == BaseLibrary::NodeSource::PLUGIN) {
+             m_createPluginNode(entry);
+        }
     }
     return ret;
+}
+
+void NodeManager::m_createInternalNode(const BaseLibrary::LibraryEntry& vLibraryEntry) {
+    if (vLibraryEntry.nodeType == "INPUT_FILE_NODE") {
+         m_graphPtr->createChildNode<InputFileNode>();
+    } else if (vLibraryEntry.nodeType == "INPUT_TEXT_NODE") {
+         m_graphPtr->createChildNode<InputTextNode>();
+    } else if (vLibraryEntry.nodeType == "FILE_PATH_SPLITTER_NODE") {
+         m_graphPtr->createChildNode<SplitFilePath>();
+    } else if (vLibraryEntry.nodeType == "FILE_NAME_RENAMER_NODE") {
+         m_graphPtr->createChildNode<FileNameRenamerNode>();
+    }
+}
+
+void NodeManager::m_createPluginNode(const BaseLibrary::LibraryEntry& vLibraryEntry) {
+    //nodePtr = PluginManager::Instance()->CreatePluginNode(vLibraryEntry.second.nodeType);
 }

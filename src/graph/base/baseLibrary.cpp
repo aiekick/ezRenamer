@@ -67,7 +67,8 @@ bool BaseLibrary::m_showContent(LibraryEntry& vLibraryEntry, int32_t vLevel) {
             vLibraryEntry = item.second;
             ret = true;
             // no break for not show a glitch when the others 
-            // menus will not been displayed after click this frame
+            // menus will not been displayed after click this frame, 
+            // but all the next frame
         }
     }
     return ret;

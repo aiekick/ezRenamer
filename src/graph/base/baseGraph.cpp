@@ -63,7 +63,7 @@ void BaseGraph::m_drawPopups() {
     nd::Suspend();
    if (nd::ShowBackgroundContextMenu()) {
         ImGui::OpenPopup(BACKGROUND_CONTEXT_MENU);
-        m_openPopupPosition = ImGui::GetMousePos();
+        m_openPopupPosition = nd::ScreenToCanvas(ImGui::GetMousePos());
     }
     m_drawBgContextMenuPopup();
 

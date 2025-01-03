@@ -14,5 +14,6 @@ output slots :
  - the extensions
 */
 class SplitFilePath : public BaseNode {
-
+public:
+    explicit SplitFilePath(const BaseStyle& vParentStyle) : BaseNode(vParentStyle, ez::NodeDatas("File splitter", "FILE_PATH_SPLITTER_NODE")) {}
 };
