@@ -14,7 +14,7 @@ public:
 
 public:  // singleton
     static std::shared_ptr<PreviewPane> Instance() {
-        static std::shared_ptr<PreviewPane> _instance = std::make_shared<PreviewPane>();
+        static auto _instance = std::make_shared<PreviewPane>();
         return _instance;
     }
 

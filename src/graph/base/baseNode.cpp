@@ -76,7 +76,7 @@ bool BaseNode::m_drawHeader() {
     ImGui::Spring(1, 5.0f);
     ImGui::TextUnformatted(getDatas<BaseNodeDatas>().name.c_str());
     ImGui::Spring(1, 5.0f);
-    ImGui::Dummy(ImVec2(0, 24));
+    ImGui::Dummy(ImVec2(0, 20));
     ImGui::EndHorizontal();
     m_headerRect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     return false;
@@ -94,10 +94,15 @@ bool BaseNode::m_drawEnd() {
         if (drawList) {
             ImGuiContext& g = *GImGui;
             const auto itemRect = g.LastItemData.Rect;
-            drawList->AddRectFilled(itemRect.Min, itemRect.Max, ImGui::GetColorU32(ImVec4(0.2, 0.5, 0.2, 0.8)), nd::GetStyle().NodeRounding, ImDrawFlags_RoundCornersAll);
             if (m_headerRect.GetSize().y > 0.0f) {
                 const ImVec4 NodePadding = nd::GetStyle().NodePadding;
                 const auto halfBorderWidth = nd::GetStyle().NodeBorderWidth * 0.5f;
+                drawList->AddRectFilled(
+                    m_headerRect.Min - ImVec2(nd::GetStyle().NodePadding.x - halfBorderWidth, halfBorderWidth),
+                    m_headerRect.Max + ImVec2(nd::GetStyle().NodePadding.z - halfBorderWidth, 0),
+                    m_nodeHeaderColor,
+                    nd::GetStyle().NodeRounding,
+                    ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersTopRight);
                 auto alpha = static_cast<int>(255 * ImGui::GetStyle().Alpha);
                 drawList->AddLine(
                     ImVec2(m_headerRect.Min.x - (NodePadding.x - halfBorderWidth), m_headerRect.Max.y - 0.5f),
@@ -106,9 +111,9 @@ bool BaseNode::m_drawEnd() {
                     1.0f);
             }
 
-            m_displayInfosOnTopOfTheNode();
+            //m_displayInfosOnTopOfTheNode();
         } else {
-            LogVarDebugInfo("why drawList is null ?? in BaseNode::DrawEnd");
+            EZ_TOOLS_DEBUG_BREAK;
         }
     }
     ImGui::PopID();

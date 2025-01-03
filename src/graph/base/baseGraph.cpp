@@ -2,6 +2,8 @@
 #include <ezlibs/ezLog.hpp>
 #include <imguipack/3rdparty/imgui_node_editor/imgui_node_editor_internal.h>
 
+#define BACKGROUND_CONTEXT_MENU "BackgroundContextMenu"
+
 bool BaseGraph::drawGraph() {
     nd::SetCurrentEditor(m_pCanvas);
 
@@ -59,49 +61,30 @@ void BaseGraph::m_unit() {
 
 void BaseGraph::m_drawPopups() {
     nd::Suspend();
-    if (nd::ShowNodeContextMenu(&m_contextMenuNodeId)) {
-        ImGui::OpenPopup("NodeContextMenu");
-        m_openPopupPosition = ImGui::GetMousePos();
-    } else if (nd::ShowPinContextMenu(&m_contextMenuSlotId)) {
-        ImGui::OpenPopup("SlotContextMenu");
-        m_openPopupPosition = ImGui::GetMousePos();
-    } else if (nd::ShowLinkContextMenu(&m_contextMenuLinkId)) {
-        ImGui::OpenPopup("LinkContextMenu");
-        m_openPopupPosition = ImGui::GetMousePos();
-    } else if (nd::ShowBackgroundContextMenu()) {
-        ImGui::OpenPopup("CreateNewNode");
+   if (nd::ShowBackgroundContextMenu()) {
+        ImGui::OpenPopup(BACKGROUND_CONTEXT_MENU);
         m_openPopupPosition = ImGui::GetMousePos();
     }
-    m_drawCheckNodePopup();
-    m_drawCheckSlotPopup();
-    m_drawCheckLinkPopup();
-    m_drawNewNodePopup();
+    m_drawBgContextMenuPopup();
 
     nd::Resume();
 }
 
-void BaseGraph::m_drawCheckNodePopup() {
-
-}
-
-void BaseGraph::m_drawCheckSlotPopup() {
-
-}
-
-void BaseGraph::m_drawCheckLinkPopup() {
-
-}
-
-void BaseGraph::m_drawNewNodePopup() {
-
+void BaseGraph::m_drawBgContextMenuPopup() {
+    if (ImGui::BeginPopup(BACKGROUND_CONTEXT_MENU)) {
+        if (m_bgRightClickAction != nullptr) {
+            m_bgRightClickAction(std::static_pointer_cast<BaseGraph>(m_getThis().lock()));
+        }
+        ImGui::EndPopup();
+    }
 }
 
 void BaseGraph::m_drawLinks() {
     for (const auto& link : m_links) {
-        auto inPtr = link.second->in.lock();
-        auto outPtr = link.second->out.lock();
-        if (inPtr && outPtr) {
-            //nd::Link(link.first, inPtr->pinID, outPtr->pinID, inPtr->color, link.second->thick);
+        auto inPtr = link.second->m_in.lock();
+        auto outPtr = link.second->m_out.lock();
+        if (inPtr != nullptr && outPtr != nullptr) {
+            nd::Link(link.first, inPtr->m_pinID, outPtr->m_pinID, link.second->m_color, link.second->m_thick);
         }
     }
 }
@@ -226,4 +209,8 @@ ez::xml::Nodes BaseGraph::getXmlNodes(const std::string& /*vUserDatas*/) {
 // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
 bool BaseGraph::setFromXmlNodes(const ez::xml::Node& /*vNode*/, const ez::xml::Node& /*vParent*/, const std::string& /*vUserDatas*/) {
     return true;
+}
+
+void BaseGraph::setBgRightClickAction(const BasicActionFunctor& vFunctor) {
+    m_bgRightClickAction = vFunctor;
 }

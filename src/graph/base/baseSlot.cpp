@@ -24,9 +24,44 @@ void BaseSlot::setPos(const ImVec2& vPos) {
 }
 
 bool BaseSlot::draw() {
-    ImGui::PushID(this);
-
-    ImGui::PopID();
+    auto& datas = getDatasRef<BaseSlotDatas>();
+    if (!datas.hidden) {
+        if (isAnInput()) {
+            nd::BeginPin(m_pinID, nd::PinKind::Input);
+            {
+                ImGui::BeginHorizontal(m_pinID.AsPointer());
+                nd::PinPivotAlignment(ImVec2(0.0f, 0.5f));
+                nd::PinPivotSize(ImVec2(0, 0));
+                m_drawSlot();
+                if (datas.showWidget) {
+                    m_drawInputWidget();
+                }
+                if (!datas.hideName) {
+                    ImGui::TextUnformatted(datas.name.c_str());
+                }
+                ImGui::Spring(1);
+                ImGui::EndHorizontal();
+            }
+            nd::EndPin();
+        } else if (isAnOutput()) {
+            nd::BeginPin(m_pinID, nd::PinKind::Output);
+            {
+                ImGui::BeginHorizontal(m_pinID.AsPointer());
+                ImGui::Spring(1);
+                if (!datas.hideName) {
+                    ImGui::TextUnformatted(datas.name.c_str());
+                }
+                if (datas.showWidget) {
+                    m_drawOutputWidget();
+                }
+                nd::PinPivotAlignment(ImVec2(0.0f, 0.5f));
+                nd::PinPivotSize(ImVec2(0, 0));
+                m_drawSlot();
+                ImGui::EndHorizontal();
+            }
+            nd::EndPin();
+        }
+    }
     return false;
 }
 
@@ -52,54 +87,14 @@ bool BaseSlot::canWeConnectToSlot(BaseSlotWeak vSlot) {
     return false;
 }
 
-void BaseSlot::drawContent() {
-    auto& baseSlotDatas = getDatasRef<BaseSlotDatas>();
-    if (!baseSlotDatas.hidden) {
-        if (baseSlotDatas.dir == ez::SlotDir::INPUT) {
-            nd::BeginPin(pinID, nd::PinKind::Input);
-            {
-                ImGui::BeginHorizontal(pinID.AsPointer());
-                nd::PinPivotAlignment(ImVec2(0.0f, 0.5f));
-                nd::PinPivotSize(ImVec2(0, 0));
-                drawSlot(baseSlotDatas.slotIconSize);
-                if (baseSlotDatas.showWidget) {
-                    m_drawInputWidget();
-                }
-                if (!baseSlotDatas.hideName) {
-                    ImGui::TextUnformatted(baseSlotDatas.name.c_str());
-                }
-                ImGui::Spring(1);
-                ImGui::EndHorizontal();
-            }
-            nd::EndPin();
-        } else if (baseSlotDatas.dir == ez::SlotDir::OUTPUT) {
-            nd::BeginPin(pinID, nd::PinKind::Output);
-            {
-                ImGui::BeginHorizontal(pinID.AsPointer());
-                ImGui::Spring(1);
-                if (!baseSlotDatas.hideName) {
-                    ImGui::TextUnformatted(baseSlotDatas.name.c_str());
-                }
-                if (baseSlotDatas.showWidget) {
-                    m_drawOutputWidget();
-                }
-                nd::PinPivotAlignment(ImVec2(0.0f, 0.5f));
-                nd::PinPivotSize(ImVec2(0, 0));
-                drawSlot(baseSlotDatas.slotIconSize);
-                ImGui::EndHorizontal();
-            }
-            nd::EndPin();
-        }
-    }
-}
 
-void BaseSlot::drawSlot(ImVec2 vSlotSize, ImVec2 vSlotOffset) {
-    auto& baseSlotDatas = getDatasRef<BaseSlotDatas>();
-    ImGui::Dummy(vSlotSize);
+void BaseSlot::m_drawSlot() {
+    auto& datas = getDatasRef<BaseSlotDatas>();
+    ImGui::Dummy(datas.slotIconSize);
 
     ImRect slotRect = ImGui::GetCurrentContext()->LastItemData.Rect;
-    slotRect.Min += vSlotOffset;
-    slotRect.Max += vSlotOffset;
+    slotRect.Min += datas.slotPadding;
+    slotRect.Max += datas.slotPadding;
 
     ImVec2 slotCenter = slotRect.GetCenter();
     m_pos = slotCenter;
@@ -107,20 +102,20 @@ void BaseSlot::drawSlot(ImVec2 vSlotSize, ImVec2 vSlotOffset) {
     nd::PinPivotRect(slotCenter, slotCenter);
     nd::PinRect(slotRect.Min, slotRect.Max);
 
-    baseSlotDatas.highLighted = false;
+    datas.highLighted = false;
 
-    if (ImGui::IsRectVisible(vSlotSize)) {
-        if (!baseSlotDatas.colorIsSet) {
-            baseSlotDatas.color = ImGui::GetColorU32(NodeManager::instance()->getSlotColor(baseSlotDatas.type));
-            baseSlotDatas.colorIsSet = true;
+    if (ImGui::IsRectVisible(datas.slotIconSize)) {
+        if (!datas.colorIsSet) {
+            datas.color = ImGui::GetColorU32(NodeManager::instance()->getSlotColor(datas.type));
+            datas.colorIsSet = true;
         }
 
-        auto u_color = ImGui::GetColorU32(baseSlotDatas.color);
+        auto u_color = ImGui::GetColorU32(datas.color);
 
-        m_drawBaseSlot(slotCenter, baseSlotDatas.connected, u_color, u_color);
+        m_drawBaseSlot(slotCenter, datas.connected, u_color, u_color);
 
         if (ImGui::IsItemHovered()) {
-            baseSlotDatas.highLighted = true;
+            datas.highLighted = true;
 
             /*if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
                 MouseDoubleClickedOnSlot(ImGuiMouseButton_Left);
@@ -133,7 +128,7 @@ void BaseSlot::drawSlot(ImVec2 vSlotSize, ImVec2 vSlotOffset) {
                 BaseNode::SelectSlot_Callback(m_This, ImGuiMouseButton_Middle);
             }*/
 
-            m_drawSlotText(slotCenter, baseSlotDatas.connected, u_color, u_color);
+            m_drawSlotText(slotCenter, datas.connected, u_color, u_color);
         }
     }
 }
@@ -272,54 +267,26 @@ void BaseSlot::m_drawSlotText(const ImVec2& /*vCenter*/, bool /*vConnected*/, Im
         std::string slotUType;
         std::string slotName;
 
-        auto& baseSlotDatas = getDatasRef<BaseSlotDatas>();
+        auto& datas = getDatasRef<BaseSlotDatas>();
         if (isAnInput()) {
-            slotName = baseSlotDatas.type;
-
-            if (baseSlotDatas.debugMode) {
-                slotName = "in " + slotUType + " links(";
-
-                int idx = 0;
-                /*for (auto link : linkedSlots) {
-                    auto linkPtr = link.lock();
-                    if (linkPtr) {
-                        if (idx > 0)
-                            slotName += ", ";
-
-                        if (!linkPtr->parentNode.expired()) {
-                            auto parentNodePtr = linkPtr->parentNode.lock();
-                            if (parentNodePtr) {
-                                slotName += parentNodePtr->name;
-                            }
-                        }
-                    }
-
-                    idx++;
-                }*/
-
-                slotName += ")";
-            }
+            slotName = datas.type;
             size_t len = slotName.length();
             if (len > 0) {
                 const char* beg = slotName.c_str();
                 ImVec2 txtSize = ImGui::CalcTextSize(beg);
-                ImVec2 min = ImVec2(m_pos.x - baseSlotDatas.slotIconSize * 0.5f - txtSize.x, m_pos.y - baseSlotDatas.slotIconSize * 0.5f);
-                ImVec2 max = min + ImVec2(txtSize.x, baseSlotDatas.slotIconSize);
+                ImVec2 min = ImVec2(m_pos.x - datas.slotIconSize * 0.5f - txtSize.x, m_pos.y - datas.slotIconSize * 0.5f);
+                ImVec2 max = min + ImVec2(txtSize.x, datas.slotIconSize);
                 ImGui::RenderFrame(min, max, ImGui::GetColorU32(ImVec4(0.1f, 0.1f, 0.1f, 1.0f)));
                 draw_list->AddText(ImVec2(min.x, m_pos.y - txtSize.y * 0.55f), ImColor(200, 200, 200, 255), beg);
             }
         } else if (isAnOutput()) {
-            slotName = baseSlotDatas.type;
-
-            if (baseSlotDatas.debugMode) {
-                // slotName = "links(" + ez::toStr(linkedSlots.size()) + ")" + slotUType + " out";
-            }
+            slotName = datas.type;
             size_t len = slotName.length();
             if (len > 0) {
                 const char* beg = slotName.c_str();
                 ImVec2 txtSize = ImGui::CalcTextSize(beg);
-                ImVec2 min = ImVec2(m_pos.x + baseSlotDatas.slotIconSize * 0.5f, m_pos.y - baseSlotDatas.slotIconSize * 0.5f);
-                ImVec2 max = min + ImVec2(txtSize.x, baseSlotDatas.slotIconSize);
+                ImVec2 min = ImVec2(m_pos.x + datas.slotIconSize * 0.5f, m_pos.y - datas.slotIconSize * 0.5f);
+                ImVec2 max = min + ImVec2(txtSize.x, datas.slotIconSize);
                 ImGui::RenderFrame(min, max, ImGui::GetColorU32(ImVec4(0.1f, 0.1f, 0.1f, 1.0f)));
                 draw_list->AddText(ImVec2(min.x, m_pos.y - txtSize.y * 0.55f), ImColor(200, 200, 200, 255), beg);
             }
@@ -333,8 +300,8 @@ void BaseSlot::m_drawBaseSlot(const ImVec2& vCenter, bool vConnected, ImU32 vCol
 
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     if (draw_list) {
-        auto& baseSlotDatas = getDatasRef<BaseSlotDatas>();
-        const auto slotRadius = baseSlotDatas.radius;
+        auto& datas = getDatasRef<BaseSlotDatas>();
+        const auto slotRadius = datas.radius;
 
         draw_list->AddNgonFilled(vCenter, slotRadius, vColor, 24);
 
@@ -389,7 +356,7 @@ bool BaseSlot::setFromXmlNodes(const ez::xml::Node& /*vNode*/, const ez::xml::No
         std::string _name;
         std::string _type = "NONE";
         BaseSlot::PlaceEnum _place = BaseSlot::PlaceEnum::NONE;
-        uint32_t _pinId = 0U;
+        uint32_t _m_pinID = 0U;
 
         for (const tinyxml2::XMLAttribute* attr = vElem->FirstAttribute(); attr != nullptr; attr = attr->Next()) {
             std::string attName = attr->Name();
@@ -404,11 +371,11 @@ bool BaseSlot::setFromXmlNodes(const ez::xml::Node& /*vNode*/, const ez::xml::No
             else if (attName == "place")
                 _place = sGetBaseSlotPlaceEnumFromString(attValue);
             else if (attName == "id")
-                _pinId = ez::ivariant(attValue).GetU();
+                _m_pinID = ez::ivariant(attValue).GetU();
         }
 
         if (index == _index && slotType == _type && slotPlace == _place && !idAlreadySetbyXml) {
-            pinID = _pinId;
+            m_pinID = _m_pinID;
             idAlreadySetbyXml = true;
 
             // pour eviter que des slots aient le meme id qu'un nodePtr

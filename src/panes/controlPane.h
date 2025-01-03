@@ -14,7 +14,7 @@ public:
 
 public:  // singleton
     static std::shared_ptr<ControlPane> Instance() {
-        static std::shared_ptr<ControlPane> _instance = std::make_shared<ControlPane>();
+        static auto _instance = std::make_shared<ControlPane>();
         return _instance;
     }
 

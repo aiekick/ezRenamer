@@ -21,12 +21,14 @@ class BaseSlot  //
       public ez::xml::Config,
       public rnm ::NotifyInterface,
       public rnm ::NotifierInterface {
+    friend class BaseGraph;
 
 public:
     struct BaseSlotDatas : ez::SlotDatas {
         float radius{2.5f};
         ImU32 color{IM_COL32(200, 200, 0, 255)};
         ImU32 hovered_color{IM_COL32(0, 200, 0, 255)};
+        ImVec2 slotPadding{0, 0};
         float slotIconSize{16.0f};
         bool highLighted{false};
         bool showWidget{false};
@@ -49,21 +51,18 @@ private:  // Common
 private:
     ImVec2 m_pos;
     ImVec2 m_size;
-    nd::PinId pinID = 0;
+    nd::PinId m_pinID = 0;
 
 public:
     template <typename T, typename = std::enable_if<std::is_base_of<BaseSlotDatas, T>::value>>
     explicit BaseSlot(const BaseStyle& vParentStyle, const T& vDatas) : m_parentStyle(vParentStyle), ez::Slot(std::make_shared<T>(vDatas)) {
-        pinID = getUuid();
+        m_pinID = getUuid();
     }
 
     void setRadius(const float vRadius);
     void setColor(const ImVec4& vColor);
     void setPos(const ImVec2& vPos);
     bool draw();
-
-    void drawContent();
-    void drawSlot(ImVec2 vSlotSize, ImVec2 vSlotOffset = {});
 
     bool isAnInput();
     bool isAnOutput();
@@ -101,6 +100,7 @@ public:
      bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
 
 private:
+    void m_drawSlot();
     void m_drawInputWidget();
     void m_drawOutputWidget();
     void m_drawSlotText(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);

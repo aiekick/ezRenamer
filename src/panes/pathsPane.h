@@ -14,7 +14,7 @@ public:
 
 public:  // singleton
     static std::shared_ptr<PathsPane> Instance() {
-        static std::shared_ptr<PathsPane> _instance = std::make_shared<PathsPane>();
+        static auto _instance = std::make_shared<PathsPane>();
         return _instance;
     }
 

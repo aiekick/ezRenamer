@@ -21,7 +21,7 @@ public:
 
 public:  // singleton
     static std::shared_ptr<GraphPane> Instance() {
-        static std::shared_ptr<GraphPane> _instance = std::make_shared<GraphPane>();
+        static auto _instance = std::make_shared<GraphPane>();
         return _instance;
     }
 

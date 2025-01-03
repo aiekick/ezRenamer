@@ -20,7 +20,7 @@ public:
 
 public:  // singleton
     static std::shared_ptr<ConsolePane> Instance() {
-        static std::shared_ptr<ConsolePane> _instance = std::make_shared<ConsolePane>();
+        static auto _instance = std::make_shared<ConsolePane>();
         return _instance;
     }
 

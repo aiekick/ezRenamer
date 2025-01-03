@@ -10,18 +10,22 @@
 #include "baseNode.h"
 #include "baseSlot.h"
 
+#include <functional>
 #include <unordered_map>
 
-class NodeLink;
-typedef std::shared_ptr<NodeLink> NodeLinkPtr;
-typedef std::weak_ptr<NodeLink> NodeLinkWeak;
+class BaseLink;
+typedef std::shared_ptr<BaseLink> BaseLinkPtr;
+typedef std::weak_ptr<BaseLink> BaseLinkWeak;
 
-struct NodeLink {
-    BaseSlotWeak in;
-    BaseSlotWeak out;
-    uint32_t linkId = 0;
-    ImColor color = ImColor(255, 255, 0, 255);
-    float thick = 2.0f;
+class BaseLink {
+    friend class BaseGraph;
+
+private:
+    BaseSlotWeak m_in;
+    BaseSlotWeak m_out;
+    nd::LinkId m_linkId = 0;
+    ImColor m_color = ImColor(255, 255, 0, 255);
+    float m_thick = 2.0f;
 };
 
 class BaseGraph;
@@ -32,11 +36,10 @@ class BaseGraph  //
     : public ez::Graph,
       public ez::xml::Config,
       public rnm::GuiInterface,
-      public rnm::NodeInterface { 
-
+      public rnm::NodeInterface {
 public:
-    struct BaseGraphDatas : public ez::GraphDatas {
-    };
+    struct BaseGraphDatas : public ez::GraphDatas {};
+    typedef std::function<void(const BaseGraphWeak& vGraph)> BasicActionFunctor;
 
 public:  // Static
     static BaseGraphPtr create(const BaseStyle& vParentStyle, const BaseGraphDatas& vNodeDatas) {
@@ -51,17 +54,18 @@ public:  // Static
 private:  // Common
     const BaseStyle& m_parentStyle;
 
-private: // Graph
+private:  // Graph
     nd::EditorContext* m_pCanvas{nullptr};
     ImVec2 m_openPopupPosition;
     nd::NodeId m_contextMenuNodeId = 0;
     nd::PinId m_contextMenuSlotId = 0;
     nd::LinkId m_contextMenuLinkId = 0;
-    std::unordered_map<ez::Uuid, NodeLinkPtr> m_links;  // linkId, link // for search query
+    std::unordered_map<ez::Uuid, BaseLinkPtr> m_links;  // linkId, link // for search query
+    BasicActionFunctor m_bgRightClickAction = nullptr;
 
-public: // Normal
+public:  // Normal
     template <typename T, typename = std::enable_if<std::is_base_of<BaseGraphDatas, T>::value>>
-    explicit BaseGraph(const BaseStyle& vParentStyle, const T& vDatas) //
+    explicit BaseGraph(const BaseStyle& vParentStyle, const T& vDatas)  //
         : m_parentStyle(vParentStyle), ez::Graph(std::make_shared<T>(vDatas)) {
         m_init();
     }
@@ -88,9 +92,11 @@ public: // Normal
     void pasteNodesAtMousePos();
     void duplicateSelectedNodes(ImVec2 vOffset);
 
-     ez::xml::Nodes getXmlNodes(const std::string& vUserDatas = "") override;
+    ez::xml::Nodes getXmlNodes(const std::string& vUserDatas = "") override;
     // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
-     bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
+    bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
+
+    void setBgRightClickAction(const BasicActionFunctor& vFunctor);
 
 public:  // Template
     template <typename U, typename = std::enable_if<std::is_base_of<ez::Node, U>::value>>
@@ -106,14 +112,13 @@ public:  // Template
         return node_ptr;
     }
 
-private: // Graph
+private:  // Graph
     void m_init();
     void m_unit();
     void m_drawPopups();
     void m_drawCheckNodePopup();
     void m_drawCheckSlotPopup();
     void m_drawCheckLinkPopup();
-    void m_drawNewNodePopup();
+    void m_drawBgContextMenuPopup();
     void m_drawLinks();
 };
-
