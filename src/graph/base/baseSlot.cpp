@@ -24,6 +24,7 @@ void BaseSlot::setPos(const ImVec2& vPos) {
 }
 
 bool BaseSlot::draw() {
+    ImGui::PushID(this);
     auto& datas = getDatasRef<BaseSlotDatas>();
     if (!datas.hidden) {
         if (isAnInput()) {
@@ -62,6 +63,7 @@ bool BaseSlot::draw() {
             nd::EndPin();
         }
     }
+    ImGui::PopID();
     return false;
 }
 
@@ -116,18 +118,6 @@ void BaseSlot::m_drawSlot() {
 
         if (ImGui::IsItemHovered()) {
             datas.highLighted = true;
-
-            /*if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-                MouseDoubleClickedOnSlot(ImGuiMouseButton_Left);
-                BaseNode::SelectSlot_Callback(m_This, ImGuiMouseButton_Left);
-            } else if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Right)) {
-                MouseDoubleClickedOnSlot(ImGuiMouseButton_Right);
-                BaseNode::SelectSlot_Callback(m_This, ImGuiMouseButton_Right);
-            } else if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Middle)) {
-                MouseDoubleClickedOnSlot(ImGuiMouseButton_Middle);
-                BaseNode::SelectSlot_Callback(m_This, ImGuiMouseButton_Middle);
-            }*/
-
             m_drawSlotText(slotCenter, datas.connected, u_color, u_color);
         }
     }

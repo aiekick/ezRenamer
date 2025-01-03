@@ -56,7 +56,7 @@ bool BaseLibrary::m_showMenu(LibraryEntry& vLibraryEntry, int32_t vLevel) {
 bool BaseLibrary::m_showContent(LibraryEntry& vLibraryEntry, int32_t vLevel) {
     bool ret = false;
     for (auto& category : m_subCategories) {
-        ret = category.second.m_showMenu(vLibraryEntry, vLevel + 1);
+        ret |= category.second.m_showMenu(vLibraryEntry, vLevel + 1);
     }
     if (!m_libraryItems.empty() && !m_subCategories.empty()) {
         ImGui::Separator();

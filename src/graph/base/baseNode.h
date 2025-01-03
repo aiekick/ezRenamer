@@ -28,13 +28,15 @@ public:
         struct NodeLayout {
             bool used = false;                  // utilise dans le code ou non
             bool hidden = false;                // visibilite du node
-            ez::ivec2 cell = ez::ivec2(-1);     // layout x:column, y:row
             bool inserted = false;              // pour voir si il y a des doublon dasn des colonnes
             bool rootUsed = false;              // ce node est le root
             bool graphDisabled = false;         // pas possible d'ouvrir ce graph
             bool deletionDisabled = false;      // pas possible d'effacer ce node
-            bool changed = false;               // need to save
+            ez::ivec2 cell = ez::ivec2(-1);     // layout x:column, y:row
         } layout;
+        ImU32 color{IM_COL32(0, 100, 0, 200)};
+        BaseNodeDatas() = default;
+        BaseNodeDatas(const std::string& vName, const std::string& vType, ImU32 vColor = IM_COL32(0, 100, 0, 200)) : ez::NodeDatas(vName, vType), color(vColor) {}
     };
 
 public:  // Static
@@ -60,8 +62,6 @@ private:  // Node
     ImVec2 m_pos{};
     ImVec2 m_size{};
     nd::NodeId m_nodeID{};
-    std::string m_nodeTitle{"Node"};
-    ImU32 m_nodeHeaderColor{IM_COL32(100, 0, 0, 200)};
     ImRect m_headerRect{};
     bool m_isHovered{false};
     bool m_isSelected{false};
@@ -78,9 +78,18 @@ private:  // popups
     nd::LinkId m_contextMenuLinkId{};
 
 public: // Normal
-    template <typename T, typename = std::enable_if<std::is_base_of<BaseNodeDatas, T>::value>>
+    template <typename T>
     explicit BaseNode(const BaseStyle& vParentStyle, const T& vDatas) : m_parentStyle(vParentStyle), ez::Node(vDatas) {
-        m_nodeID = getUuid();
+        static_assert(std::is_base_of<BaseNodeDatas, T>::value, "T must derive of BaseNodeDatas");
+    }
+    ~BaseNode() override = default;
+
+    bool init() override { 
+        if (ez::Node::init()) {
+            m_nodeID = getUuid(); 
+            return true;
+        }
+        return false;
     }
 
     bool drawWidgets(const uint32_t& vFrame) override;
@@ -92,23 +101,14 @@ public: // Normal
     // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
     bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
 
-public:  // Template
-    template <typename U, typename = std::enable_if<std::is_base_of<ez::Node, U>::value>>
-    std::weak_ptr<U> createChildNode(const BaseStyle& vParentStyle, const BaseNodeDatas& vNodeDatas) {
-        auto node_ptr = std::make_shared<U>(vStyle, vNodeDatas);
-        if (!node_ptr->init()) {
-            node_ptr.reset();
-        } else {
-            if (m_addNode(node_ptr) != ez::RetCodes::SUCCESS) {
-                node_ptr.reset();
-            }
-        }
-        return node_ptr;
-    }
+    const BaseStyle& getParentStyle();
+    BaseStyle getNodeStyle();
 
-    template <typename U, typename = std::enable_if<std::is_base_of<ez::Slot, U>::value>>
-    std::weak_ptr<U> addSlot(const BaseStyle& vParentStyle, const BaseSlot::BaseSlotDatas& vSlotDatas) {
-        auto slot_ptr = std::make_shared<U>(vParentStyle, vSlotDatas);
+public:  // Template
+    template <typename T>
+    std::weak_ptr<T> createChildSlot() {
+        static_assert(std::is_base_of<BaseSlot, T>::value, "T must derive of BaseSlot");
+        auto slot_ptr = std::make_shared<T>(m_parentStyle);
         if (!slot_ptr->init()) {
             slot_ptr.reset();
         } else {
@@ -120,14 +120,14 @@ public:  // Template
     }
 
 private: // Node
-    bool m_drawNodeHeader();
-    bool m_drawNodeContent();
-    bool m_drawNodeInputSlots();
-    bool m_drawNodeOutputSlots();
     bool m_drawBegin();
     bool m_drawHeader();
+    bool m_drawContent();
+    bool m_drawInputSlots();
+    bool m_drawOutputSlots();
     bool m_drawFooter();
     bool m_drawEnd();
     void m_displayInfosOnTopOfTheNode();
+    BaseSlotWeak m_findSlot(nd::PinId vId);
 };
 

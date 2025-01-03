@@ -22,6 +22,8 @@ class BaseSlot  //
       public rnm ::NotifyInterface,
       public rnm ::NotifierInterface {
     friend class BaseGraph;
+    friend class BaseNode;
+    friend class BaseLink;
 
 public:
     struct BaseSlotDatas : ez::SlotDatas {
@@ -52,12 +54,25 @@ private:
     ImVec2 m_pos;
     ImVec2 m_size;
     nd::PinId m_pinID = 0;
+    BaseLinkWeak m_link;
 
 public:
-    template <typename T, typename = std::enable_if<std::is_base_of<BaseSlotDatas, T>::value>>
-    explicit BaseSlot(const BaseStyle& vParentStyle, const T& vDatas) : m_parentStyle(vParentStyle), ez::Slot(std::make_shared<T>(vDatas)) {
-        m_pinID = getUuid();
+    template <typename T>
+    explicit BaseSlot(const BaseStyle& vParentStyle, const T& vDatas)
+        : m_parentStyle(vParentStyle), ez::Slot(std::make_shared<T>(vDatas)) {
+        static_assert(std::is_base_of<BaseSlotDatas, T>::value, "T must derive of BaseSlotDatas");
     }
+    ~BaseSlot() override = default;
+
+    bool init() override {
+        if (ez::Slot::init()) {
+            m_pinID = getUuid();
+            return true;
+        }
+        return false;
+    }
+
+    void unit() override { EZ_TOOLS_DEBUG_BREAK; }
 
     void setRadius(const float vRadius);
     void setColor(const ImVec4& vColor);

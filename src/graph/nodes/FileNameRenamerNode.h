@@ -18,5 +18,6 @@ the finale renaming is done by the app
 class FileNameRenamerNode : public BaseNode {
 private:
 public:
-    explicit FileNameRenamerNode(const BaseStyle& vParentStyle) : BaseNode(vParentStyle, ez::NodeDatas("File renamer", "FILE_NAME_RENAMER_NODE")) {}
+    explicit FileNameRenamerNode(const BaseStyle& vParentStyle);
+    bool init() override;
 };

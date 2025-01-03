@@ -13,7 +13,7 @@ bool BaseNode::drawNode() {
     bool change = false;
     if (m_drawBegin()) {
         change |= m_drawHeader();
-        change |= m_drawNodeContent();
+        change |= m_drawContent();
         change |= m_drawFooter();
         change |= m_drawEnd();
     }
@@ -36,35 +36,16 @@ bool BaseNode::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& 
     return true;
 }
 
-bool BaseNode::m_drawNodeContent() {
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ImGui::GetStyle().ItemSpacing.x, 0));
-    ImGui::BeginHorizontal("content");
-    ImGui::Spring(0, 0);
-    ImGui::BeginVertical("inputs", ImVec2(0, 0), 0.0f);
-    for (auto& p_slot : m_getInputSlotsRef()) {  // slots
-        std::static_pointer_cast<BaseSlot>(p_slot)->draw();
-    }
-    ImGui::EndVertical();
-    ImGui::Spring(1, 5.0f);  // pour que BeginVertical soi poussé au bout
-    ImGui::BeginVertical("outputs", ImVec2(0, 0), 1.0f);  // 1.0f pour que l'interieur soit aligné sur la fin
-    for (auto& p_slot : m_getOutputSlotsRef()) {          // slots
-        std::static_pointer_cast<BaseSlot>(p_slot)->draw();
-    }
-    ImGui::EndVertical();
-    ImGui::EndHorizontal();
-    ImGui::PopStyleVar();
-    return false;
+const BaseStyle& BaseNode::getParentStyle() {
+    return m_parentStyle;
 }
 
-bool BaseNode::m_drawNodeInputSlots() {
-    return false;
-}
-
-bool BaseNode::m_drawNodeOutputSlots() {
-    return false;
+BaseStyle BaseNode::getNodeStyle() {
+    return m_nodeStyle;
 }
 
 bool BaseNode::m_drawBegin() {
+    nd::PushStyleVar(nd::StyleVar_NodePadding, ImVec4(4, 2, 4, 4));
     nd::BeginNode(m_nodeID);
     ImGui::PushID(m_nodeID.AsPointer());
     ImGui::BeginVertical("node");
@@ -82,6 +63,34 @@ bool BaseNode::m_drawHeader() {
     return false;
 }
 
+bool BaseNode::m_drawContent() {
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ImGui::GetStyle().ItemSpacing.x, 0));
+    ImGui::BeginHorizontal("content");
+    ImGui::Spring(0, 0);
+    ImGui::BeginVertical("inputs", ImVec2(0, 0), 0.0f);
+    for (auto& slot : m_getInputSlotsRef()) {  // slots
+        std::static_pointer_cast<BaseSlot>(slot.lock())->draw();
+    }
+    ImGui::EndVertical();
+    ImGui::Spring(1, 5.0f);                               // pour que BeginVertical soi poussé au bout
+    ImGui::BeginVertical("outputs", ImVec2(0, 0), 1.0f);  // 1.0f pour que l'interieur soit aligné sur la fin
+    for (auto& slot : m_getOutputSlotsRef()) {          // slots
+        std::static_pointer_cast<BaseSlot>(slot.lock())->draw();
+    }
+    ImGui::EndVertical();
+    ImGui::EndHorizontal();
+    ImGui::PopStyleVar();
+    return false;
+}
+
+bool BaseNode::m_drawInputSlots() {
+    return false;
+}
+
+bool BaseNode::m_drawOutputSlots() {
+    return false;
+}
+
 bool BaseNode::m_drawFooter() {
     return false;
 }
@@ -90,17 +99,18 @@ bool BaseNode::m_drawEnd() {
     ImGui::EndVertical();
     nd::EndNode();
     if (ImGui::IsItemVisible()) {
+        auto alpha = static_cast<int>(255 * ImGui::GetStyle().Alpha);
         auto drawList = nd::GetNodeBackgroundDrawList(m_nodeID);
         if (drawList) {
             ImGuiContext& g = *GImGui;
             const auto itemRect = g.LastItemData.Rect;
             if (m_headerRect.GetSize().y > 0.0f) {
                 const ImVec4 NodePadding = nd::GetStyle().NodePadding;
-                const auto halfBorderWidth = nd::GetStyle().NodeBorderWidth * 0.5f;
+                const auto halfBorderWidth = nd::GetStyle().NodeBorderWidth;
                 drawList->AddRectFilled(
-                    m_headerRect.Min - ImVec2(nd::GetStyle().NodePadding.x - halfBorderWidth, halfBorderWidth),
-                    m_headerRect.Max + ImVec2(nd::GetStyle().NodePadding.z - halfBorderWidth, 0),
-                    m_nodeHeaderColor,
+                    m_headerRect.Min - ImVec2(NodePadding.x - halfBorderWidth, NodePadding.y - halfBorderWidth),
+                    m_headerRect.Max + ImVec2(NodePadding.z - halfBorderWidth, 0),
+                    getDatas<BaseNodeDatas>().color,
                     nd::GetStyle().NodeRounding,
                     ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersTopRight);
                 auto alpha = static_cast<int>(255 * ImGui::GetStyle().Alpha);
@@ -117,6 +127,7 @@ bool BaseNode::m_drawEnd() {
         }
     }
     ImGui::PopID();
+    nd::PopStyleVar();
     return false;
 }
 
@@ -128,4 +139,25 @@ void BaseNode::m_displayInfosOnTopOfTheNode() {
         ImVec2 txtSize = ImGui::CalcTextSize(debugInfos.c_str());
         drawList->AddText(m_pos - ImVec2(0, txtSize.y), ImGui::GetColorU32(ImGuiCol_Text), debugInfos.c_str());
     }
+}
+
+BaseSlotWeak BaseNode::m_findSlot(nd::PinId vId) {
+    BaseSlotWeak ret;
+    if (vId) {
+        for (const auto& slot : m_getInputSlots()) {
+            auto base_pin_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+            if (base_pin_ptr->m_pinID == vId) {
+                ret = base_pin_ptr;
+                break;
+            }
+        }
+        for (const auto& slot : m_getOutputSlots()) {
+            auto base_pin_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+            if (base_pin_ptr->m_pinID == vId) {
+                ret = base_pin_ptr;
+                break;
+            }
+        }
+    }
+    return ret;
 }

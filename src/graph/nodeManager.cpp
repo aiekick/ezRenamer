@@ -25,29 +25,22 @@ void NodeManager::unitInstance() {
 }
 
 bool NodeManager::init() {
-    m_graphStyle.style.NodePadding = 0.0f;
     m_graphStyle.style.NodeRounding = 2.0f;
     m_graphStyle.style.NodeBorderWidth = 1.0f;
     m_graphStyle.style.altDragSnapping = 5.0f;
 
     addSlotColor("NONE", ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-    addSlotColor("FILES", ImVec4(0.5f, 0.5f, 0.9f, 1.0f));
+    addSlotColor("FILE", ImVec4(0.5f, 0.5f, 0.9f, 1.0f));
     addSlotColor("TOKEN", ImVec4(0.9f, 0.9f, 0.1f, 1.0f));
 
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("base", "Input files", "INPUT_FILE_NODE", BaseLibrary::NodeSource::INTERNAL));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("base", "Input text", "INPUT_TEXT_NODE", BaseLibrary::NodeSource::INTERNAL));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("base", "File path name splitter", "FILE_PATH_SPLITTER_NODE", BaseLibrary::NodeSource::INTERNAL));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("base", "File path name Renamer", "FILE_NAME_RENAMER_NODE", BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("Sources", "Input files", "INPUT_FILE_NODE", BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("Sources", "Input text", "INPUT_TEXT_NODE", BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("Extractors", "File path splitter", "FILE_PATH_SPLITTER_NODE", BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("Renamers", "File path name Renamer", "FILE_NAME_RENAMER_NODE", BaseLibrary::NodeSource::INTERNAL));
 
     m_graphPtr = BaseGraph::create(m_graphStyle, m_graphConfig);
     m_graphPtr->setBgRightClickAction([this](const BaseGraphWeak& vGraph) { m_showLibrary(); });
-    BaseNode::BaseNodeDatas nodeDatas;
-    nodeDatas.name = "TestNode";
-    auto node_ptr = m_graphPtr->createChildNode<BaseNode>(nodeDatas);
-    if (node_ptr != nullptr) {
-        node_ptr->addSlot<BaseSlot>(m_graphStyle, BaseSlot::BaseSlotDatas("in0", "base", ez::SlotDir::INPUT));
-        node_ptr->addSlot<BaseSlot>(m_graphStyle, BaseSlot::BaseSlotDatas("out0", "base", ez::SlotDir::OUTPUT));
-    }
+
     return true;
 }
 

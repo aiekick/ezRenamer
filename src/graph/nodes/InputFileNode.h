@@ -11,6 +11,7 @@ it give a ouput slot with a string of a file
 */
 class InputFileNode : public BaseNode {
 public:
-    explicit InputFileNode(const BaseStyle& vParentStyle) : BaseNode(vParentStyle, ez::NodeDatas("Input file", "INPUT_FILE_NODE")) {}
+    explicit InputFileNode(const BaseStyle& vParentStyle);
 
+    bool init() override;
 };
