@@ -44,6 +44,31 @@ BaseStyle BaseNode::getNodeStyle() {
     return m_nodeStyle;
 }
 
+BaseSlotWeak BaseNode::findSlotByType(ez::SlotDir vDir, const std::string& vType) {
+    BaseSlotWeak ret;
+    if (!vType.empty()) {
+        if (vDir == ez::SlotDir::INPUT) {
+            for (const auto& slot : m_getInputSlots()) {
+                auto base_pin_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+                if (base_pin_ptr->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
+                    ret = base_pin_ptr;
+                    break;
+                }
+            }
+        }
+        else if(vDir == ez::SlotDir::OUTPUT) {
+            for (const auto& slot : m_getOutputSlots()) {
+                auto base_pin_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+                if (base_pin_ptr->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
+                    ret = base_pin_ptr;
+                    break;
+                }
+            }
+        }
+    }
+    return ret;
+}
+
 bool BaseNode::m_drawBegin() {
     nd::PushStyleVar(nd::StyleVar_NodePadding, ImVec4(4, 2, 4, 4));
     nd::BeginNode(m_nodeID);

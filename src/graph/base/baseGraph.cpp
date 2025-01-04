@@ -60,9 +60,10 @@ void BaseGraph::m_unit() {
 
 void BaseGraph::m_drawPopups() {
     nd::Suspend();
-   if (nd::ShowBackgroundContextMenu()) {
+    if (nd::ShowBackgroundContextMenu()) {
         ImGui::OpenPopup(BACKGROUND_CONTEXT_MENU);
         m_openPopupPosition = nd::ScreenToCanvas(ImGui::GetMousePos());
+        m_PrepareForCreateNodeFromSlot({});  // no slot, maybe needed for reset what was done for slot
     }
     m_drawBgContextMenuPopup();
 
@@ -71,8 +72,8 @@ void BaseGraph::m_drawPopups() {
 
 void BaseGraph::m_drawBgContextMenuPopup() {
     if (ImGui::BeginPopup(BACKGROUND_CONTEXT_MENU)) {
-        if (m_bgRightClickAction != nullptr) {
-            m_bgRightClickAction(std::static_pointer_cast<BaseGraph>(m_getThis().lock()));
+        if (m_BgRightClickAction != nullptr) {
+            m_BgRightClickAction(m_getThis<BaseGraph>());
         }
         ImGui::EndPopup();
     }
@@ -182,7 +183,8 @@ void BaseGraph::m_doCreateLinkOrNode() {
             auto start_slot_ptr = m_findSlot(startSlotId).lock();
             auto end_slot_ptr = m_findSlot(endSlotId).lock();
             if (start_slot_ptr != nullptr && end_slot_ptr != nullptr) {
-                if (start_slot_ptr == end_slot_ptr) {
+                if (start_slot_ptr == end_slot_ptr ||                                                                                   // same slot
+                    (end_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().dir == ez::SlotDir::INPUT && !end_slot_ptr->m_links.empty())) {  // input slot already connected
                     nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
                 } else {
                     showLabel("+ Create Link", ImColor(32, 45, 32, 180));  //-V112
@@ -197,12 +199,12 @@ void BaseGraph::m_doCreateLinkOrNode() {
         nd::PinId slotId = 0;
         if (nd::QueryNewNode(&slotId)) {
             auto slot_ptr = m_findSlot(slotId).lock();
-            if (slot_ptr->getDatas<ez::SlotDatas>().dir == ez::SlotDir::OUTPUT) { 
+            if (slot_ptr->getDatas<ez::SlotDatas>().dir == ez::SlotDir::INPUT) {
+                showLabel("o Redirect link", ImColor(32, 45, 32, 180));  //-V112
+            } else if (slot_ptr->getDatas<ez::SlotDatas>().dir == ez::SlotDir::OUTPUT) {
                 showLabel("+ Create Node", ImColor(32, 45, 32, 180));  //-V112
                 if (nd::AcceptNewItem()) {
-                    EZ_TOOLS_DEBUG_BREAK;
-                    // we must find a node with input slot of researched type
-                    // and create this node
+                    m_doCreateNodeFromSlot(slot_ptr);
                 }
             }
         }
@@ -214,20 +216,36 @@ void BaseGraph::m_doDeleteLinkOrNode() {
     if (nd::BeginDelete()) {
         nd::LinkId linkId = 0;
         while (nd::QueryDeletedLink(&linkId)) {
-            if (nd::AcceptDeletedItem()) {
-                m_disconnectLink(m_findLink(linkId));
+            auto link = m_findLink(linkId);
+            if (nd::AcceptDeletedItem()) {  // will delete the link
+                m_disconnectLink(link);
             }
         }
         nd::NodeId nodeId = 0;
         while (nd::QueryDeletedNode(&nodeId)) {
+            auto node = m_findNode(nodeId);
             if (nd::AcceptDeletedItem()) {
-                m_delNode(m_findNode(nodeId).lock());
+                m_delNode(node);
             }
         }
     }
     nd::EndDelete();
 }
 
+void BaseGraph::m_doCreateNodeFromSlot(const BaseSlotWeak& vSlot) {
+    if (m_PrepareForCreateNodeFromSlot(vSlot)) {
+        ImGui::OpenPopup(BACKGROUND_CONTEXT_MENU);
+        m_openPopupPosition = nd::ScreenToCanvas(ImGui::GetMousePos());
+    }
+}
+
+bool BaseGraph::m_PrepareForCreateNodeFromSlot(const BaseSlotWeak& vSlot) {
+    if (m_PrepareForCreateNodeFromSlotActionFunctor != nullptr) {
+        return m_PrepareForCreateNodeFromSlotActionFunctor(m_getThis<BaseGraph>(), vSlot);
+    }
+    return false;
+}
+    
 //////////////////////////////////////////////////////////////////////////////
 ////// SHORTCUT //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -279,15 +297,17 @@ void BaseGraph::m_duplicateSelectedNodes(const ImVec2& vOffset) {
 }
 
 void BaseGraph::m_duplicateNode(uint32_t vNodeId, const ImVec2& vOffsetPos) {
-    auto base_node_ptr = m_findNode(vNodeId).lock();
+    auto base_node = m_findNode(vNodeId);
+    auto base_node_ptr = base_node.lock();
     if (base_node_ptr != nullptr) {
-        auto new_base_node_ptr = BaseNodePtr{nullptr};
-        EZ_TOOLS_DEBUG_BREAK;
-        if (new_base_node_ptr != nullptr) {
-            nd::SetNodePosition(new_base_node_ptr->m_nodeID, new_base_node_ptr->m_pos + vOffsetPos);
-        }
+        auto new_pos = base_node_ptr->m_pos + vOffsetPos;
+        auto new_base_node_ptr = cloneChildNode(base_node, new_pos);
     }
 }
+
+//////////////////////////////////////////////////////////////////////////////
+////// CONFIGURATION /////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 ez::xml::Nodes BaseGraph::getXmlNodes(const std::string& /*vUserDatas*/) {
     ez::xml::Node node;
@@ -299,9 +319,21 @@ bool BaseGraph::setFromXmlNodes(const ez::xml::Node& /*vNode*/, const ez::xml::N
     return true;
 }
 
-void BaseGraph::setBgRightClickAction(const BasicActionFunctor& vFunctor) {
-    m_bgRightClickAction = vFunctor;
+//////////////////////////////////////////////////////////////////////////////
+////// ACTION FUNCTORS ///////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+void BaseGraph::setBgRightClickAction(const BgRightClickActionFunctor& vFunctor) {
+    m_BgRightClickAction = vFunctor;
 }
+
+void BaseGraph::setPrepareForCreateNodeFromSlotActionFunctor(const PrepareForCreateNodeFromSlotActionFunctor& vFunctor) {
+    m_PrepareForCreateNodeFromSlotActionFunctor = vFunctor;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+////// FINDERS ///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 BaseNodeWeak BaseGraph::m_findNode(nd::NodeId vId) {
     BaseNodeWeak ret;
@@ -356,6 +388,10 @@ BaseSlotWeak BaseGraph::m_findSlot(nd::PinId vId) {
     return ret;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+////// ADD / DEL VISUAL LINKS ////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
 bool BaseGraph::m_addLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd) {
     bool ret = false;
     const auto startPtr = vStart.lock();
@@ -365,9 +401,12 @@ bool BaseGraph::m_addLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd) 
         if (link_ptr != nullptr) {
             if (m_links.find(link_ptr->getUuid()) == m_links.end()) {
                 m_links[link_ptr->getUuid()] = link_ptr;
-                startPtr->m_link = link_ptr;
-                endPtr->m_link = link_ptr;
-                ret = true;
+                if (startPtr->m_links.tryAdd(link_ptr->getUuid(), link_ptr) && endPtr->m_links.tryAdd(link_ptr->getUuid(), link_ptr)) {
+                    ret = true;
+                } else {
+                    EZ_TOOLS_DEBUG_BREAK;
+                    LogVarDebugError("Err : fail to add link in both Slots");
+                }
             }
         }
     }
@@ -381,11 +420,11 @@ bool BaseGraph::m_breakLink(const BaseLinkWeak& vLink) {
         if (m_links.find(link_ptr->getUuid()) != m_links.end()) {
             const auto startPtr = link_ptr->m_in.lock();
             if (startPtr != nullptr) {
-                startPtr->m_link.reset();
+                startPtr->m_links.erase(link_ptr->getUuid());
             }
             const auto endPtr = link_ptr->m_out.lock();
             if (endPtr != nullptr) {
-                endPtr->m_link.reset();
+                endPtr->m_links.erase(link_ptr->getUuid());
             }
             m_links.erase(link_ptr->getUuid());
         }
@@ -398,8 +437,23 @@ bool BaseGraph::m_breakLink(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo) 
     const auto fromPtr = vFrom.lock();
     const auto toPtr = vTo.lock();
     if (fromPtr != nullptr && toPtr != nullptr) {
-        if (fromPtr->m_link.lock() == toPtr->m_link.lock()) {
-            m_breakLink(fromPtr->m_link);
+        // il faut trouver le lien qui existe entre les deux slot
+        // et on doit le trouver dans les deux slots
+        // si c'est le cas alors on le break
+        // si non ya un souci
+        std::vector<BaseLinkWeak> found_links;
+        for (const auto& from_link : fromPtr->m_links) {
+            auto from_link_ptr = from_link.lock();
+            if (from_link_ptr != nullptr) {
+                for (const auto& to_link : toPtr->m_links) {
+                    if (from_link_ptr == to_link.lock()) {
+                        found_links.push_back(to_link);
+                    }
+                }
+            }
+        }
+        if (found_links.size() == 1U) {
+            m_breakLink(found_links.front());
         } else {
             // ya un bug
             EZ_TOOLS_DEBUG_BREAK;
@@ -420,6 +474,14 @@ void BaseGraph::m_delOneSideLinks() {
     for (const auto& link_uuid : links_to_destroy) {
         m_links.erase(link_uuid);
     }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+////// CONNECT / DISCONNED ///////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+bool BaseGraph::connectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo) {
+    return m_connectSlots(vFrom, vTo);
 }
 
 bool BaseGraph::m_connectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo) {
@@ -454,6 +516,10 @@ bool BaseGraph::m_disconnectLink(const BaseLinkWeak& vLink) {
     }
     return ret;
 }
+
+//////////////////////////////////////////////////////////////////////////////
+////// DEL NODES /////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 bool BaseGraph::m_delNode(const BaseNodeWeak& vNode) {
     bool ret = false;

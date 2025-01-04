@@ -30,16 +30,52 @@ bool NodeManager::init() {
     m_graphStyle.style.altDragSnapping = 5.0f;
 
     addSlotColor("NONE", ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-    addSlotColor("FILE", ImVec4(0.5f, 0.5f, 0.9f, 1.0f));
-    addSlotColor("TOKEN", ImVec4(0.9f, 0.9f, 0.1f, 1.0f));
+    addSlotColor("FILE_SLOT", ImVec4(0.5f, 0.5f, 0.9f, 1.0f));
+    addSlotColor("STRING_SLOT", ImVec4(0.9f, 0.9f, 0.1f, 1.0f));
 
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("Sources", "Input files", "INPUT_FILE_NODE", BaseLibrary::NodeSource::INTERNAL));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("Sources", "Input text", "INPUT_TEXT_NODE", BaseLibrary::NodeSource::INTERNAL));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("Extractors", "File path splitter", "FILE_PATH_SPLITTER_NODE", BaseLibrary::NodeSource::INTERNAL));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry("Renamers", "File path name Renamer", "FILE_NAME_RENAMER_NODE", BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
+        "Sources",
+        "Input files",
+        "INPUT_FILE_NODE",  //
+        {},
+        {"FILE_SLOT"},
+        BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
+        "Sources",
+        "Input text",
+        "INPUT_TEXT_NODE",  //
+        {},
+        {"STRING_SLOT"},
+        BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
+        "Extractors",
+        "File path splitter",
+        "FILE_PATH_SPLITTER_NODE",  //
+        {"FILE_SLOT"},
+        {"FILE_SLOT", "STRING_SLOT"},
+        BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
+        "Renamers",
+        "File path name Renamer",
+        "FILE_NAME_RENAMER_NODE",  //
+        {"FILE_SLOT"},
+        {},
+        BaseLibrary::NodeSource::INTERNAL));
 
     m_graphPtr = BaseGraph::create(m_graphStyle, m_graphConfig);
-    m_graphPtr->setBgRightClickAction([this](const BaseGraphWeak& vGraph) { m_showLibrary(); });
+    m_graphPtr->setBgRightClickAction(             //
+        [this](const BaseGraphWeak& /*vGraph*/) {  //
+            m_showLibrary();
+        });
+    m_graphPtr->setPrepareForCreateNodeFromSlotActionFunctor(                         //
+        [this](const BaseGraphWeak& /*vGraph*/, const BaseSlotWeak& vSlot) -> bool {  //
+            m_createNodeFromSlot = vSlot;
+            BaseLibrary::SlotType slot_type;
+            if (!m_createNodeFromSlot.expired()) {
+                slot_type = m_createNodeFromSlot.lock()->getDatas<BaseSlot::BaseSlotDatas>().type;
+            }
+            return m_filterLibraryForInputSlotType(slot_type);
+        });
 
     return true;
 }
@@ -64,31 +100,62 @@ void NodeManager::addSlotColor(const std::string& vBaseSlotType, const ImVec4& v
     m_ColorSlots[vBaseSlotType] = vSlotColor;
 }
 
-bool NodeManager::m_showLibrary() {
-    bool ret = false;
-    BaseLibrary::LibraryEntry entry;
-    if (m_baseLibrary.showMenu(entry)) {
-        if (entry.nodeSource == BaseLibrary::NodeSource::INTERNAL) {
-             m_createInternalNode(entry);
-        } else if (entry.nodeSource == BaseLibrary::NodeSource::PLUGIN) {
-             m_createPluginNode(entry);
+bool NodeManager::m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vInputSlotType) {
+    m_libraryToShow = m_baseLibrary;
+    if (!vInputSlotType.empty()) {
+        return m_libraryToShow.filterNodesForSomeInputSlotTypes({vInputSlotType});
+    }
+    return false;
+}
+
+void NodeManager::m_showLibrary() {
+    BaseLibrary::LibraryEntry entryToCreate;
+    if (m_libraryToShow.showMenu(entryToCreate)) {
+        BaseNodeWeak new_node;
+        if (entryToCreate.nodeSource == BaseLibrary::NodeSource::INTERNAL) {
+            new_node = m_createInternalNode(entryToCreate);
+        } else if (entryToCreate.nodeSource == BaseLibrary::NodeSource::PLUGIN) {
+            new_node = m_createPluginNode(entryToCreate);
+        }
+        // new node just created
+        if (!new_node.expired()) {
+            // if created node from slot mode
+            // we will connect the slot to the first input slot 
+            // of the corresponding type in the new node
+            if (!m_createNodeFromSlot.expired()) {
+                auto slot_ptr = m_createNodeFromSlot.lock();
+                auto new_node_ptr = new_node.lock();
+                auto wanted_slot_type = slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().type;
+                auto found_slot = new_node_ptr->findSlotByType(ez::SlotDir::INPUT, wanted_slot_type);
+                // a slot of the good type was found
+                // we will connect it
+                if (!found_slot.expired()) {
+                    m_graphPtr->connectSlots(m_createNodeFromSlot, found_slot);
+                } else {
+                    // we have filtered the list for this slot
+                    // so if we not have it, its not normal
+                    // and we must check what happen
+                    LogVarDebugError("Fail to found a slot of type [%s] for node of type [%s]", wanted_slot_type.c_str(), entryToCreate.nodeType.c_str());
+                }
+            }
         }
     }
-    return ret;
 }
 
-void NodeManager::m_createInternalNode(const BaseLibrary::LibraryEntry& vLibraryEntry) {
+BaseNodeWeak NodeManager::m_createInternalNode(const BaseLibrary::LibraryEntry& vLibraryEntry) {
     if (vLibraryEntry.nodeType == "INPUT_FILE_NODE") {
-         m_graphPtr->createChildNode<InputFileNode>();
+        return m_graphPtr->createChildNode<InputFileNode>();
     } else if (vLibraryEntry.nodeType == "INPUT_TEXT_NODE") {
-         m_graphPtr->createChildNode<InputTextNode>();
+        return m_graphPtr->createChildNode<InputTextNode>();
     } else if (vLibraryEntry.nodeType == "FILE_PATH_SPLITTER_NODE") {
-         m_graphPtr->createChildNode<SplitFilePath>();
+        return m_graphPtr->createChildNode<SplitFilePath>();
     } else if (vLibraryEntry.nodeType == "FILE_NAME_RENAMER_NODE") {
-         m_graphPtr->createChildNode<FileNameRenamerNode>();
+        return m_graphPtr->createChildNode<FileNameRenamerNode>();
     }
+    return {};
 }
 
-void NodeManager::m_createPluginNode(const BaseLibrary::LibraryEntry& vLibraryEntry) {
+BaseNodeWeak NodeManager::m_createPluginNode(const BaseLibrary::LibraryEntry& vLibraryEntry) {
     //nodePtr = PluginManager::Instance()->CreatePluginNode(vLibraryEntry.second.nodeType);
+    return {};
 }

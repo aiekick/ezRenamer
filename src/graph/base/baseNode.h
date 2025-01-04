@@ -9,11 +9,18 @@
 #include "baseStyle.h"
 #include "baseSlot.h"
 
+#include <memory>
 #include <unordered_map>
 
 class BaseNode;
 typedef std::shared_ptr<BaseNode> BaseNodePtr;
 typedef std::weak_ptr<BaseNode> BaseNodeWeak;
+
+// to put in each derived nodes
+#define ENABLE_CLONE(className)                    \
+    BaseNodePtr clone() const override {           \
+        return std::make_shared<className>(*this); \
+    }
 
 class BaseNode  //
     : public ez::Node,
@@ -38,21 +45,6 @@ public:
         BaseNodeDatas() = default;
         BaseNodeDatas(const std::string& vName, const std::string& vType, ImU32 vColor = IM_COL32(0, 100, 0, 200)) : ez::NodeDatas(vName, vType), color(vColor) {}
     };
-
-public:  // Static
-    static BaseNodePtr create(const BaseStyle& vParentStyle, const BaseNodeDatas& vNodeDatas) {
-        auto node_ptr = std::make_shared<BaseNode>(vParentStyle, vNodeDatas);
-        node_ptr->m_setThis(node_ptr);
-        if (!node_ptr->init()) {
-            node_ptr.reset();
-        }
-        return node_ptr;
-    }
-
-    static uint32_t GetFreeId() {
-        static uint32_t freeId = 4577;
-        return ++freeId;
-    }
 
 private:  // Style
     const BaseStyle& m_parentStyle;
@@ -97,6 +89,9 @@ public: // Normal
 
     bool drawNode();
 
+    // for the ablity to duplicate a node in graph
+    virtual BaseNodePtr clone() const = 0;
+
     ez::xml::Nodes getXmlNodes(const std::string& vUserDatas = "") override;
     // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
     bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
@@ -104,7 +99,9 @@ public: // Normal
     const BaseStyle& getParentStyle();
     BaseStyle getNodeStyle();
 
-public:  // Template
+    BaseSlotWeak findSlotByType(ez::SlotDir vDir, const std::string& vType);
+
+    public:  // Template
     template <typename T>
     std::weak_ptr<T> createChildSlot() {
         static_assert(std::is_base_of<BaseSlot, T>::value, "T must derive of BaseSlot");

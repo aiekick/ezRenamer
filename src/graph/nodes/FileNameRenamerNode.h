@@ -19,5 +19,6 @@ class FileNameRenamerNode : public BaseNode {
 private:
 public:
     explicit FileNameRenamerNode(const BaseStyle& vParentStyle);
+    ENABLE_CLONE(FileNameRenamerNode);
     bool init() override;
 };

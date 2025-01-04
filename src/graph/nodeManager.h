@@ -19,6 +19,14 @@ private:
     std::map<std::string, ImVec4> m_ColorSlots;
     BaseLibrary m_baseLibrary;
 
+    // Library to show, can be filtered from m_baseLibrary or not
+    BaseLibrary m_libraryToShow;
+
+    // used to create a node from this slot and connect
+    // the input slot af the newx node to this slot
+    // empty if not createFromSlot mode
+    BaseSlotWeak m_createNodeFromSlot;
+
 public:
     static NodeManager* instance();
     static bool initInstance();
@@ -32,7 +40,8 @@ public:
     void addSlotColor(const std::string& vBaseSlotType, const ImVec4& vSlotColor);
 
 private:
-    bool m_showLibrary();
-    void m_createInternalNode(const BaseLibrary::LibraryEntry& vLibraryEntry);
-    void m_createPluginNode(const BaseLibrary::LibraryEntry& vLibraryEntry);
+    bool m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vSlotType);
+    void m_showLibrary();
+    BaseNodeWeak m_createInternalNode(const BaseLibrary::LibraryEntry& vLibraryEntry);
+    BaseNodeWeak m_createPluginNode(const BaseLibrary::LibraryEntry& vLibraryEntry);
 };

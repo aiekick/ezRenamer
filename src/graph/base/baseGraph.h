@@ -10,7 +10,9 @@
 #include "baseNode.h"
 #include "baseSlot.h"
 #include "baseLink.h"
+#include "baseLibrary.h"
 
+#include <vector>
 #include <functional>
 #include <unordered_map>
 
@@ -25,7 +27,8 @@ class BaseGraph  //
       public rnm::NodeInterface {
 public:
     struct BaseGraphDatas : public ez::GraphDatas {};
-    typedef std::function<void(const BaseGraphWeak& vGraph)> BasicActionFunctor;
+    typedef std::function<void(const BaseGraphWeak&)> BgRightClickActionFunctor;
+    typedef std::function<bool(const BaseGraphWeak&, const BaseSlotWeak&)> PrepareForCreateNodeFromSlotActionFunctor;
     typedef ez::Uuid LinkUuid;
 
 public:  // Static
@@ -48,7 +51,8 @@ private:  // Graph
     nd::PinId m_contextMenuSlotId = 0;
     nd::LinkId m_contextMenuLinkId = 0;
     std::unordered_map<LinkUuid, BaseLinkPtr> m_links;  // linkId, link // for search query
-    BasicActionFunctor m_bgRightClickAction = nullptr;
+    BgRightClickActionFunctor m_BgRightClickAction = nullptr;
+    PrepareForCreateNodeFromSlotActionFunctor m_PrepareForCreateNodeFromSlotActionFunctor = nullptr;
     std::vector<nd::NodeId> m_nodesToCopy;  // for copy/paste
     ImVec2 m_nodesCopyOffset;
 
@@ -78,16 +82,19 @@ public:  // Normal
     void setCanvasOffset(const ImVec2& vOffset);
     void setCanvasScale(const float& vScale);
 
+    bool connectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo);
+
     ez::xml::Nodes getXmlNodes(const std::string& vUserDatas = "") override;
     // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
     bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
 
-    void setBgRightClickAction(const BasicActionFunctor& vFunctor);
+    void setBgRightClickAction(const BgRightClickActionFunctor& vFunctor);
+    void setPrepareForCreateNodeFromSlotActionFunctor(const PrepareForCreateNodeFromSlotActionFunctor& vFunctor);
 
 public:  // Template
     template <typename T>
     std::shared_ptr<T> createChildNode() {
-        static_assert(std::is_base_of<BaseNode, T>::value, "U must derive of BaseNode");
+        static_assert(std::is_base_of<BaseNode, T>::value, "T must derive of BaseNode");
         auto node_ptr = std::make_shared<T>(m_parentStyle);
         if (!node_ptr->init()) {
             node_ptr.reset();
@@ -101,6 +108,22 @@ public:  // Template
         return node_ptr;
     }
 
+    template <typename T>
+    std::shared_ptr<T> cloneChildNode(const std::weak_ptr<T>& vNodeToClone, const ImVec2& vNewPos) {
+        static_assert(std::is_base_of<BaseNode, T>::value, "T must derive of BaseNode");
+        auto node_ptr = vNodeToClone.lock();
+        if (node_ptr != nullptr) {
+            auto duplicated_node_ptr = node_ptr->clone();
+            if (m_addNode(duplicated_node_ptr) != ez::RetCodes::SUCCESS) {
+                duplicated_node_ptr.reset();
+            } else {
+                nd::SetNodePosition(duplicated_node_ptr->m_nodeID, m_openPopupPosition);
+            }
+            return duplicated_node_ptr;
+        }
+        return nullptr;
+    }
+
 private:  // Graph
     void m_init();
     void m_unit();
@@ -112,6 +135,10 @@ private:  // Graph
     void m_doDeleteLinkOrNode();
 
     void m_doShorcutsOnNode();
+
+    // create node with a specific slot type in mind
+    void m_doCreateNodeFromSlot(const BaseSlotWeak& vSlot);
+    bool m_PrepareForCreateNodeFromSlot(const BaseSlotWeak& vSlot);
 
     void m_copySelectedNodes();
     void m_pasteNodesAtMousePos();

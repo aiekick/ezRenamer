@@ -5,6 +5,7 @@
 #include <imguipack/ImGuiPack.h>
 #include <ezlibs/ezGraph.hpp>
 #include <ezlibs/ezXmlConfig.hpp>
+#include <ezlibs/ezCnt.hpp>
 
 #include "baseStyle.h"
 #include "baseSlot.h"
@@ -54,7 +55,10 @@ private:
     ImVec2 m_pos;
     ImVec2 m_size;
     nd::PinId m_pinID = 0;
-    BaseLinkWeak m_link;
+
+    // un slot peut etre attaché a plusieurs autre slots, 
+    // donc plusieurs links
+    ez::cnt::DicoVector<ez::Uuid, BaseLinkWeak> m_links;
 
 public:
     template <typename T>

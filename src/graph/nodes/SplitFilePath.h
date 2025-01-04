@@ -16,6 +16,6 @@ output slots :
 class SplitFilePath : public BaseNode {
 public:
     explicit SplitFilePath(const BaseStyle& vParentStyle);
-
+    ENABLE_CLONE(SplitFilePath)
     bool init() override;
 };

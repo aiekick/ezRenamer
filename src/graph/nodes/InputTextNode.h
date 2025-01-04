@@ -12,6 +12,6 @@ it give a ouput slot with a string of the text pane content
 class InputTextNode : public BaseNode {
 public:
     explicit InputTextNode(const BaseStyle& vParentStyle);
-
+    ENABLE_CLONE(InputTextNode)
     bool init() override;
 };
