@@ -39,27 +39,27 @@ bool NodeManager::init() {
         "Input files",
         "INPUT_FILE_NODE",  //
         {},
-        {"FILE_SLOT"},
+        {"FILE_SLOT", "FLOW_SLOT"},
         BaseLibrary::NodeSource::INTERNAL));
     m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
         "Sources",
         "Input text",
         "INPUT_TEXT_NODE",  //
         {},
-        {"STRING_SLOT"},
+        {"STRING_SLOT", "FLOW_SLOT"},
         BaseLibrary::NodeSource::INTERNAL));
     m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
         "Extractors",
         "File path splitter",
         "FILE_PATH_SPLITTER_NODE",  //
-        {"FILE_SLOT"},
-        {"FILE_SLOT", "STRING_SLOT"},
+        {"FILE_SLOT", "FLOW_SLOT"},
+        {"FILE_SLOT", "STRING_SLOT", "FLOW_SLOT"},
         BaseLibrary::NodeSource::INTERNAL));
     m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
         "Renamers",
         "File path name Renamer",
         "FILE_NAME_RENAMER_NODE",  //
-        {"FILE_SLOT"},
+        {"FILE_SLOT", "FLOW_SLOT"},
         {},
         BaseLibrary::NodeSource::INTERNAL));
 

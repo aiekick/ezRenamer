@@ -7,9 +7,13 @@ private:
     FlowInputSlotPtr m_flowInputSlotPtr = nullptr;
 
 public:
-    bool initInputFlow(const BaseStyle& vParentStyle) {
+    bool initInputFlow(const BaseStyle& vParentStyle, const BaseNodeWeak& vParentNode) {
         m_flowInputSlotPtr = BaseSlot::create<FlowInputSlot>(vParentStyle, {});
-        return (m_flowInputSlotPtr != nullptr);
+        if (m_flowInputSlotPtr != nullptr) {
+            m_flowInputSlotPtr->setParentNode(vParentNode);
+            return true;
+        }
+        return false;
     }
 
     FlowInputSlotWeak getInputFlowSlot() { return m_flowInputSlotPtr; }

@@ -119,11 +119,11 @@ public:
      bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
 
 private:
-    void m_drawSlot();
     void m_drawInputWidget();
     void m_drawOutputWidget();
-    void m_drawSlotText(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
 
 protected:
+    void m_drawSlot();
     virtual void m_drawBaseSlot(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
+    virtual void m_drawSlotText(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
 };

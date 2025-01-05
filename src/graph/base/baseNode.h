@@ -99,13 +99,14 @@ public:  // Normal
     const BaseStyle& getParentStyle();
     BaseStyle getNodeStyle();
 
-    BaseSlotWeak findSlotByType(ez::SlotDir vDir, const std::string& vType);
+    virtual BaseSlotWeak findSlotByType(ez::SlotDir vDir, const std::string& vType);
 
 public:  // Template
     template <typename T>
     std::weak_ptr<T> createChildSlot() {
         static_assert(std::is_base_of<BaseSlot, T>::value, "T must derive of BaseSlot");
         auto slot_ptr = std::make_shared<T>(m_parentStyle);
+        slot_ptr->m_setThis(slot_ptr);
         if (!slot_ptr->init()) {
             slot_ptr.reset();
         } else {
@@ -125,8 +126,6 @@ protected:  // Node
     virtual bool m_drawFooter();
     virtual bool m_drawEnd();
     virtual void m_displayInfosOnTopOfTheNode();
-
-private:
-    BaseSlotWeak m_findSlot(nd::PinId vId);
+    virtual BaseSlotWeak m_findSlot(nd::PinId vId);
 };
 

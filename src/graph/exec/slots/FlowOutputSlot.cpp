@@ -11,6 +11,12 @@ bool FlowOutputSlot::init() {
     return ret && true;
 }
 
+void FlowOutputSlot::drawSlot() {
+    nd::BeginPin(getUuid(), nd::PinKind::Output);
+    BaseSlot::m_drawSlot();
+    nd::EndPin();
+}
+
 void FlowOutputSlot::m_drawBaseSlot(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor) {
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     if (draw_list) {

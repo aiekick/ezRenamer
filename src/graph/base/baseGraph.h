@@ -96,6 +96,7 @@ public:  // Template
     std::shared_ptr<T> createChildNode() {
         static_assert(std::is_base_of<BaseNode, T>::value, "T must derive of BaseNode");
         auto node_ptr = std::make_shared<T>(m_parentStyle);
+        node_ptr->m_setThis(node_ptr);
         if (!node_ptr->init()) {
             node_ptr.reset();
         } else {

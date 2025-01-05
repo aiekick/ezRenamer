@@ -7,9 +7,13 @@ private:
     FlowOutputSlotPtr m_flowOutputSlotPtr = nullptr;
 
 public:
-    bool initOutputFlow(const BaseStyle& vParentStyle) {
+    bool initOutputFlow(const BaseStyle& vParentStyle, const BaseNodeWeak& vParentNode) {
         m_flowOutputSlotPtr = BaseSlot::create<FlowOutputSlot>(vParentStyle, {});
-        return (m_flowOutputSlotPtr != nullptr);
+        if (m_flowOutputSlotPtr != nullptr) {
+            m_flowOutputSlotPtr->setParentNode(vParentNode);
+            return true;
+        }
+        return false;
     }
 
     FlowOutputSlotWeak getOutputFlowSlot() { return m_flowOutputSlotPtr; }

@@ -183,8 +183,25 @@ void BaseGraph::m_doCreateLinkOrNode() {
             auto start_slot_ptr = m_findSlot(startSlotId).lock();
             auto end_slot_ptr = m_findSlot(endSlotId).lock();
             if (start_slot_ptr != nullptr && end_slot_ptr != nullptr) {
-                if (start_slot_ptr == end_slot_ptr ||                                                                                   // same slot
-                    (end_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().dir == ez::SlotDir::INPUT && !end_slot_ptr->m_links.empty())) {  // input slot already connected
+                if (end_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().dir == ez::SlotDir::OUTPUT &&
+                    start_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().dir == ez::SlotDir::INPUT) {  // if start and end are inverted
+                    std::swap(start_slot_ptr, end_slot_ptr);
+                }
+                if (start_slot_ptr == end_slot_ptr) {  // same slot
+                    showLabel("Same Slot", ImColor(32, 45, 32, 180));
+                    nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+                } else if (start_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().dir == end_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().dir) {  // same dir
+                    showLabel("Same dir", ImColor(32, 45, 32, 180));
+                    nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+                } else if (start_slot_ptr->getParentNode().lock() == end_slot_ptr->getParentNode().lock()) {  // same parent node
+                    showLabel("Same node", ImColor(32, 45, 32, 180));
+                    nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+                } else if (start_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().type != end_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().type) {  // same dir
+                    showLabel("Not Same type", ImColor(32, 45, 32, 180));
+                    nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+                } else if ((end_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().dir == ez::SlotDir::INPUT &&
+                            !end_slot_ptr->m_links.empty())) {  // input slot already connected
+                    showLabel("input slots accept only one link", ImColor(32, 45, 32, 180));
                     nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
                 } else {
                     showLabel("+ Create Link", ImColor(32, 45, 32, 180));  //-V112
@@ -199,13 +216,24 @@ void BaseGraph::m_doCreateLinkOrNode() {
         nd::PinId slotId = 0;
         if (nd::QueryNewNode(&slotId)) {
             auto slot_ptr = m_findSlot(slotId).lock();
-            if (slot_ptr->getDatas<ez::SlotDatas>().dir == ez::SlotDir::INPUT) {
-                showLabel("o Redirect link", ImColor(32, 45, 32, 180));  //-V112
-            } else if (slot_ptr->getDatas<ez::SlotDatas>().dir == ez::SlotDir::OUTPUT) {
-                showLabel("+ Create Node", ImColor(32, 45, 32, 180));  //-V112
-                if (nd::AcceptNewItem()) {
-                    m_doCreateNodeFromSlot(slot_ptr);
+            if (slot_ptr != nullptr) {
+                if (slot_ptr->getDatas<ez::SlotDatas>().dir == ez::SlotDir::INPUT) {
+                    if (!slot_ptr->m_links.empty()) {
+                        showLabel("input slots accept only one link", ImColor(32, 45, 32, 180));
+                        nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+                    } else {
+                        showLabel("o Redirect link", ImColor(32, 45, 32, 180));  //-V112
+                    }
+                } else if (slot_ptr->getDatas<ez::SlotDatas>().dir == ez::SlotDir::OUTPUT) {
+                    showLabel("+ Create Node", ImColor(32, 45, 32, 180));  //-V112
+                    if (nd::AcceptNewItem()) {
+                        m_doCreateNodeFromSlot(slot_ptr);
+                    }
                 }
+            } else {
+#ifdef _DEBUG
+                showLabel("/_\\ Slot not found", ImColor(32, 45, 32, 180));  //-V112
+#endif
             }
         }
     }
