@@ -2,10 +2,12 @@
 #include <graph/slots/FileInputSlot.h>
 
 FileNameRenamerNode::FileNameRenamerNode(const BaseStyle& vParentStyle)  //
-    : BaseNode(vParentStyle, BaseNodeDatas("File renamer", "FILE_NAME_RENAMER_NODE")) {}
+    : ActionNode(vParentStyle) {}
 
 bool FileNameRenamerNode::init() {
-    bool ret = BaseNode::init();
+    bool ret = ActionNode::init();
+    getDatasRef<BaseNodeDatas>().name = "File renamer";
+    getDatasRef<BaseNodeDatas>().type = "FILE_NAME_RENAMER_NODE";
     createChildSlot<FileInputSlot>();
     return ret && true;
 }

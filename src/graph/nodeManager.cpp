@@ -2,10 +2,10 @@
 #include <graph/base/baseNode.h>
 #include <graph/base/baseSlot.h>
 
-#include <graph/nodes/InputFileNode.h>
-#include <graph/nodes/InputTextNode.h>
-#include <graph/nodes/SplitFilePath.h>
-#include <graph/nodes/FileNameRenamerNode.h>
+#include <graph/nodes/inputs/InputFileNode.h>
+#include <graph/nodes/inputs/InputTextNode.h>
+#include <graph/nodes/tools/SplitFilePath.h>
+#include <graph/nodes/actions/FileNameRenamerNode.h>
 
 std::unique_ptr<NodeManager> NodeManager::m_singleton = nullptr;
 
@@ -30,6 +30,7 @@ bool NodeManager::init() {
     m_graphStyle.style.altDragSnapping = 5.0f;
 
     addSlotColor("NONE", ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+    addSlotColor("FLOW_SLOT", ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
     addSlotColor("FILE_SLOT", ImVec4(0.5f, 0.5f, 0.9f, 1.0f));
     addSlotColor("STRING_SLOT", ImVec4(0.9f, 0.9f, 0.1f, 1.0f));
 
@@ -88,16 +89,29 @@ bool NodeManager::drawGraph() {
     return m_graphPtr->drawGraph();
 }
 
-ImVec4 NodeManager::getSlotColor(const std::string& vBaseSlotType) {
-    ImVec4 res = ImVec4(0.8f, 0.8f, 0.0f, 1.0f);
+bool NodeManager::getSlotColor(const std::string& vBaseSlotType, ImVec4& vOutColor) const {
     if (m_ColorSlots.find(vBaseSlotType) != m_ColorSlots.end()) {
-        res = m_ColorSlots.at(vBaseSlotType);
+        vOutColor = m_ColorSlots.at(vBaseSlotType);
+        return true;
     }
-    return res;
+    return false;
+}
+
+bool NodeManager::getSlotColor(const std::string& vBaseSlotType, ImU32& vOutColor) const {
+    if (m_ColorSlots.find(vBaseSlotType) != m_ColorSlots.end()) {
+        vOutColor = ImGui::GetColorU32(m_ColorSlots.at(vBaseSlotType));
+        return true;
+    }
+    return false;
 }
 
 void NodeManager::addSlotColor(const std::string& vBaseSlotType, const ImVec4& vSlotColor) {
     m_ColorSlots[vBaseSlotType] = vSlotColor;
+}
+
+bool NodeManager::executeGraph() {
+    // on doit trouver les dernier nodes
+    return false;
 }
 
 bool NodeManager::m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vInputSlotType) {

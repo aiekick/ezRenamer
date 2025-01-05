@@ -1,7 +1,5 @@
 #pragma once
 
-#include <apis/ezRenamerPluginApi.h>
-
 #include <imguipack/ImGuiPack.h>
 #include <ezlibs/ezGraph.hpp>
 #include <ezlibs/ezXmlConfig.hpp>
@@ -9,6 +7,9 @@
 
 #include "baseStyle.h"
 #include "baseSlot.h"
+#include "baseLink.h"
+
+#include "interfaces/SlotColorBankInterface.h"
 
 #include <unordered_map>
 #include <map>
@@ -19,9 +20,7 @@ typedef std::weak_ptr<BaseSlot> BaseSlotWeak;
 
 class BaseSlot  //
     : public ez::Slot,
-      public ez::xml::Config,
-      public rnm ::NotifyInterface,
-      public rnm ::NotifierInterface {
+      public ez::xml::Config {
     friend class BaseGraph;
     friend class BaseNode;
     friend class BaseLink;
@@ -31,6 +30,7 @@ public:
         float radius{2.5f};
         ImU32 color{IM_COL32(200, 200, 0, 255)};
         ImU32 hovered_color{IM_COL32(0, 200, 0, 255)};
+        ImU32 inner_color{IM_COL32(0, 200, 0, 255)};
         ImVec2 slotPadding{0, 0};
         float slotIconSize{16.0f};
         bool highLighted{false};
@@ -38,16 +38,36 @@ public:
         bool hideName{false};
         bool connected{false};
         bool hidden{false};
-        bool colorIsSet{false};
         bool debugMode{false};
         BaseSlotDatas() = default;
-        BaseSlotDatas(const std::string& vName, const std::string& vType, const ez::SlotDir vSlotDir, ez::UserDatas vUserDatas = nullptr)
-            : ez::SlotDatas(vName, vType, vSlotDir, vUserDatas) {}
+        BaseSlotDatas(
+            const std::string& vName,
+            const std::string& vType,
+            const ez::SlotDir vSlotDir,
+            const SlotColorBankInterface* vSlotColorBankPtr = nullptr,
+            ez::UserDatas vUserDatas = nullptr)
+            : ez::SlotDatas(vName, vType, vSlotDir, vUserDatas) {
+            if (vSlotColorBankPtr != nullptr) {
+                if (vSlotColorBankPtr->getSlotColor(vType, color)) {
+                    hovered_color = color;
+                    inner_color = color;
+                }
+            }
+        }
     };
 
 public:  // Static
-    static BaseSlotPtr create(const BaseStyle& vParentStyle, const BaseSlotDatas& vSlotDatas);    
-    
+    template<typename T>
+    static std::shared_ptr<T> create(const BaseStyle& vParentStyle, const BaseSlotDatas& vSlotDatas) {
+        static_assert(std::is_base_of<BaseSlot, T>::value, "T must derive of BaseSlot");
+        auto slot_ptr = std::make_shared<T>(vParentStyle, vSlotDatas);
+        slot_ptr->m_setThis(slot_ptr);
+        if (!slot_ptr->init()) {
+            slot_ptr.reset();
+        }
+        return slot_ptr;
+    }
+
 private:  // Common
     const BaseStyle& m_parentStyle;
 
@@ -86,26 +106,6 @@ public:
     bool isAnInput();
     bool isAnOutput();
 
-    void notifyConnectionChangeToParent(bool vConnected);
-    bool canWeConnectToSlot(BaseSlotWeak vSlot);
-
-    void notify(const rnm::NotifyEvent& vEvent, const BaseSlotWeak& vEmitterSlot = {}, const BaseSlotWeak& vReceiverSlot = {}) override;
-
-    /// When a OnConnectEvent event is detected (to be herited)
-    virtual void onConnectEvent(const BaseSlotWeak& vOtherSlot);
-
-    /// When a OnDisConnectEvent event is detected (to be herited)
-    virtual void onDisConnectEvent(const BaseSlotWeak& vOtherSlot);
-
-    /// Treat an event (to be herited)
-    void treatNotification(const rnm::NotifyEvent& vEvent, const BaseSlotWeak& vEmitterSlot = {}, const BaseSlotWeak& vReceiverSlot = {}) override;
-
-    /// Send a event in front (to be herited)
-    void sendFrontNotification(const rnm::NotifyEvent& vEvent) override;
-
-    /// Send a event in back (to be herited)
-    void sendBackNotification(const rnm::NotifyEvent& vEvent) override;
-
     /// called when a slot was double clicked with mouse
     //virtual void mouseDoubleClickedOnSlot(const ImGuiMouseButton& vMouseButton);
 
@@ -123,5 +123,7 @@ private:
     void m_drawInputWidget();
     void m_drawOutputWidget();
     void m_drawSlotText(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
-    void m_drawBaseSlot(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
+
+protected:
+    virtual void m_drawBaseSlot(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
 };

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <graph/base/baseStyle.h>
-#include <graph/base/baseNode.h>
+#include <graph/exec/nodes/ActionNode.h>
 
 /*
 FileNameRenamerNode
@@ -15,7 +14,7 @@ the preview of all
 the finale renaming is done by the app
 
 */
-class FileNameRenamerNode : public BaseNode {
+class FileNameRenamerNode : public ActionNode {
 private:
 public:
     explicit FileNameRenamerNode(const BaseStyle& vParentStyle);

@@ -27,19 +27,19 @@ class BaseNode  //
       public ez::xml::Config,
       public rnm::GuiInterface,
       public rnm::TaskInterface,
-      public rnm::NodeInterface { 
+      public rnm::NodeInterface {
     friend class BaseGraph;
 
 public:
     struct BaseNodeDatas : public ez::NodeDatas {
         struct NodeLayout {
-            bool used = false;                  // utilise dans le code ou non
-            bool hidden = false;                // visibilite du node
-            bool inserted = false;              // pour voir si il y a des doublon dasn des colonnes
-            bool rootUsed = false;              // ce node est le root
-            bool graphDisabled = false;         // pas possible d'ouvrir ce graph
-            bool deletionDisabled = false;      // pas possible d'effacer ce node
-            ez::ivec2 cell = ez::ivec2(-1);     // layout x:column, y:row
+            bool used = false;               // utilise dans le code ou non
+            bool hidden = false;             // visibilite du node
+            bool inserted = false;           // pour voir si il y a des doublon dasn des colonnes
+            bool rootUsed = false;           // ce node est le root
+            bool graphDisabled = false;      // pas possible d'ouvrir ce graph
+            bool deletionDisabled = false;   // pas possible d'effacer ce node
+            ez::ivec2 cell = ez::ivec2(-1);  // layout x:column, y:row
         } layout;
         ImU32 color{IM_COL32(0, 100, 0, 200)};
         BaseNodeDatas() = default;
@@ -58,7 +58,7 @@ private:  // Node
     bool m_isHovered{false};
     bool m_isSelected{false};
 
-private: // Graph
+private:  // Graph
     nd::EditorContext* m_pNodeGraphContext{nullptr};
     std::set<ez::Uuid> m_selectedNodes{};
 
@@ -69,16 +69,16 @@ private:  // popups
     nd::NodeId m_contextMenuNodeId{};
     nd::LinkId m_contextMenuLinkId{};
 
-public: // Normal
+public:  // Normal
     template <typename T>
     explicit BaseNode(const BaseStyle& vParentStyle, const T& vDatas) : m_parentStyle(vParentStyle), ez::Node(vDatas) {
         static_assert(std::is_base_of<BaseNodeDatas, T>::value, "T must derive of BaseNodeDatas");
     }
     ~BaseNode() override = default;
 
-    bool init() override { 
+    bool init() override {
         if (ez::Node::init()) {
-            m_nodeID = getUuid(); 
+            m_nodeID = getUuid();
             return true;
         }
         return false;
@@ -101,7 +101,7 @@ public: // Normal
 
     BaseSlotWeak findSlotByType(ez::SlotDir vDir, const std::string& vType);
 
-    public:  // Template
+public:  // Template
     template <typename T>
     std::weak_ptr<T> createChildSlot() {
         static_assert(std::is_base_of<BaseSlot, T>::value, "T must derive of BaseSlot");
@@ -116,15 +116,17 @@ public: // Normal
         return slot_ptr;
     }
 
-private: // Node
-    bool m_drawBegin();
-    bool m_drawHeader();
-    bool m_drawContent();
-    bool m_drawInputSlots();
-    bool m_drawOutputSlots();
-    bool m_drawFooter();
-    bool m_drawEnd();
-    void m_displayInfosOnTopOfTheNode();
+protected:  // Node
+    virtual bool m_drawBegin();
+    virtual bool m_drawHeader();
+    virtual bool m_drawContent();
+    virtual bool m_drawInputSlots();
+    virtual bool m_drawOutputSlots();
+    virtual bool m_drawFooter();
+    virtual bool m_drawEnd();
+    virtual void m_displayInfosOnTopOfTheNode();
+
+private:
     BaseSlotWeak m_findSlot(nd::PinId vId);
 };
 

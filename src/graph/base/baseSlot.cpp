@@ -1,15 +1,5 @@
 #include "baseSlot.h"
 #include <ezlibs/ezLog.hpp>
-#include <graph/nodeManager.h>
-
-BaseSlotPtr BaseSlot::create(const BaseStyle& vParentStyle, const BaseSlotDatas& vSlotDatas) {
-    auto slot_ptr = std::make_shared<BaseSlot>(vParentStyle, vSlotDatas);
-    slot_ptr->m_setThis(slot_ptr);
-    if (!slot_ptr->init()) {
-        slot_ptr.reset();
-    }
-    return slot_ptr;
-}
 
 void BaseSlot::setRadius(const float vRadius) {
     getDatasRef<BaseSlotDatas>().radius = vRadius;
@@ -67,29 +57,6 @@ bool BaseSlot::draw() {
     return false;
 }
 
-void BaseSlot::notifyConnectionChangeToParent(bool vConnected) {  // va contacter le parent pour lui dire que ce slot est connecté a un autre
-    assert(!m_This.expired());
-    if (!getParentNode().expired()) {
-        auto parentNodePtr = getParentNode().lock();
-        if (parentNodePtr) {
-            // parentNodePtr->notifyConnectionChangeOfThisSlot(m_This, vConnected);
-        }
-    }
-}
-
-bool BaseSlot::canWeConnectToSlot(BaseSlotWeak vSlot) {
-    if (!getParentNode().expired()) {
-        auto parentNodePtr = getParentNode().lock();
-        if (parentNodePtr) {
-            assert(!m_This.expired());
-            // return parentNodePtr->canWeConnectSlots(m_This, vSlot);
-        }
-    }
-
-    return false;
-}
-
-
 void BaseSlot::m_drawSlot() {
     auto& datas = getDatasRef<BaseSlotDatas>();
     ImGui::Dummy(datas.slotIconSize);
@@ -107,18 +74,11 @@ void BaseSlot::m_drawSlot() {
     datas.highLighted = false;
 
     if (ImGui::IsRectVisible(datas.slotIconSize)) {
-        if (!datas.colorIsSet) {
-            datas.color = ImGui::GetColorU32(NodeManager::instance()->getSlotColor(datas.type));
-            datas.colorIsSet = true;
-        }
-
-        auto u_color = ImGui::GetColorU32(datas.color);
-
-        m_drawBaseSlot(slotCenter, datas.connected, u_color, u_color);
+        m_drawBaseSlot(slotCenter, datas.connected, datas.color, datas.color);
 
         if (ImGui::IsItemHovered()) {
             datas.highLighted = true;
-            m_drawSlotText(slotCenter, datas.connected, u_color, u_color);
+            m_drawSlotText(slotCenter, datas.connected, datas.color, datas.color);
         }
     }
 }
@@ -129,95 +89,6 @@ bool BaseSlot::isAnInput() {
 
 bool BaseSlot::isAnOutput() {
     return getDatas<BaseSlotDatas>().dir == ez::SlotDir::OUTPUT;
-}
-
-void BaseSlot::notify(const rnm::NotifyEvent& vEvent, const BaseSlotWeak& vEmitterSlot, const BaseSlotWeak& /*vReceiverSlot*/) {
-    // one notification can be :
-    // - from input to output : Front
-    // - from output to input : Back
-    // Front or Back will not been used in the same way
-
-    if (vEmitterSlot.expired() || vEmitterSlot.lock() == m_This.lock())  // Front or Back
-    {
-        // we propagate the notification to the connected slots
-        /*for (const auto& otherSlot : linkedSlots) {
-            auto otherSlotPtr = otherSlot.lock();
-            if (otherSlotPtr) {
-                otherSlotPtr->Notify(vEvent, m_This, otherSlot);
-            }
-        }
-
-        // also to the LMR selected output slots
-
-        // Left
-        if (vEmitterSlot.lock() == BaseSlot::sSlotGraphOutputMouseLeft.lock()) {
-            BaseNode::SelectForGraphOutput_Callback(BaseSlot::sSlotGraphOutputMouseLeft, ImGuiMouseButton_Left);
-        }
-
-        // Middle
-        if (vEmitterSlot.lock() == BaseSlot::sSlotGraphOutputMouseMiddle.lock()) {
-            BaseNode::SelectForGraphOutput_Callback(BaseSlot::sSlotGraphOutputMouseLeft, ImGuiMouseButton_Middle);
-        }
-
-        // Right
-        if (vEmitterSlot.lock() == BaseSlot::sSlotGraphOutputMouseRight.lock()) {
-            BaseNode::SelectForGraphOutput_Callback(BaseSlot::sSlotGraphOutputMouseLeft, ImGuiMouseButton_Right);
-        }*/
-    } else  // receiving notification from other slots
-    {
-        // we treat the notification in herited slots
-        /* TreatNotification(vEvent, vEmitterSlot, m_This);
-
-        auto parentPtr = parentNode.lock();
-        if (parentPtr) {
-            // we treat the notification in parent node
-            parentPtr->TreatNotification(vEvent, vEmitterSlot, m_This);
-        }
-
-        if (IsAnInput())  // Front
-        {
-            // front propagate some particular global events
-            if (vEvent == GraphIsLoaded || vEvent == NewFrameAvailable || vEvent == SomeTasksWasUpdated) {
-                parentPtr->PropagateFrontNotification(vEvent);
-            }
-        } else if (IsAnOutput())  // Back
-        {
-            // back propagate some particular global events
-            if (vEvent == GraphIsLoaded || vEvent == NewFrameAvailable || vEvent == SomeTasksWasUpdated) {
-                parentPtr->PropagateBackNotification(vEvent);
-            }
-        }*/
-    }
-}
-
-void BaseSlot::onConnectEvent(const BaseSlotWeak& /*vOtherSlot*/) {
-#ifdef _DEBUG
-    LogVarInfo("BaseSlot::OnConnectEvent catched by the slot \"%s\", some class not implement it. maybe its wanted", getDatas<BaseSlotDatas>().name.c_str());
-#endif
-}
-
-void BaseSlot::onDisConnectEvent(const BaseSlotWeak& /*vOtherSlot*/) {
-#ifdef _DEBUG
-    LogVarInfo("BaseSlot::OnDisConnectEvent catched by the slot \"%s\", some class not implement it. maybe its wanted", getDatas<BaseSlotDatas>().name.c_str());
-#endif
-}
-
-void BaseSlot::treatNotification(const rnm::NotifyEvent& /*vEvent*/, const BaseSlotWeak& /*vEmitterSlot*/, const BaseSlotWeak& /*vReceiverSlot*/) {
-#ifdef _DEBUG
-    LogVarInfo("BaseSlot::TreatNotification catched by the slot \"%s\", some class not implement it. maybe its wanted", getDatas<BaseSlotDatas>().name.c_str());
-#endif
-}
-
-void BaseSlot::sendFrontNotification(const rnm::NotifyEvent& /*vEvent*/) {
-#ifdef _DEBUG
-    LogVarInfo("BaseSlot::SendFrontNotification catched by the slot \"%s\", some class not implement it. maybe its wanted", getDatas<BaseSlotDatas>().name.c_str());
-#endif
-}
-
-void BaseSlot::sendBackNotification(const rnm::NotifyEvent& /*vEvent*/) {
-#ifdef _DEBUG
-    LogVarInfo("BaseSlot::SendBackNotification catched by the slot \"%s\", some class not implement it. maybe its wanted", getDatas<BaseSlotDatas>().name.c_str());
-#endif
 }
 
 void BaseSlot::drawDebugInfos() {
@@ -254,7 +125,6 @@ void BaseSlot::m_drawOutputWidget() {
 void BaseSlot::m_drawSlotText(const ImVec2& /*vCenter*/, bool /*vConnected*/, ImU32 /*vColor*/, ImU32 /*vInnerColor*/) {
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     if (draw_list) {
-        std::string slotUType;
         std::string slotName;
 
         auto& datas = getDatasRef<BaseSlotDatas>();
@@ -266,7 +136,7 @@ void BaseSlot::m_drawSlotText(const ImVec2& /*vCenter*/, bool /*vConnected*/, Im
                 ImVec2 txtSize = ImGui::CalcTextSize(beg);
                 ImVec2 min = ImVec2(m_pos.x - datas.slotIconSize * 0.5f - txtSize.x, m_pos.y - datas.slotIconSize * 0.5f);
                 ImVec2 max = min + ImVec2(txtSize.x, datas.slotIconSize);
-                ImGui::RenderFrame(min, max, ImGui::GetColorU32(ImVec4(0.1f, 0.1f, 0.1f, 1.0f)));
+                draw_list->AddRectFilled(min, max, ImGui::GetColorU32(ImVec4(0.1f, 0.1f, 0.1f, 1.0f)));
                 draw_list->AddText(ImVec2(min.x, m_pos.y - txtSize.y * 0.55f), ImColor(200, 200, 200, 255), beg);
             }
         } else if (isAnOutput()) {
@@ -277,7 +147,7 @@ void BaseSlot::m_drawSlotText(const ImVec2& /*vCenter*/, bool /*vConnected*/, Im
                 ImVec2 txtSize = ImGui::CalcTextSize(beg);
                 ImVec2 min = ImVec2(m_pos.x + datas.slotIconSize * 0.5f, m_pos.y - datas.slotIconSize * 0.5f);
                 ImVec2 max = min + ImVec2(txtSize.x, datas.slotIconSize);
-                ImGui::RenderFrame(min, max, ImGui::GetColorU32(ImVec4(0.1f, 0.1f, 0.1f, 1.0f)));
+                draw_list->AddRectFilled(min, max, ImGui::GetColorU32(ImVec4(0.1f, 0.1f, 0.1f, 1.0f)));
                 draw_list->AddText(ImVec2(min.x, m_pos.y - txtSize.y * 0.55f), ImColor(200, 200, 200, 255), beg);
             }
         }

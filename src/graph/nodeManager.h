@@ -8,7 +8,7 @@
 #include <memory>
 #include <functional>
 
-class NodeManager {
+class NodeManager : public SlotColorBankInterface {
 private: // Static
     static std::unique_ptr<NodeManager> m_singleton;
 
@@ -36,8 +36,10 @@ public:
     bool init();
     void unit();
     bool drawGraph();
-    ImVec4 getSlotColor(const std::string& vBaseSlotType);
-    void addSlotColor(const std::string& vBaseSlotType, const ImVec4& vSlotColor);
+    bool getSlotColor(const std::string& vBaseSlotType, ImVec4& vOutColor) const override;
+    bool getSlotColor(const std::string& vBaseSlotType, ImU32& vOutColor) const override;
+    void addSlotColor(const std::string& vBaseSlotType, const ImVec4& vSlotColor) override;
+    bool executeGraph();
 
 private:
     bool m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vSlotType);

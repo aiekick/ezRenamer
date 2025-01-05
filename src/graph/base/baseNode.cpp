@@ -13,6 +13,7 @@ bool BaseNode::drawNode() {
     bool change = false;
     if (m_drawBegin()) {
         change |= m_drawHeader();
+        m_headerRect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
         change |= m_drawContent();
         change |= m_drawFooter();
         change |= m_drawEnd();
@@ -84,7 +85,6 @@ bool BaseNode::m_drawHeader() {
     ImGui::Spring(1, 5.0f);
     ImGui::Dummy(ImVec2(0, 20));
     ImGui::EndHorizontal();
-    m_headerRect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     return false;
 }
 

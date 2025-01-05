@@ -1,6 +1,11 @@
 #pragma once
 
-#include <graph/base/baseNode.h>
+#include <graph/exec/nodes/ToolNode.h>
+
+class FilePathSplitter {
+public:
+
+};
 
 /*
 SplitFilePath
@@ -13,7 +18,7 @@ output slots :
  - the file
  - the extensions
 */
-class SplitFilePath : public BaseNode {
+class SplitFilePath : public ToolNode {
 public:
     explicit SplitFilePath(const BaseStyle& vParentStyle);
     ENABLE_CLONE(SplitFilePath)
