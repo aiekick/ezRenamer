@@ -7,7 +7,9 @@ public:
     explicit FlowInputSlot(const BaseStyle& vParentStyle, const BaseSlotDatas& vDatas);
     bool init() override;
 
+    // for expose protected member
     void drawSlot();
+    void drawHoveredSlotText();
 
 protected:
     void m_drawBaseSlot(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor) override;

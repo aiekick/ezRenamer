@@ -20,6 +20,7 @@ bool BaseLink::init(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd) {
         m_in = vStart;
         m_out = vEnd;
         m_linkId = getUuid();
+        m_type = inPtr->getDatas<BaseSlot::BaseSlotDatas>().type;
         m_color = inPtr->getDatas<BaseSlot::BaseSlotDatas>().color;
         m_thick = 2.0f;
         ret = true;

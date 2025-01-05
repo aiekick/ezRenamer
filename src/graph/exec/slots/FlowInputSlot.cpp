@@ -2,10 +2,13 @@
 #include <graph/nodeManager.h>
 
 FlowInputSlot::FlowInputSlot(const BaseStyle& vParentStyle, const BaseSlotDatas& /*vDatas*/)  //
-    : BaseSlot(vParentStyle, BaseSlotDatas("Flow", "FLOW_SLOT", ez::SlotDir::INPUT, NodeManager::instance())) {}
+    : BaseSlot(vParentStyle, BaseSlotDatas("Flow", "FLOW", ez::SlotDir::INPUT, NodeManager::instance())) {}
 
 bool FlowInputSlot::init() {
     auto ret = BaseSlot::init();
+    getDatasRef<BaseSlotDatas>().hoveredInfos = "Flow";
+    getDatasRef<BaseSlotDatas>().color = ImGui::GetColorU32(ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
+    getDatasRef<BaseSlotDatas>().hideName = true;
     return ret && true;
 }
 
@@ -13,6 +16,10 @@ void FlowInputSlot::drawSlot() {
     nd::BeginPin(getUuid(), nd::PinKind::Input);
     BaseSlot::m_drawSlot();
     nd::EndPin();
+}
+
+void FlowInputSlot::drawHoveredSlotText() {
+    m_drawHoveredSlotText(m_getPos(), false, 0, 0);
 }
 
 void FlowInputSlot::m_drawBaseSlot(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor) {

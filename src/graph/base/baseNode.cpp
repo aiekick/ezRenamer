@@ -18,6 +18,7 @@ bool BaseNode::drawNode() {
         change |= m_drawFooter();
         change |= m_drawEnd();
     }
+
     m_size = ImGui::GetItemRectSize();
     m_pos = ImGui::GetItemRectMin();
     if (ImGui::IsItemHovered()) {
@@ -56,8 +57,7 @@ BaseSlotWeak BaseNode::findSlotByType(ez::SlotDir vDir, const std::string& vType
                     break;
                 }
             }
-        }
-        else if(vDir == ez::SlotDir::OUTPUT) {
+        } else if (vDir == ez::SlotDir::OUTPUT) {
             for (const auto& slot : m_getOutputSlots()) {
                 auto base_pin_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
                 if (base_pin_ptr->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
@@ -99,7 +99,7 @@ bool BaseNode::m_drawContent() {
     ImGui::EndVertical();
     ImGui::Spring(1, 5.0f);                               // pour que BeginVertical soi poussé au bout
     ImGui::BeginVertical("outputs", ImVec2(0, 0), 1.0f);  // 1.0f pour que l'interieur soit aligné sur la fin
-    for (auto& slot : m_getOutputSlotsRef()) {          // slots
+    for (auto& slot : m_getOutputSlotsRef()) {            // slots
         std::static_pointer_cast<BaseSlot>(slot.lock())->draw();
     }
     ImGui::EndVertical();
@@ -121,6 +121,7 @@ bool BaseNode::m_drawFooter() {
 }
 
 bool BaseNode::m_drawEnd() {
+    bool ret = false;
     ImGui::EndVertical();
     nd::EndNode();
     if (ImGui::IsItemVisible()) {
@@ -146,13 +147,30 @@ bool BaseNode::m_drawEnd() {
                     1.0f);
             }
 
-            //m_displayInfosOnTopOfTheNode();
+            ret |= m_drawHints();
         } else {
             EZ_TOOLS_DEBUG_BREAK;
         }
     }
     ImGui::PopID();
     nd::PopStyleVar();
+    return ret;
+}
+
+bool BaseNode::m_drawHints() {
+    for (auto& slot : m_getInputSlotsRef()) {
+        auto ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+        if (nd::GetHoveredPin().Get() == ptr->getUuid()) {
+            ptr->m_drawHoveredSlotText(ptr->m_pos, false, 0, 0);
+        }
+    }
+
+    for (auto& slot : m_getOutputSlotsRef()) {
+        auto ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+        if (nd::GetHoveredPin().Get() == ptr->getUuid()) {
+            ptr->m_drawHoveredSlotText(ptr->m_pos, false, 0, 0);
+        }
+    }
     return false;
 }
 

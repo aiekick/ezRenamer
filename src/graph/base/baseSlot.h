@@ -39,6 +39,7 @@ public:
         bool connected{false};
         bool hidden{false};
         bool debugMode{false};
+        std::string hoveredInfos; // infox dipslayed when the slot is hovered
         BaseSlotDatas() = default;
         BaseSlotDatas(
             const std::string& vName,
@@ -123,7 +124,10 @@ private:
     void m_drawOutputWidget();
 
 protected:
+    ImVec2 m_getPos() { return m_pos; }
+    ImVec2 m_getSize() { return m_size; }
+    nd::PinId m_getPinID() { return m_pinID; }
     void m_drawSlot();
     virtual void m_drawBaseSlot(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
-    virtual void m_drawSlotText(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
+    virtual void m_drawHoveredSlotText(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
 };

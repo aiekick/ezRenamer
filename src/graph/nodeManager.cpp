@@ -5,6 +5,7 @@
 #include <graph/nodes/inputs/InputFileNode.h>
 #include <graph/nodes/inputs/InputTextNode.h>
 #include <graph/nodes/tools/SplitFilePath.h>
+#include <graph/nodes/tools/JoinFilePath.h>
 #include <graph/nodes/actions/FileNameRenamerNode.h>
 
 std::unique_ptr<NodeManager> NodeManager::m_singleton = nullptr;
@@ -28,41 +29,9 @@ bool NodeManager::init() {
     m_graphStyle.style.NodeRounding = 2.0f;
     m_graphStyle.style.NodeBorderWidth = 1.0f;
     m_graphStyle.style.altDragSnapping = 5.0f;
-
-    addSlotColor("NONE", ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-    addSlotColor("FLOW_SLOT", ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
-    addSlotColor("FILE_SLOT", ImVec4(0.5f, 0.5f, 0.9f, 1.0f));
-    addSlotColor("STRING_SLOT", ImVec4(0.9f, 0.9f, 0.1f, 1.0f));
-
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
-        "Sources",
-        "Input files",
-        "INPUT_FILE_NODE",  //
-        {},
-        {"FILE_SLOT", "FLOW_SLOT"},
-        BaseLibrary::NodeSource::INTERNAL));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
-        "Sources",
-        "Input text",
-        "INPUT_TEXT_NODE",  //
-        {},
-        {"STRING_SLOT", "FLOW_SLOT"},
-        BaseLibrary::NodeSource::INTERNAL));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
-        "Extractors",
-        "File path splitter",
-        "FILE_PATH_SPLITTER_NODE",  //
-        {"FILE_SLOT", "FLOW_SLOT"},
-        {"FILE_SLOT", "STRING_SLOT", "FLOW_SLOT"},
-        BaseLibrary::NodeSource::INTERNAL));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
-        "Renamers",
-        "File path name Renamer",
-        "FILE_NAME_RENAMER_NODE",  //
-        {"FILE_SLOT", "FLOW_SLOT"},
-        {},
-        BaseLibrary::NodeSource::INTERNAL));
-
+    m_graphConfig.showFlow = true;
+    m_graphConfig.flowType = "FLOW";
+    m_graphConfig.showFlowKey = ImGuiKey_Backspace;
     m_graphPtr = BaseGraph::create(m_graphStyle, m_graphConfig);
     m_graphPtr->setBgRightClickAction(             //
         [this](const BaseGraphWeak& /*vGraph*/) {  //
@@ -77,6 +46,48 @@ bool NodeManager::init() {
             }
             return m_filterLibraryForInputSlotType(slot_type);
         });
+
+    addSlotColor("NONE", ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+    addSlotColor("FLOW", ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
+    addSlotColor("FILE", ImVec4(0.5f, 0.5f, 0.9f, 1.0f));
+    addSlotColor("STRING", ImVec4(0.9f, 0.9f, 0.1f, 1.0f));
+
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
+        "Sources",
+        "Input files",
+        "INPUT_FILE_NODE",  //
+        {},
+        {"FILE", "FLOW"},
+        BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
+        "Sources",
+        "Input text",
+        "INPUT_TEXT_NODE",  //
+        {},
+        {"STRING", "FLOW"},
+        BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
+        "Extractors",
+        "File path splitter",
+        "FILE_PATH_SPLITTER_NODE",  //
+        {"FILE", "FLOW"},
+        {"STRING", "FLOW"},
+        BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
+        "Extractors",
+        "File path joinder",
+        "FILE_PATH_JOINER_NODE",  //
+        {"STRING", "FLOW"},
+        {"FILE", "FLOW"},
+        BaseLibrary::NodeSource::INTERNAL));
+    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
+        "Renamers",
+        "File path name Renamer",
+        "FILE_NAME_RENAMER_NODE",  //
+        {"FILE", "FLOW"},
+        {},
+        BaseLibrary::NodeSource::INTERNAL));
+
 
     return true;
 }
@@ -163,6 +174,8 @@ BaseNodeWeak NodeManager::m_createInternalNode(const BaseLibrary::LibraryEntry& 
         return m_graphPtr->createChildNode<InputTextNode>();
     } else if (vLibraryEntry.nodeType == "FILE_PATH_SPLITTER_NODE") {
         return m_graphPtr->createChildNode<SplitFilePath>();
+    } else if (vLibraryEntry.nodeType == "FILE_PATH_JOINER_NODE") {
+        return m_graphPtr->createChildNode<JoinFilePath>();
     } else if (vLibraryEntry.nodeType == "FILE_NAME_RENAMER_NODE") {
         return m_graphPtr->createChildNode<FileNameRenamerNode>();
     }

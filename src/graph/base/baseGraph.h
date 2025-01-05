@@ -26,7 +26,11 @@ class BaseGraph  //
       public rnm::GuiInterface,
       public rnm::NodeInterface {
 public:
-    struct BaseGraphDatas : public ez::GraphDatas {};
+    struct BaseGraphDatas : public ez::GraphDatas {
+        bool showFlow = false; // will display the flow of of link types
+        std::string flowType; // the type for show the flow with F key
+        ImGuiKey showFlowKey = ImGuiKey_Backspace; // the key who start the flow display
+    };
     typedef std::function<void(const BaseGraphWeak&)> BgRightClickActionFunctor;
     typedef std::function<bool(const BaseGraphWeak&, const BaseSlotWeak&)> PrepareForCreateNodeFromSlotActionFunctor;
     typedef ez::Uuid LinkUuid;

@@ -44,7 +44,13 @@ bool BaseGraph::drawWidgets(const uint32_t& vFrame) {
 }
 
 void BaseGraph::m_init() {
-    nd::Config config;
+    nd::Config config;  
+    // disabling json loading/saving
+    config.SettingsFile = nullptr;
+    config.LoadNodeSettings = nullptr;
+    config.LoadSettings = nullptr;
+    config.SaveNodeSettings = nullptr;
+    config.SaveSettings = nullptr;
     m_pCanvas = nd::CreateEditor(&config);
     if (m_pCanvas != nullptr) {
         nd::SetCurrentEditor(m_pCanvas);
@@ -82,6 +88,16 @@ void BaseGraph::m_drawBgContextMenuPopup() {
 void BaseGraph::m_drawLinks() {
     for (const auto& link : m_links) {
         link.second->draw();
+    }
+
+    // show flow direction
+    const auto& datas = getDatas<BaseGraphDatas>();
+    if (datas.showFlow && ImGui::IsKeyPressed(datas.showFlowKey)) {
+        for (auto& link : m_links) {
+            if (link.second->m_type == datas.flowType) {
+                nd::Flow(link.second->getUuid());
+            }
+        }
     }
 }
 

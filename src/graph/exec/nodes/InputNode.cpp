@@ -27,11 +27,18 @@ bool InputNode::m_drawHeader() {
     ImGui::Spring(1, 5.0f);
     ImGui::TextUnformatted(getDatas<BaseNodeDatas>().name.c_str());
     ImGui::Spring(1, 5.0f);
-    //ImGui::BeginVertical("OutFlowSlot");
     getOutputFlowSlot().lock()->drawSlot();
-    //ImGui::EndVertical();
     ImGui::EndHorizontal();
     return false;
+}
+
+bool InputNode::m_drawHints() {
+    bool ret = ExecNode::m_drawHints();
+    auto ptr = getOutputFlowSlot().lock();
+    if (nd::GetHoveredPin().Get() == ptr->getUuid()) {
+        ptr->drawHoveredSlotText();
+    }
+    return ret;
 }
 
 BaseSlotWeak InputNode::m_findSlot(nd::PinId vId) {

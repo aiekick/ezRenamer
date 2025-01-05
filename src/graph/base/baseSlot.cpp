@@ -75,11 +75,6 @@ void BaseSlot::m_drawSlot() {
 
     if (ImGui::IsRectVisible(datas.slotIconSize)) {
         m_drawBaseSlot(slotCenter, datas.connected, datas.color, datas.color);
-
-        if (ImGui::IsItemHovered()) {
-            datas.highLighted = true;
-            m_drawSlotText(slotCenter, datas.connected, datas.color, datas.color);
-        }
     }
 }
 
@@ -122,42 +117,36 @@ void BaseSlot::m_drawOutputWidget() {
     }
 }
 
-void BaseSlot::m_drawSlotText(const ImVec2& /*vCenter*/, bool /*vConnected*/, ImU32 /*vColor*/, ImU32 /*vInnerColor*/) {
+void BaseSlot::m_drawHoveredSlotText(const ImVec2& vCenter, bool /*vConnected*/, ImU32 /*vColor*/, ImU32 /*vInnerColor*/) {
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     if (draw_list) {
-        std::string slotName;
-
         auto& datas = getDatasRef<BaseSlotDatas>();
+        datas.highLighted = true;
         if (isAnInput()) {
-            slotName = datas.type;
-            size_t len = slotName.length();
+            size_t len = datas.hoveredInfos.length();
             if (len > 0) {
-                const char* beg = slotName.c_str();
+                const char* beg = datas.hoveredInfos.c_str();
                 ImVec2 txtSize = ImGui::CalcTextSize(beg);
-                ImVec2 min = ImVec2(m_pos.x - datas.slotIconSize * 0.5f - txtSize.x, m_pos.y - datas.slotIconSize * 0.5f);
+                ImVec2 min = ImVec2(vCenter.x - datas.slotIconSize * 0.5f - txtSize.x, vCenter.y - datas.slotIconSize * 0.5f);
                 ImVec2 max = min + ImVec2(txtSize.x, datas.slotIconSize);
                 draw_list->AddRectFilled(min, max, ImGui::GetColorU32(ImVec4(0.1f, 0.1f, 0.1f, 1.0f)));
-                draw_list->AddText(ImVec2(min.x, m_pos.y - txtSize.y * 0.55f), ImColor(200, 200, 200, 255), beg);
+                draw_list->AddText(ImVec2(min.x, vCenter.y - txtSize.y * 0.55f), ImColor(200, 200, 200, 255), beg);
             }
         } else if (isAnOutput()) {
-            slotName = datas.type;
-            size_t len = slotName.length();
+            size_t len = datas.hoveredInfos.length();
             if (len > 0) {
-                const char* beg = slotName.c_str();
+                const char* beg = datas.hoveredInfos.c_str();
                 ImVec2 txtSize = ImGui::CalcTextSize(beg);
-                ImVec2 min = ImVec2(m_pos.x + datas.slotIconSize * 0.5f, m_pos.y - datas.slotIconSize * 0.5f);
+                ImVec2 min = ImVec2(vCenter.x + datas.slotIconSize * 0.5f, vCenter.y - datas.slotIconSize * 0.5f);
                 ImVec2 max = min + ImVec2(txtSize.x, datas.slotIconSize);
                 draw_list->AddRectFilled(min, max, ImGui::GetColorU32(ImVec4(0.1f, 0.1f, 0.1f, 1.0f)));
-                draw_list->AddText(ImVec2(min.x, m_pos.y - txtSize.y * 0.55f), ImColor(200, 200, 200, 255), beg);
+                draw_list->AddText(ImVec2(min.x, vCenter.y - txtSize.y * 0.55f), ImColor(200, 200, 200, 255), beg);
             }
         }
     }
 }
 
-void BaseSlot::m_drawBaseSlot(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor) {
-    UNUSED(vInnerColor);
-    UNUSED(vConnected);
-
+void BaseSlot::m_drawBaseSlot(const ImVec2& vCenter, bool /*vConnected*/, ImU32 vColor, ImU32 /*vInnerColor*/) {
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     if (draw_list) {
         auto& datas = getDatasRef<BaseSlotDatas>();

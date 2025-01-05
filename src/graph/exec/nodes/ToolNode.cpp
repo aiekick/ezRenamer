@@ -29,18 +29,27 @@ BaseSlotWeak ToolNode::findSlotByType(ez::SlotDir vDir, const std::string& vType
 
 bool ToolNode::m_drawHeader() {
     ImGui::BeginHorizontal("header");
-    //ImGui::BeginVertical("InFlowSlot");
     getInputFlowSlot().lock()->drawSlot();
-    //ImGui::EndVertical();
     ImGui::Spring(1, 5.0f);
     ImGui::TextUnformatted(getDatas<BaseNodeDatas>().name.c_str());
     ImGui::Spring(1, 5.0f);
-    //ImGui::BeginVertical("OutFlowSlot");
     getOutputFlowSlot().lock()->drawSlot();
-    //ImGui::EndVertical();
     ImGui::Dummy(ImVec2(0, 20));
     ImGui::EndHorizontal();
     return false;
+}
+
+bool ToolNode::m_drawHints() {
+    bool ret = ExecNode::m_drawHints();
+    auto inPtr = getInputFlowSlot().lock();
+    if (nd::GetHoveredPin().Get() == inPtr->getUuid()) {
+        inPtr->drawHoveredSlotText();
+    }
+    auto outPtr = getOutputFlowSlot().lock();
+    if (nd::GetHoveredPin().Get() == outPtr->getUuid()) {
+        outPtr->drawHoveredSlotText();
+    }
+    return ret;
 }
 
 BaseSlotWeak ToolNode::m_findSlot(nd::PinId vId) {

@@ -7,7 +7,7 @@ SplitFilePath::SplitFilePath(const BaseStyle& vParentStyle)  //
 
 bool SplitFilePath::init() {
     bool ret = ToolNode::init();
-    getDatasRef<BaseNodeDatas>().name = "File path splitter";
+    getDatasRef<BaseNodeDatas>().name = "Split file path";
     getDatasRef<BaseNodeDatas>().type = "FILE_PATH_SPLITTER_NODE";
     createChildSlot<FileInputSlot>();
     createChildSlot<StringOutputSlot>().lock()->getDatasRef<BaseSlot::BaseSlotDatas>().name = "Path";

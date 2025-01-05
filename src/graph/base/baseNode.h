@@ -125,6 +125,7 @@ protected:  // Node
     virtual bool m_drawOutputSlots();
     virtual bool m_drawFooter();
     virtual bool m_drawEnd();
+    virtual bool m_drawHints();
     virtual void m_displayInfosOnTopOfTheNode();
     virtual BaseSlotWeak m_findSlot(nd::PinId vId);
 };

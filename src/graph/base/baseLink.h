@@ -26,6 +26,7 @@ private:
     BaseLinkWeak m_This;
     BaseSlotWeak m_in;
     BaseSlotWeak m_out;
+    std::string m_type; // will take the type of the slots
     float m_thick = 2.0f;
     nd::LinkId m_linkId = 0;
     ImU32 m_color{IM_COL32(100, 100, 0, 200)};

@@ -13,6 +13,7 @@ public:
 
 protected:
     bool m_drawHeader() override;
+    bool m_drawHints() override;
     BaseSlotWeak m_findSlot(nd::PinId vId) override;
 };
 
