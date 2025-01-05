@@ -40,7 +40,8 @@ public:
             const std::string& vType,
             const ez::SlotDir vSlotDir,
             const SlotColorBankInterface* vSlotColorBankPtr = nullptr,
-            ez::UserDatas vUserDatas = nullptr)
+            ez::UserDatas vUserDatas = nullptr,
+            const size_t& vMaxConnectionCount=1U) // cant be changed after definition from the
             : ez::SlotDatas(vName, vType, vSlotDir, vUserDatas) {
             if (vSlotColorBankPtr != nullptr) {
                 if (vSlotColorBankPtr->getSlotColor(vType, color)) {
@@ -56,6 +57,16 @@ public:  // Static
     static std::shared_ptr<T> create(const BaseStyle& vParentStyle, const BaseSlotDatas& vSlotDatas) {
         static_assert(std::is_base_of<BaseSlot, T>::value, "T must derive of BaseSlot");
         auto slot_ptr = std::make_shared<T>(vParentStyle, vSlotDatas);
+        slot_ptr->m_setThis(slot_ptr);
+        if (!slot_ptr->init()) {
+            slot_ptr.reset();
+        }
+        return slot_ptr;
+    }
+    template <typename T>
+    static std::shared_ptr<T> create(const BaseStyle& vParentStyle) {
+        static_assert(std::is_base_of<BaseSlot, T>::value, "T must derive of BaseSlot");
+        auto slot_ptr = std::make_shared<T>(vParentStyle);
         slot_ptr->m_setThis(slot_ptr);
         if (!slot_ptr->init()) {
             slot_ptr.reset();
@@ -104,6 +115,8 @@ public:
     bool isAnInput();
     bool isAnOutput();
 
+    size_t getMaxConnectionCount() const;
+
     /// called when a slot was double clicked with mouse
     //virtual void mouseDoubleClickedOnSlot(const ImGuiMouseButton& vMouseButton);
 
@@ -120,6 +133,7 @@ private:
     void m_drawInputWidget();
     void m_drawOutputWidget();
 
+
 protected:
     ImVec2 m_getPos() { return m_pos; }
     ImVec2 m_getSize() { return m_size; }
@@ -127,4 +141,5 @@ protected:
     void m_drawSlot();
     virtual void m_drawBaseSlot(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
     virtual void m_drawHoveredSlotText(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
+    virtual size_t m_getMaxConnectionCount() const;
 };

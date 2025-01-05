@@ -8,7 +8,7 @@ private:
 
 public:
     bool initOutputFlow(const BaseStyle& vParentStyle, const BaseNodeWeak& vParentNode) {
-        m_flowOutputSlotPtr = BaseSlot::create<FlowOutputSlot>(vParentStyle, {});
+        m_flowOutputSlotPtr = BaseSlot::create<FlowOutputSlot>(vParentStyle);
         if (m_flowOutputSlotPtr != nullptr) {
             m_flowOutputSlotPtr->setParentNode(vParentNode);
             return true;

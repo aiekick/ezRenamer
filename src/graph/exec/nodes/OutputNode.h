@@ -4,6 +4,8 @@
 #include <graph/exec/nodes/abstracts/FlowInputSlotAbstract.h>
 
 class OutputNode : public ExecNode {
+    typedef ExecNode Parent;
+
 public:
     explicit OutputNode(const BaseStyle& vParentStyle);
     ENABLE_CLONE(OutputNode);

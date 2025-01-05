@@ -4,6 +4,7 @@
 
 #define INPUT_NODES_CATEGORY_NAME "Inputs"
 #define OUTPUT_NODES_CATEGORY_NAME "Outputs"
+#define TOP_LEVEL_CATEGORY_LESS_NODES_CATEGORY_NAME "TopLevelCategoryLess"
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //// INIT ////////////////////////////////////////////////////////////////////////////////////
@@ -43,7 +44,7 @@ void BaseLibrary::addLibraryEntry(const LibraryEntry& vLibraryEntry) {
                 word = "Empty";
                 LogVarError("A item of the path [%s] is empty. replace by \"Empty\"", vLibraryEntry.nodePath.c_str());
             }
-            if (word == vec.front() && // first category of the path
+            if (word == vec.front() &&                   // first category of the path
                 (word == INPUT_NODES_CATEGORY_NAME ||    // Category of Inputs node to show on top of the popup
                  word == OUTPUT_NODES_CATEGORY_NAME)) {  // Category of Outputs node to show on top of the popup
                 if (pCat->m_mainSubCategories.find(word) != pCat->m_mainSubCategories.end()) {
@@ -51,7 +52,7 @@ void BaseLibrary::addLibraryEntry(const LibraryEntry& vLibraryEntry) {
                 } else {
                     pCat = pCat->m_addCategory(word, pCat->m_mainSubCategories);
                 }
-            } else {
+            } else if (word != vec.front() || word != TOP_LEVEL_CATEGORY_LESS_NODES_CATEGORY_NAME) {  // special cat, on top without category
                 if (pCat->m_subCategories.find(word) != pCat->m_subCategories.end()) {
                     pCat = &pCat->m_subCategories.at(word);
                 } else {
@@ -59,7 +60,11 @@ void BaseLibrary::addLibraryEntry(const LibraryEntry& vLibraryEntry) {
                 }
             }
         }
-        pCat->m_entries[vLibraryEntry.nodeLabel] = vLibraryEntry;
+        if (vLibraryEntry.nodePath == TOP_LEVEL_CATEGORY_LESS_NODES_CATEGORY_NAME) {  // special cat, on top without category
+            pCat->m_mainEntries[vLibraryEntry.nodeLabel] = vLibraryEntry;
+        } else {
+            pCat->m_entries[vLibraryEntry.nodeLabel] = vLibraryEntry;
+        }
     }
 }
 
@@ -100,6 +105,16 @@ bool BaseLibrary::m_showContent(LibraryEntry& vOutEntry, int32_t vLevel) {
         for (auto& category : m_mainSubCategories) {
             ret |= category.second.m_showMenu(vOutEntry, vLevel + 1);
         }
+        ImGui::SetNextWindowViewport(ImGui::GetWindowViewport()->ID);
+        for (auto& item : m_mainEntries) {
+            if (ImGui::MenuItem(item.first.c_str())) {
+                vOutEntry = item.second;
+                ret = true;
+                // no break for not show a glitch when the others
+                // menus will not been displayed after click this frame,
+                // but all the next frame
+            }
+        }
         ImGui::Separator();
     }
     for (auto& category : m_subCategories) {
@@ -128,44 +143,62 @@ at least a slot of the wanted type
 bool BaseLibrary::m_filterNodesForSomeInputSlotTypes(const SlotTypes& vInputSlotTypes, int32_t vLevel) {
     bool ret = false;
     if (!vInputSlotTypes.empty()) {
-        // childs filtering
-        {
-            std::set<CategoryName> categoryToRemove;
-            for (auto& category : m_subCategories) {
-                ret |= category.second.m_filterNodesForSomeInputSlotTypes(vInputSlotTypes, vLevel + 1);
-                if (category.second.emptyEntries()) {  // no entries, we will remove the category
-                    categoryToRemove.emplace(category.first);
-                }
-            }
-            // now remove empty category entry
-            for (const auto& category_name : categoryToRemove) {
-                m_subCategories.erase(category_name);
-            }
+        if (vLevel == 0) {  // main childs filtering
+            ret |= m_filterCategories(vInputSlotTypes, m_mainSubCategories, 0);
         }
 
-        // leafs
-        {
-            bool found = false;
-            std::set<NodeLabel> nodeToRemove;
-            for (auto& item : m_entries) {
-                found = false;
-                for (const auto& type : vInputSlotTypes) {
-                    if (item.second.inputSlotTypes.find(type) != item.second.inputSlotTypes.end()) {
-                        found = true;  // we will keep this node
-                        ret = true;
-                        break;
-                    }
-                }
-                // entry to remove, since no input slots of the wanted type was found
-                if (!found) {
-                    nodeToRemove.emplace(item.first);
-                }
+        {  // childs filtering
+            ret |= m_filterCategories(vInputSlotTypes, m_subCategories, vLevel);
+        }
+
+        if (vLevel == 0) {  // main entries
+            ret |= m_filterEntries(vInputSlotTypes, m_mainEntries);
+        }
+
+        {  // entries
+            ret |= m_filterEntries(vInputSlotTypes, m_entries);
+        }
+    }
+    return ret;
+}
+
+bool BaseLibrary::m_filterCategories(const SlotTypes& vInputSlotTypes, CategoriesCnt& vCategories, int32_t vLevel) {
+    bool ret = false;
+    std::set<CategoryName> categoryToRemove;
+    for (auto& category : vCategories) {
+        ret |= category.second.m_filterNodesForSomeInputSlotTypes(vInputSlotTypes, vLevel + 1);
+        if (category.second.emptyEntries()) {  // no entries, we will remove the category
+            categoryToRemove.emplace(category.first);
+        }
+    }
+    // now remove empty category entry
+    for (const auto& category_name : categoryToRemove) {
+        vCategories.erase(category_name);
+    }
+    return ret;
+}
+
+bool BaseLibrary::m_filterEntries(const SlotTypes& vInputSlotTypes, LibraryEntriesCnt& vEntries) {
+    bool ret = false;
+    bool found = false;
+    std::set<NodeLabel> nodeToRemove;
+    for (auto& item : vEntries) {
+        found = false;
+        for (const auto& type : vInputSlotTypes) {
+            if (item.second.inputSlotTypes.find(type) != item.second.inputSlotTypes.end()) {
+                found = true;  // we will keep this node
+                ret = true;
+                break;
             }
-            // now remove unwanted entry
-            for (const auto& node_label : nodeToRemove) {
-                m_entries.erase(node_label);
-            }
-        }        
+        }
+        // entry to remove, since no input slots of the wanted type was found
+        if (!found) {
+            nodeToRemove.emplace(item.first);
+        }
+    }
+    // now remove unwanted entry
+    for (const auto& node_label : nodeToRemove) {
+        vEntries.erase(node_label);
     }
     return ret;
 }

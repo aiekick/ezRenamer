@@ -2,10 +2,10 @@
 #include <graph/manager/nodeManager.h>
 
 TextInputSlot::TextInputSlot(const BaseStyle& vParentStyle)  //
-    : BaseSlot(vParentStyle, BaseSlotDatas("Text", "TEXT", ez::SlotDir::INPUT, NodeManager::instance())) {}
+    : Parent(vParentStyle, BaseSlotDatas("Text", "TEXT", ez::SlotDir::INPUT, NodeManager::instance())) {}
 
 bool TextInputSlot::init() {
-    auto ret = BaseSlot::init();
+    auto ret = Parent::init();
     getDatasRef<BaseSlotDatas>().hoveredInfos = "A Text";
     return ret && true;
 }

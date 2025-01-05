@@ -2,10 +2,10 @@
 #include <graph/manager/nodeManager.h>
 
 FileOutputSlot::FileOutputSlot(const BaseStyle& vParentStyle)  //
-    : BaseSlot(vParentStyle, BaseSlotDatas("File", "FILE", ez::SlotDir::OUTPUT, NodeManager::instance())) {}
+    : Parent(vParentStyle, BaseSlotDatas("File", "FILE", ez::SlotDir::OUTPUT, NodeManager::instance())) {}
 
 bool FileOutputSlot::init() {
-    auto ret = BaseSlot::init();
+    auto ret = Parent::init();
     getDatasRef<BaseSlotDatas>().hoveredInfos = "A File path";
     return ret && true;
 }

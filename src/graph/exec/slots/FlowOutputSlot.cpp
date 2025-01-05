@@ -1,11 +1,11 @@
 ﻿#include "FlowOutputSlot.h"
 #include <graph/manager/nodeManager.h>
 
-FlowOutputSlot::FlowOutputSlot(const BaseStyle& vParentStyle, const BaseSlotDatas& /*vDatas*/)  //
-    : BaseSlot(vParentStyle, BaseSlotDatas("Flow", "FLOW", ez::SlotDir::OUTPUT, NodeManager::instance())) {}
+FlowOutputSlot::FlowOutputSlot(const BaseStyle& vParentStyle)  //
+    : Parent(vParentStyle, BaseSlotDatas("Flow", "FLOW", ez::SlotDir::OUTPUT, NodeManager::instance())) {}
 
 bool FlowOutputSlot::init() {
-    auto ret = BaseSlot::init();
+    auto ret = Parent::init();
     getDatasRef<BaseSlotDatas>().hoveredInfos = "Flow";
     getDatasRef<BaseSlotDatas>().color = ImGui::GetColorU32(ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
     getDatasRef<BaseSlotDatas>().hideName = true;
@@ -14,7 +14,7 @@ bool FlowOutputSlot::init() {
 
 void FlowOutputSlot::drawSlot() {
     nd::BeginPin(getUuid(), nd::PinKind::Output);
-    BaseSlot::m_drawSlot();
+    Parent::m_drawSlot();
     nd::EndPin();
 }
 
@@ -38,3 +38,6 @@ void FlowOutputSlot::m_drawBaseSlot(const ImVec2& vCenter, bool vConnected, ImU3
     }
 }
 
+size_t FlowOutputSlot::m_getMaxConnectionCount() const {
+    return 1U;  // a flow not accept many connections
+}

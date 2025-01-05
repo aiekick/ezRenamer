@@ -1,14 +1,14 @@
 #include "ExecNode.h"
 
 ExecNode::ExecNode(const BaseStyle& vParentStyle)  //
-    : BaseNode(vParentStyle, BaseNodeDatas("", "", ImGui::GetColorU32(ImVec4(0.2f, 0.5f, 0.2f, 1.0f)))) {}
+    : Parent(vParentStyle, BaseNodeDatas("", "", ImGui::GetColorU32(ImVec4(0.2f, 0.5f, 0.2f, 1.0f)))) {}
 
 bool ExecNode::init() {
-    return BaseNode::init();
+    return Parent::init();
 }
 
 BaseSlotWeak ExecNode::findSlotByType(ez::SlotDir vDir, const std::string& vType) {
-    BaseSlotWeak ret = BaseNode::findSlotByType(vDir, vType);
+    BaseSlotWeak ret = Parent::findSlotByType(vDir, vType);
     if (ret.expired()) {
         if (!vType.empty()) {
             if (vDir == ez::SlotDir::INPUT) {
@@ -37,7 +37,12 @@ bool ExecNode::m_drawHeader() {
         getInputFlowSlot().lock()->drawSlot();
     }
     ImGui::Spring(1, 5.0f);
+    const auto& datas = getDatas<BaseNodeDatas>();
+    const bool pushed = ImGui::PushStyleColorWithContrast4(datas.color, ImGuiCol_Text, ImGui::CustomStyle::puContrastedTextColor, ImGui::CustomStyle::puContrastRatio);
     ImGui::TextUnformatted(getDatas<BaseNodeDatas>().name.c_str());
+    if (pushed) {
+        ImGui::PopStyleColor();
+    }
     ImGui::Spring(1, 5.0f);
     if (!getOutputFlowSlot().expired()) {
         getOutputFlowSlot().lock()->drawSlot();
@@ -47,7 +52,7 @@ bool ExecNode::m_drawHeader() {
 }
 
 bool ExecNode::m_drawHints() {
-    bool ret = BaseNode::m_drawHints();
+    bool ret = Parent::m_drawHints();
     if (!getInputFlowSlot().expired()) {
         auto inPtr = getInputFlowSlot().lock();
         if (nd::GetHoveredPin().Get() == inPtr->getUuid()) {
@@ -64,7 +69,7 @@ bool ExecNode::m_drawHints() {
 }
 
 BaseSlotWeak ExecNode::m_findSlot(nd::PinId vId) {
-    BaseSlotWeak ret = BaseNode::m_findSlot(vId);
+    BaseSlotWeak ret = Parent::m_findSlot(vId);
     if (ret.expired()) {
         if (!getInputFlowSlot().expired()) {
             if (getInputFlowSlot().lock()->getUuid() == vId.Get()) {

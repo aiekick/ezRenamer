@@ -12,7 +12,6 @@
 
 class BaseLibrary {
 public:
-    typedef std::map<CategoryName, BaseLibrary> CategoriesCnt;
     typedef std::string NodeSource;
     typedef std::string NodeLabel;
     typedef std::string NodeType;
@@ -50,23 +49,26 @@ public:
               nodeSource(vNodeSource),
               nodeColor(vNodeColor) {}
     };
+    typedef std::map<CategoryName, BaseLibrary> CategoriesCnt;
+    typedef std::map<NodeLabel, LibraryEntry> LibraryEntriesCnt;
 
 private:
     CategoryName m_categoryName;
     std::map<NodeLabel, LibraryEntry> m_entries;
     CategoriesCnt m_subCategories;
-    
-    // for display on top of the popup. 
+
+    // for display on top of the popup.
     // only for categories (Inputs, Outputs) not plugins
     CategoriesCnt m_mainSubCategories;
+    std::map<NodeLabel, LibraryEntry> m_mainEntries;
 
 public:
     void clear();
-    void addLibraryEntry(const LibraryEntry& vLibraryEntry);    
-    bool empty() const;// no category, no sub categories, no entries 
-    bool emptyCategory() const;  // no category 
-    bool emptySubCategories() const;  // no sub categories 
-    bool emptyEntries() const;// no entries 
+    void addLibraryEntry(const LibraryEntry& vLibraryEntry);
+    bool empty() const;               // no category, no sub categories, no entries
+    bool emptyCategory() const;       // no category
+    bool emptySubCategories() const;  // no sub categories
+    bool emptyEntries() const;        // no entries
 
     /// <summary>
     /// return true if an entry was selected
@@ -95,4 +97,6 @@ private:
     bool m_showMenu(LibraryEntry& vOutEntry, int32_t vLevel);
     bool m_showContent(LibraryEntry& vOutEntry, int32_t vLevel);
     bool m_filterNodesForSomeInputSlotTypes(const SlotTypes& vInputSlotTypes, int32_t vLevel);
+    bool m_filterCategories(const SlotTypes& vInputSlotTypes, CategoriesCnt& vCategories, int32_t vLevel);
+    bool m_filterEntries(const SlotTypes& vInputSlotTypes, LibraryEntriesCnt& vEntries);
 };

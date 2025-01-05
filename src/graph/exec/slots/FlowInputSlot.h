@@ -3,8 +3,10 @@
 #include <graph/base/baseSlot.h>
 
 class FlowInputSlot : public BaseSlot {
+    typedef BaseSlot Parent;
+
 public:
-    explicit FlowInputSlot(const BaseStyle& vParentStyle, const BaseSlotDatas& vDatas);
+    explicit FlowInputSlot(const BaseStyle& vParentStyle);
     bool init() override;
 
     // for expose protected member

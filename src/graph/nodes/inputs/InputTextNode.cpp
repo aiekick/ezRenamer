@@ -2,10 +2,10 @@
 #include <graph/slots/TextOutputSlot.h>
 
 InputTextNode::InputTextNode(const BaseStyle& vParentStyle)  //
-    : InputNode(vParentStyle) {}
+    : Parent(vParentStyle) {}
 
 bool InputTextNode::init() {
-    bool ret = InputNode::init();
+    bool ret = Parent::init();
     getDatasRef<BaseNodeDatas>().name = "Input text";
     getDatasRef<BaseNodeDatas>().type = "INPUT_TEXT_NODE";
     createChildSlot<TextOutputSlot>();

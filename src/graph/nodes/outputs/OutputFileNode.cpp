@@ -2,10 +2,10 @@
 #include <graph/slots/FileInputSlot.h>
 
 OutputFileNode::OutputFileNode(const BaseStyle& vParentStyle)  //
-    : OutputNode(vParentStyle) {}
+    : Parent(vParentStyle) {}
 
 bool OutputFileNode::init() {
-    bool ret = OutputNode::init();
+    bool ret = Parent::init();
     getDatasRef<BaseNodeDatas>().name = "Output file";
     getDatasRef<BaseNodeDatas>().type = "OUTPUT_FILE_NODE";
     createChildSlot<FileInputSlot>();

@@ -103,6 +103,20 @@ void BaseSlot::drawDebugInfos() {
     //  ImGui::Text("Count connections : %u", (uint32_t)linkedSlots.size());
 }
 
+size_t BaseSlot::getMaxConnectionCount() const {
+    // we get the possibly overrides user count
+    auto count = m_getMaxConnectionCount();
+    // but we can accept the user change the logic
+    // so an input cant accept more than one connection
+    // so we clamp it again
+    const auto& datas = getDatas<BaseSlotDatas>();
+    if (datas.dir == ez::SlotDir::INPUT) { 
+        count = 1U;  // always 1 for an input
+    } else if (datas.dir == ez::SlotDir::OUTPUT) {
+        count = ez::clamp<size_t>(count, 1U, 1024U);  // 1024 is big enough i guess :)
+    }
+    return count;
+}
 //////////////////////////////////////////////////////////////
 //// PRIVATE /////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -185,6 +199,11 @@ void BaseSlot::m_drawBaseSlot(const ImVec2& vCenter, bool /*vConnected*/, ImU32 
             draw_list->AddNgon(vCenter, slotRadius + 2.0f, ImGui::GetColorU32(BaseSlot::sSlotGraphOutputMouseRightColor), 24, 2.5f);
         }*/
     }
+}
+
+size_t BaseSlot::m_getMaxConnectionCount() const {
+    const auto& datas = getDatas<BaseSlotDatas>();
+    return (datas.dir == ez::SlotDir::INPUT ? 1U : 1024U); // 1024 is big enough i guess :)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

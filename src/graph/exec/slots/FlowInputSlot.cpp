@@ -1,11 +1,11 @@
 ﻿#include "FlowInputSlot.h"
 #include <graph/manager/nodeManager.h>
 
-FlowInputSlot::FlowInputSlot(const BaseStyle& vParentStyle, const BaseSlotDatas& /*vDatas*/)  //
-    : BaseSlot(vParentStyle, BaseSlotDatas("Flow", "FLOW", ez::SlotDir::INPUT, NodeManager::instance())) {}
+FlowInputSlot::FlowInputSlot(const BaseStyle& vParentStyle)  //
+    : Parent(vParentStyle, BaseSlotDatas("Flow", "FLOW", ez::SlotDir::INPUT, NodeManager::instance())) {}
 
 bool FlowInputSlot::init() {
-    auto ret = BaseSlot::init();
+    auto ret = Parent::init();
     getDatasRef<BaseSlotDatas>().hoveredInfos = "Flow";
     getDatasRef<BaseSlotDatas>().color = ImGui::GetColorU32(ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
     getDatasRef<BaseSlotDatas>().hideName = true;
@@ -14,7 +14,7 @@ bool FlowInputSlot::init() {
 
 void FlowInputSlot::drawSlot() {
     nd::BeginPin(getUuid(), nd::PinKind::Input);
-    BaseSlot::m_drawSlot();
+    Parent::m_drawSlot();
     nd::EndPin();
 }
 

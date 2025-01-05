@@ -16,6 +16,8 @@ typedef std::shared_ptr<ExecNode> ExecNodePtr;
 typedef std::weak_ptr<ExecNode> ExecNodeWeak;
 
 class ExecNode : public BaseNode, public FlowInputSlotAbstract, public FlowOutputSlotAbstract {
+    typedef BaseNode Parent;
+
 public:
     explicit ExecNode(const BaseStyle& vParentStyle);
     ENABLE_CLONE(ExecNode);

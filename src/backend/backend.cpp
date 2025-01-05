@@ -375,7 +375,7 @@ bool Backend::m_InitImGui() {
     (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;    // Enable Docking
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable Viewport
-    io.FontAllowUserScaling = true;                      // activate zoom feature with ctrl + mousewheel
+    //io.FontAllowUserScaling = true;                      // activate zoom feature with ctrl + mousewheel
 #ifdef USE_DECORATIONS_FOR_RESIZE_CHILD_WINDOWS
     io.ConfigViewportsNoDecoration = false;  // toujours mettre une frame aux fenetres enfants
 #endif
@@ -390,8 +390,11 @@ bool Backend::m_InitImGui() {
     // fonts
     {
         {  // main font
-            if (ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_RM, 15.0f) == nullptr) {
+            auto fontPtr = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_RM, 50.0f);
+            if (fontPtr == nullptr) {
                 assert(0);  // failed to load font
+            } else {
+                fontPtr->Scale = 16.0f / 50.0f;
             }
         }
         {  // icon font
@@ -399,8 +402,11 @@ bool Backend::m_InitImGui() {
             ImFontConfig icons_config;
             icons_config.MergeMode = true;
             icons_config.PixelSnapH = true;
-            if (ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_STRO, 15.0f, &icons_config, icons_ranges) == nullptr) {
+            auto fontPtr = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_STRO, 50.0f, &icons_config, icons_ranges);
+            if (fontPtr == nullptr) {
                 assert(0);  // failed to load font
+            } else {
+                fontPtr->Scale = 16.0f / 50.0f;
             }
         }
     }    

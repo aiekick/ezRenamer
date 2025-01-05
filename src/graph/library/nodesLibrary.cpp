@@ -1,13 +1,16 @@
 #include <graph/library/nodesLibrary.h>
 #include <graph/base/baseGraph.h>
 
-// Nodes
+// Internal Nodes
 #include <graph/nodes/inputs/InputFileNode.h>
 #include <graph/nodes/inputs/InputTextNode.h>
-#include <graph/nodes/tools/SplitFilePathNode.h>
-#include <graph/nodes/tools/JoinFilePathNode.h>
 #include <graph/nodes/outputs/OutputFileNode.h>
 #include <graph/nodes/outputs/OutputTextNode.h>
+#include <graph/exec/nodes/SequenceNode.h>
+
+// Others Nodes (will be in a plugin in few times)
+#include <graph/nodes/tools/SplitFilePathNode.h>
+#include <graph/nodes/tools/JoinFilePathNode.h>
 
 BaseLibrary NodesLibrary::get() {
     BaseLibrary lib;
@@ -44,6 +47,15 @@ BaseLibrary NodesLibrary::get() {
         {"TEXT", "FLOW"},
         {},
         [](const BaseGraphWeak& vGraph) { return vGraph.lock()->createChildNode<OutputTextNode>(); }));
+
+    // Special
+    lib.addLibraryEntry(BaseLibrary::LibraryEntry(
+        "TopLevelCategoryLess",
+        "Sequence",
+        "SEQUENCE_NODE",  //
+        {"FLOW"},
+        {"FLOW"},
+        [](const BaseGraphWeak& vGraph) { return vGraph.lock()->createChildNode<SequenceNode>(); }));
 
     // File Manipulation
     lib.addLibraryEntry(BaseLibrary::LibraryEntry(

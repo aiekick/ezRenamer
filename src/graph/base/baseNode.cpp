@@ -84,7 +84,12 @@ bool BaseNode::m_drawBegin() {
 bool BaseNode::m_drawHeader() {
     ImGui::BeginHorizontal("header");
     ImGui::Spring(1, 5.0f);
+    const auto& datas = getDatas<BaseNodeDatas>();
+    const bool pushed = ImGui::PushStyleColorWithContrast4(datas.color, ImGuiCol_Text, ImGui::CustomStyle::puContrastedTextColor, ImGui::CustomStyle::puContrastRatio);
     ImGui::TextUnformatted(getDatas<BaseNodeDatas>().name.c_str());
+    if (pushed) {
+        ImGui::PopStyleColor();
+    }
     ImGui::Spring(1, 5.0f);
     ImGui::Dummy(ImVec2(0, 20));
     ImGui::EndHorizontal();

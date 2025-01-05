@@ -3,10 +3,10 @@
 #include <graph/slots/StringOutputSlot.h>
 
 SplitFilePathNode::SplitFilePathNode(const BaseStyle& vParentStyle)  //
-    : ToolNode(vParentStyle) {}
+    : Parent(vParentStyle) {}
 
 bool SplitFilePathNode::init() {
-    bool ret = ToolNode::init();
+    bool ret = Parent::init();
     getDatasRef<BaseNodeDatas>().name = "Split file path";
     getDatasRef<BaseNodeDatas>().type = "FILE_PATH_SPLITTER_NODE";
     createChildSlot<FileInputSlot>();

@@ -2,10 +2,10 @@
 #include <graph/manager/nodeManager.h>
 
 StringOutputSlot::StringOutputSlot(const BaseStyle& vParentStyle)  //
-    : BaseSlot(vParentStyle, BaseSlotDatas("String", "STRING", ez::SlotDir::OUTPUT, NodeManager::instance())) {}
+    : Parent(vParentStyle, BaseSlotDatas("String", "STRING", ez::SlotDir::OUTPUT, NodeManager::instance())) {}
 
 bool StringOutputSlot::init() {
-    auto ret = BaseSlot::init();
+    auto ret = Parent::init();
     getDatasRef<BaseSlotDatas>().hoveredInfos = "A String";
     return ret && true;
 }

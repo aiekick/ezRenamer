@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <graph/exec/slots/FlowInputSlot.h>
 
 class FlowInputSlotAbstract {
@@ -8,7 +9,7 @@ private:
 
 public:
     bool initInputFlow(const BaseStyle& vParentStyle, const BaseNodeWeak& vParentNode) {
-        m_flowInputSlotPtr = BaseSlot::create<FlowInputSlot>(vParentStyle, {});
+        m_flowInputSlotPtr = BaseSlot::create<FlowInputSlot>(vParentStyle);
         if (m_flowInputSlotPtr != nullptr) {
             m_flowInputSlotPtr->setParentNode(vParentNode);
             return true;

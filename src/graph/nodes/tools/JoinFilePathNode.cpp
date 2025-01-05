@@ -3,10 +3,10 @@
 #include <graph/slots/StringInputSlot.h>
 
 JoinFilePathNode::JoinFilePathNode(const BaseStyle& vParentStyle)  //
-    : ToolNode(vParentStyle) {}
+    : Parent(vParentStyle) {}
 
 bool JoinFilePathNode::init() {
-    bool ret = ToolNode::init();
+    bool ret = Parent::init();
     getDatasRef<BaseNodeDatas>().name = "Join file path";
     getDatasRef<BaseNodeDatas>().type = "FILE_PATH_JOINER_NODE";
     createChildSlot<FileOutputSlot>();

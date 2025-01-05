@@ -218,9 +218,11 @@ void BaseGraph::m_doCreateLinkOrNode() {
                 } else if (start_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().type != end_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().type) {  // same dir
                     showLabel("Not Same type", ImColor(32, 45, 32, 180));
                     nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
-                } else if ((end_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().dir == ez::SlotDir::INPUT &&
-                            !end_slot_ptr->m_links.empty())) {  // input slot already connected
-                    showLabel("input slots accept only one link", ImColor(32, 45, 32, 180));
+                } else if ((end_slot_ptr->getLinks().size()+1) > end_slot_ptr->getMaxConnectionCount()) {  // slot can have more conenctions
+                    showLabel("the slot cant accept more connections", ImColor(32, 45, 32, 180));
+                    nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+                } else if ((start_slot_ptr->getLinks().size() + 1) > start_slot_ptr->getMaxConnectionCount()) {  // slot can have more conenctions
+                    showLabel("the slot cant accept more connections", ImColor(32, 45, 32, 180));
                     nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
                 } else {
                     showLabel("+ Create Link", ImColor(32, 45, 32, 180));  //-V112
@@ -237,16 +239,23 @@ void BaseGraph::m_doCreateLinkOrNode() {
             auto slot_ptr = m_findSlot(slotId).lock();
             if (slot_ptr != nullptr) {
                 if (slot_ptr->getDatas<ez::SlotDatas>().dir == ez::SlotDir::INPUT) {
-                    if (!slot_ptr->m_links.empty()) {
-                        showLabel("input slots accept only one link", ImColor(32, 45, 32, 180));
+                    if ((slot_ptr->getLinks().size() + 1) > slot_ptr->getMaxConnectionCount()) {
+                        showLabel("the slot cant accept more connections", ImColor(32, 45, 32, 180));
                         nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
                     } else {
+#ifdef _DEBUG
                         showLabel("o Redirect link", ImColor(32, 45, 32, 180));  //-V112
+#endif
                     }
                 } else if (slot_ptr->getDatas<ez::SlotDatas>().dir == ez::SlotDir::OUTPUT) {
-                    showLabel("+ Create Node", ImColor(32, 45, 32, 180));  //-V112
-                    if (nd::AcceptNewItem()) {
-                        m_doCreateNodeFromSlot(slot_ptr);
+                    if ((slot_ptr->getLinks().size() + 1) > slot_ptr->getMaxConnectionCount()) {
+                        showLabel("the slot cant accept more connections", ImColor(32, 45, 32, 180));
+                        nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+                    } else {
+                        showLabel("+ Create Node", ImColor(32, 45, 32, 180));  //-V112
+                        if (nd::AcceptNewItem()) {
+                            m_doCreateNodeFromSlot(slot_ptr);
+                        }
                     }
                 }
             } else {

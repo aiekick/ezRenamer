@@ -61,8 +61,6 @@ bool Frontend::sCentralWindowHovered = false;
 Frontend::~Frontend() = default;
 
 bool Frontend::init() {
-    ImGui::CustomStyle::Init();
-
     m_build_themes();
 
     LayoutManager::Instance()->Init("Layouts", "Default Layout");
