@@ -17,9 +17,9 @@ private:
     BaseGraph::BaseGraphDatas m_graphConfig;
     BaseGraphPtr m_graphPtr = nullptr;
     std::map<std::string, ImVec4> m_ColorSlots;
-    BaseLibrary m_baseLibrary;
+    BaseLibrary m_nodesLibrary;
 
-    // Library to show, can be filtered from m_baseLibrary or not
+    // Library to show, can be filtered from m_nodesLibrary or not
     BaseLibrary m_libraryToShow;
 
     // used to create a node from this slot and connect
@@ -44,6 +44,4 @@ public:
 private:
     bool m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vSlotType);
     void m_showLibrary();
-    BaseNodeWeak m_createInternalNode(const BaseLibrary::LibraryEntry& vLibraryEntry);
-    BaseNodeWeak m_createPluginNode(const BaseLibrary::LibraryEntry& vLibraryEntry);
 };

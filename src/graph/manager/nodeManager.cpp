@@ -1,12 +1,7 @@
-#include <graph/nodeManager.h>
+#include "nodeManager.h"
 #include <graph/base/baseNode.h>
 #include <graph/base/baseSlot.h>
-
-#include <graph/nodes/inputs/InputFileNode.h>
-#include <graph/nodes/inputs/InputTextNode.h>
-#include <graph/nodes/tools/SplitFilePath.h>
-#include <graph/nodes/tools/JoinFilePath.h>
-#include <graph/nodes/actions/FileNameRenamerNode.h>
+#include <graph/library/nodesLibrary.h>
 
 std::unique_ptr<NodeManager> NodeManager::m_singleton = nullptr;
 
@@ -51,43 +46,9 @@ bool NodeManager::init() {
     addSlotColor("FLOW", ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
     addSlotColor("FILE", ImVec4(0.5f, 0.5f, 0.9f, 1.0f));
     addSlotColor("STRING", ImVec4(0.9f, 0.9f, 0.1f, 1.0f));
+    addSlotColor("TEXT", ImVec4(0.9f, 0.5f, 0.1f, 1.0f));
 
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
-        "Sources",
-        "Input files",
-        "INPUT_FILE_NODE",  //
-        {},
-        {"FILE", "FLOW"},
-        BaseLibrary::NodeSource::INTERNAL));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
-        "Sources",
-        "Input text",
-        "INPUT_TEXT_NODE",  //
-        {},
-        {"STRING", "FLOW"},
-        BaseLibrary::NodeSource::INTERNAL));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
-        "Extractors",
-        "File path splitter",
-        "FILE_PATH_SPLITTER_NODE",  //
-        {"FILE", "FLOW"},
-        {"STRING", "FLOW"},
-        BaseLibrary::NodeSource::INTERNAL));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
-        "Extractors",
-        "File path joinder",
-        "FILE_PATH_JOINER_NODE",  //
-        {"STRING", "FLOW"},
-        {"FILE", "FLOW"},
-        BaseLibrary::NodeSource::INTERNAL));
-    m_baseLibrary.addLibraryEntry(BaseLibrary::LibraryEntry(
-        "Renamers",
-        "File path name Renamer",
-        "FILE_NAME_RENAMER_NODE",  //
-        {"FILE", "FLOW"},
-        {},
-        BaseLibrary::NodeSource::INTERNAL));
-
+    m_nodesLibrary = NodesLibrary::get();
 
     return true;
 }
@@ -126,7 +87,7 @@ bool NodeManager::executeGraph() {
 }
 
 bool NodeManager::m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vInputSlotType) {
-    m_libraryToShow = m_baseLibrary;
+    m_libraryToShow = m_nodesLibrary;
     if (!vInputSlotType.empty()) {
         return m_libraryToShow.filterNodesForSomeInputSlotTypes({vInputSlotType});
     }
@@ -136,12 +97,7 @@ bool NodeManager::m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& v
 void NodeManager::m_showLibrary() {
     BaseLibrary::LibraryEntry entryToCreate;
     if (m_libraryToShow.showMenu(entryToCreate)) {
-        BaseNodeWeak new_node;
-        if (entryToCreate.nodeSource == BaseLibrary::NodeSource::INTERNAL) {
-            new_node = m_createInternalNode(entryToCreate);
-        } else if (entryToCreate.nodeSource == BaseLibrary::NodeSource::PLUGIN) {
-            new_node = m_createPluginNode(entryToCreate);
-        }
+        BaseNodeWeak new_node = m_libraryToShow.createChildNodeInGraph(entryToCreate, m_graphPtr);
         // new node just created
         if (!new_node.expired()) {
             // if created node from slot mode
@@ -167,22 +123,3 @@ void NodeManager::m_showLibrary() {
     }
 }
 
-BaseNodeWeak NodeManager::m_createInternalNode(const BaseLibrary::LibraryEntry& vLibraryEntry) {
-    if (vLibraryEntry.nodeType == "INPUT_FILE_NODE") {
-        return m_graphPtr->createChildNode<InputFileNode>();
-    } else if (vLibraryEntry.nodeType == "INPUT_TEXT_NODE") {
-        return m_graphPtr->createChildNode<InputTextNode>();
-    } else if (vLibraryEntry.nodeType == "FILE_PATH_SPLITTER_NODE") {
-        return m_graphPtr->createChildNode<SplitFilePath>();
-    } else if (vLibraryEntry.nodeType == "FILE_PATH_JOINER_NODE") {
-        return m_graphPtr->createChildNode<JoinFilePath>();
-    } else if (vLibraryEntry.nodeType == "FILE_NAME_RENAMER_NODE") {
-        return m_graphPtr->createChildNode<FileNameRenamerNode>();
-    }
-    return {};
-}
-
-BaseNodeWeak NodeManager::m_createPluginNode(const BaseLibrary::LibraryEntry& vLibraryEntry) {
-    //nodePtr = PluginManager::Instance()->CreatePluginNode(vLibraryEntry.second.nodeType);
-    return {};
-}

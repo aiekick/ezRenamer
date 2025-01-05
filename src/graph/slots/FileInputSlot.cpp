@@ -1,5 +1,5 @@
 ﻿#include "FileInputSlot.h"
-#include <graph/nodeManager.h>
+#include <graph/manager/nodeManager.h>
 
 FileInputSlot::FileInputSlot(const BaseStyle& vParentStyle)  //
     : BaseSlot(vParentStyle, BaseSlotDatas("File", "FILE", ez::SlotDir::INPUT, NodeManager::instance())) {}

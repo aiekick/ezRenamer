@@ -1,6 +1,6 @@
 #include <core/controller.h>
 #include <plugins/pluginManager.h>
-#include <graph/nodeManager.h>
+#include <graph/manager/nodeManager.h>
 
 bool Controller::init() {
     m_getAvailableRenamers();

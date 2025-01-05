@@ -2,6 +2,9 @@
 #include <ezlibs/ezLog.hpp>
 #include <imguipack/ImGuiPack.h>
 
+#define INPUT_NODES_CATEGORY_NAME "Inputs"
+#define OUTPUT_NODES_CATEGORY_NAME "Outputs"
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 //// INIT ////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -12,11 +15,19 @@ void BaseLibrary::clear() {
 }
 
 bool BaseLibrary::empty() const {
-    return m_categoryName.empty() && m_subCategories.empty() && m_libraryItems.empty();
+    return emptyCategory() && emptySubCategories() && emptyEntries();
 }
 
-bool BaseLibrary::emptyLeafs() const {
-    return m_libraryItems.empty();
+bool BaseLibrary::emptyCategory() const {
+    return m_categoryName.empty();
+}
+
+bool BaseLibrary::emptySubCategories() const {
+    return m_subCategories.empty();
+}
+
+bool BaseLibrary::emptyEntries() const {
+    return m_entries.empty();
 }
 
 void BaseLibrary::addLibraryEntry(const LibraryEntry& vLibraryEntry) {
@@ -32,13 +43,23 @@ void BaseLibrary::addLibraryEntry(const LibraryEntry& vLibraryEntry) {
                 word = "Empty";
                 LogVarError("A item of the path [%s] is empty. replace by \"Empty\"", vLibraryEntry.nodePath.c_str());
             }
-            if (pCat->m_subCategories.find(word) != pCat->m_subCategories.end()) {
-                pCat = &pCat->m_subCategories.at(word);
+            if (word == vec.front() && // first category of the path
+                (word == INPUT_NODES_CATEGORY_NAME ||    // Category of Inputs node to show on top of the popup
+                 word == OUTPUT_NODES_CATEGORY_NAME)) {  // Category of Outputs node to show on top of the popup
+                if (pCat->m_mainSubCategories.find(word) != pCat->m_mainSubCategories.end()) {
+                    pCat = &pCat->m_mainSubCategories.at(word);
+                } else {
+                    pCat = pCat->m_addCategory(word, pCat->m_mainSubCategories);
+                }
             } else {
-                pCat = pCat->m_addCategory(word);
+                if (pCat->m_subCategories.find(word) != pCat->m_subCategories.end()) {
+                    pCat = &pCat->m_subCategories.at(word);
+                } else {
+                    pCat = pCat->m_addCategory(word, pCat->m_subCategories);
+                }
             }
         }
-        pCat->m_libraryItems[vLibraryEntry.nodeLabel] = vLibraryEntry;
+        pCat->m_entries[vLibraryEntry.nodeLabel] = vLibraryEntry;
     }
 }
 
@@ -50,9 +71,17 @@ bool BaseLibrary::filterNodesForSomeInputSlotTypes(const SlotTypes& vInputSlotTy
     return m_filterNodesForSomeInputSlotTypes(vInputSlotTypes, 0);
 }
 
-BaseLibrary* BaseLibrary::m_addCategory(const CategoryName& vCategoryName) {
-    m_subCategories[vCategoryName].m_categoryName = vCategoryName;
-    return &m_subCategories.at(vCategoryName);
+BaseNodeWeak BaseLibrary::createChildNodeInGraph(const LibraryEntry& vEntry, const BaseGraphWeak& vGraph) {
+    assert(vEntry.createNodeFunctor != nullptr);
+    if (vEntry.createNodeFunctor != nullptr) {
+        return vEntry.createNodeFunctor(vGraph);
+    }
+    return {};
+}
+
+BaseLibrary* BaseLibrary::m_addCategory(const CategoryName& vCategoryName, CategoriesCnt& vCategories) {
+    vCategories[vCategoryName].m_categoryName = vCategoryName;
+    return &vCategories.at(vCategoryName);
 }
 
 bool BaseLibrary::m_showMenu(LibraryEntry& vOutEntry, int32_t vLevel) {
@@ -67,14 +96,20 @@ bool BaseLibrary::m_showMenu(LibraryEntry& vOutEntry, int32_t vLevel) {
 
 bool BaseLibrary::m_showContent(LibraryEntry& vOutEntry, int32_t vLevel) {
     bool ret = false;
+    if (vLevel == 0) {
+        for (auto& category : m_mainSubCategories) {
+            ret |= category.second.m_showMenu(vOutEntry, vLevel + 1);
+        }
+        ImGui::Separator();
+    }
     for (auto& category : m_subCategories) {
         ret |= category.second.m_showMenu(vOutEntry, vLevel + 1);
     }
-    if (!m_libraryItems.empty() && !m_subCategories.empty()) {
+    if (!m_entries.empty() && !m_subCategories.empty()) {
         ImGui::Separator();
     }
     ImGui::SetNextWindowViewport(ImGui::GetWindowViewport()->ID);
-    for (auto& item : m_libraryItems) {
+    for (auto& item : m_entries) {
         if (ImGui::MenuItem(item.first.c_str())) {
             vOutEntry = item.second;
             ret = true;
@@ -98,7 +133,7 @@ bool BaseLibrary::m_filterNodesForSomeInputSlotTypes(const SlotTypes& vInputSlot
             std::set<CategoryName> categoryToRemove;
             for (auto& category : m_subCategories) {
                 ret |= category.second.m_filterNodesForSomeInputSlotTypes(vInputSlotTypes, vLevel + 1);
-                if (category.second.emptyLeafs()) {  // no entry leafs, we will remove the category
+                if (category.second.emptyEntries()) {  // no entries, we will remove the category
                     categoryToRemove.emplace(category.first);
                 }
             }
@@ -112,7 +147,7 @@ bool BaseLibrary::m_filterNodesForSomeInputSlotTypes(const SlotTypes& vInputSlot
         {
             bool found = false;
             std::set<NodeLabel> nodeToRemove;
-            for (auto& item : m_libraryItems) {
+            for (auto& item : m_entries) {
                 found = false;
                 for (const auto& type : vInputSlotTypes) {
                     if (item.second.inputSlotTypes.find(type) != item.second.inputSlotTypes.end()) {
@@ -128,7 +163,7 @@ bool BaseLibrary::m_filterNodesForSomeInputSlotTypes(const SlotTypes& vInputSlot
             }
             // now remove unwanted entry
             for (const auto& node_label : nodeToRemove) {
-                m_libraryItems.erase(node_label);
+                m_entries.erase(node_label);
             }
         }        
     }

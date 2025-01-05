@@ -10,7 +10,6 @@
 #include "baseNode.h"
 #include "baseSlot.h"
 #include "baseLink.h"
-#include "baseLibrary.h"
 
 #include <vector>
 #include <functional>
@@ -97,7 +96,7 @@ public:  // Normal
 
 public:  // Template
     template <typename T>
-    std::shared_ptr<T> createChildNode() {
+    std::weak_ptr<T> createChildNode() {
         static_assert(std::is_base_of<BaseNode, T>::value, "T must derive of BaseNode");
         auto node_ptr = std::make_shared<T>(m_parentStyle);
         node_ptr->m_setThis(node_ptr);
@@ -114,7 +113,7 @@ public:  // Template
     }
 
     template <typename T>
-    std::shared_ptr<T> cloneChildNode(const std::weak_ptr<T>& vNodeToClone, const ImVec2& vNewPos) {
+    std::weak_ptr<T> cloneChildNode(const std::weak_ptr<T>& vNodeToClone, const ImVec2& vNewPos) {
         static_assert(std::is_base_of<BaseNode, T>::value, "T must derive of BaseNode");
         auto node_ptr = vNodeToClone.lock();
         if (node_ptr != nullptr) {
@@ -126,7 +125,7 @@ public:  // Template
             }
             return duplicated_node_ptr;
         }
-        return nullptr;
+        return {};
     }
 
 private:  // Graph

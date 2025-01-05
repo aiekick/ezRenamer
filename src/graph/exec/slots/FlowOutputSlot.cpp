@@ -1,5 +1,5 @@
 ﻿#include "FlowOutputSlot.h"
-#include <graph/nodeManager.h>
+#include <graph/manager/nodeManager.h>
 
 FlowOutputSlot::FlowOutputSlot(const BaseStyle& vParentStyle, const BaseSlotDatas& /*vDatas*/)  //
     : BaseSlot(vParentStyle, BaseSlotDatas("Flow", "FLOW", ez::SlotDir::OUTPUT, NodeManager::instance())) {}

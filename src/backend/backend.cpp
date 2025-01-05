@@ -19,7 +19,7 @@
 
 #include <project/projectFile.h>
 #include <plugins/pluginManager.h>
-#include <graph/nodeManager.h>
+#include <graph/manager/nodeManager.h>
 #include <core/controller.h>
 
 #include <LayoutManager.h>

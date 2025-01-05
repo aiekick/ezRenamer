@@ -1,5 +1,5 @@
 ﻿#include "FileOutputSlot.h"
-#include <graph/nodeManager.h>
+#include <graph/manager/nodeManager.h>
 
 FileOutputSlot::FileOutputSlot(const BaseStyle& vParentStyle)  //
     : BaseSlot(vParentStyle, BaseSlotDatas("File", "FILE", ez::SlotDir::OUTPUT, NodeManager::instance())) {}

@@ -34,7 +34,6 @@ bool ToolNode::m_drawHeader() {
     ImGui::TextUnformatted(getDatas<BaseNodeDatas>().name.c_str());
     ImGui::Spring(1, 5.0f);
     getOutputFlowSlot().lock()->drawSlot();
-    ImGui::Dummy(ImVec2(0, 20));
     ImGui::EndHorizontal();
     return false;
 }

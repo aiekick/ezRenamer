@@ -1,6 +1,5 @@
 #include "baseGraph.h"
 #include <ezlibs/ezLog.hpp>
-#include <imguipack/3rdparty/imgui_node_editor/imgui_node_editor_internal.h>
 
 #define BACKGROUND_CONTEXT_MENU "BackgroundContextMenu"
 

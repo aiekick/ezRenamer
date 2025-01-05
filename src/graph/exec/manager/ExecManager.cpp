@@ -1,9 +1,9 @@
 #include "ExecManager.h"
 #include <graph/exec/nodes/InputNode.h>
-#include <graph/exec/nodes/ActionNode.h>
+#include <graph/exec/nodes/OutputNode.h>
 
 // will analyse the graph and get all sequences 
-// from inputNode to ActionNode
+// from inputNode to OutputNode
 bool ExecManager::analyzeGraph(const BaseGraphWeak& vGraph) {
     auto graph_ptr = vGraph.lock();
     if (graph_ptr != nullptr) {
@@ -26,4 +26,19 @@ bool ExecManager::executeFromFile(const std::string& vFile) {
 // execute a sequence from a InputText node
 bool ExecManager::executeFromText(const std::string& vText) {
     return false;
+}
+
+ExecManager::InputNodes ExecManager::m_getInputNodesFromGraph(const BaseGraphWeak& vGraph) {
+    InputNodes ret;
+    return ret;
+}
+
+ExecManager::OutputNodes ExecManager::m_getOutputNodesFromGraph(const BaseGraphWeak& vGraph) {
+    OutputNodes ret;
+    return ret;
+}
+
+ExecManager::ToolNodes ExecManager::m_getToolNodesFromGraph(const BaseGraphWeak& vGraph) {
+    ToolNodes ret;
+    return ret;
 }

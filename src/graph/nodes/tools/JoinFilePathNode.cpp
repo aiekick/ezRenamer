@@ -1,11 +1,11 @@
-#include "JoinFilePath.h"
+#include "JoinFilePathNode.h"
 #include <graph/slots/FileOutputSlot.h>
 #include <graph/slots/StringInputSlot.h>
 
-JoinFilePath::JoinFilePath(const BaseStyle& vParentStyle)  //
+JoinFilePathNode::JoinFilePathNode(const BaseStyle& vParentStyle)  //
     : ToolNode(vParentStyle) {}
 
-bool JoinFilePath::init() {
+bool JoinFilePathNode::init() {
     bool ret = ToolNode::init();
     getDatasRef<BaseNodeDatas>().name = "Join file path";
     getDatasRef<BaseNodeDatas>().type = "FILE_PATH_JOINER_NODE";

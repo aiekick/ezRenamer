@@ -4,11 +4,16 @@
 #include <map>
 #include <string>
 #include <cstdint>
+#include <functional>
+#include <ezlibs/ezCnt.hpp>
 #include <ezlibs/ezMath.hpp>
+#include <graph/base/baseNode.h>
+#include <graph/base/baseGraph.h>
 
 class BaseLibrary {
 public:
-    enum class NodeSource { INTERNAL = 0, PLUGIN, Count };
+    typedef std::map<CategoryName, BaseLibrary> CategoriesCnt;
+    typedef std::string NodeSource;
     typedef std::string NodeLabel;
     typedef std::string NodeType;
     typedef std::string NodePath;
@@ -16,6 +21,7 @@ public:
     typedef std::string CategoryName;
     typedef std::string SlotType;
     typedef std::set<SlotType> SlotTypes;
+    typedef std::function<BaseNodeWeak(const BaseGraphWeak&)> CreateNodeFunctor;
     struct LibraryEntry {
         NodeSource nodeSource;
         NodePath nodePath;  // can be a path like cat0/cat1/node
@@ -24,35 +30,43 @@ public:
         NodeColor nodeColor;
         SlotTypes inputSlotTypes;
         SlotTypes outputSlotTypes;
+        CreateNodeFunctor createNodeFunctor;
         LibraryEntry() = default;
         LibraryEntry(
             const NodePath& vNodePath,
             const NodeLabel& vNodeLabel,
             const NodeType& vNodeType,
-            const SlotTypes& vInputSlotTypes = {},         // for add a node for a slot type
-            const SlotTypes& vOutputSlotTypes = {},  // for add a node for a slot type
-            const NodeSource vNodeSource = NodeSource::PLUGIN,
+            const SlotTypes& vInputSlotTypes,             // for add a node for a slot type
+            const SlotTypes& vOutputSlotTypes,            // for add a node for a slot type
+            const CreateNodeFunctor& vCreateNodeFunctor,  // for the create the node
+            const NodeSource vNodeSource = "INTERNAL",    // the origin of the node (the app ?, a plugin ?)
             const NodeColor& vNodeColor = {})
             : nodePath(vNodePath),
               nodeLabel(vNodeLabel),
               nodeType(vNodeType),
               inputSlotTypes(vInputSlotTypes),
               outputSlotTypes(vOutputSlotTypes),
+              createNodeFunctor(vCreateNodeFunctor),
               nodeSource(vNodeSource),
               nodeColor(vNodeColor) {}
     };
 
 private:
-    std::map<NodeLabel, LibraryEntry> m_libraryItems;
-    std::map<CategoryName, BaseLibrary> m_subCategories;
     CategoryName m_categoryName;
+    std::map<NodeLabel, LibraryEntry> m_entries;
+    CategoriesCnt m_subCategories;
+    
+    // for display on top of the popup. 
+    // only for categories (Inputs, Outputs) not plugins
+    CategoriesCnt m_mainSubCategories;
 
 public:
     void clear();
-    void addLibraryEntry(const LibraryEntry& vLibraryEntry);
-
-    bool empty() const;
-    bool emptyLeafs() const;
+    void addLibraryEntry(const LibraryEntry& vLibraryEntry);    
+    bool empty() const;// no category, no sub categories, no entries 
+    bool emptyCategory() const;  // no category 
+    bool emptySubCategories() const;  // no sub categories 
+    bool emptyEntries() const;// no entries 
 
     /// <summary>
     /// return true if an entry was selected
@@ -68,8 +82,16 @@ public:
     /// <returns></returns>
     bool filterNodesForSomeInputSlotTypes(const SlotTypes& vInputSlotTypes);
 
+    /// <summary>
+    /// will create a child node in graph
+    /// </summary>
+    /// <param name="vEntry"></param>
+    /// <param name="vGraph"></param>
+    /// <returns></returns>
+    BaseNodeWeak createChildNodeInGraph(const LibraryEntry& vEntry, const BaseGraphWeak& vGraph);
+
 private:
-    BaseLibrary* m_addCategory(const CategoryName& vCategoryName);
+    BaseLibrary* m_addCategory(const CategoryName& vCategoryName, CategoriesCnt& vCategories);
     bool m_showMenu(LibraryEntry& vOutEntry, int32_t vLevel);
     bool m_showContent(LibraryEntry& vOutEntry, int32_t vLevel);
     bool m_filterNodesForSomeInputSlotTypes(const SlotTypes& vInputSlotTypes, int32_t vLevel);

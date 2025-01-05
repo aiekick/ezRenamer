@@ -1,5 +1,5 @@
 ﻿#include "StringInputSlot.h"
-#include <graph/nodeManager.h>
+#include <graph/manager/nodeManager.h>
 
 StringInputSlot::StringInputSlot(const BaseStyle& vParentStyle)  //
     : BaseSlot(vParentStyle, BaseSlotDatas("String", "STRING", ez::SlotDir::INPUT, NodeManager::instance())) {}

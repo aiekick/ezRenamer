@@ -1,5 +1,5 @@
 ﻿#include "FlowInputSlot.h"
-#include <graph/nodeManager.h>
+#include <graph/manager/nodeManager.h>
 
 FlowInputSlot::FlowInputSlot(const BaseStyle& vParentStyle, const BaseSlotDatas& /*vDatas*/)  //
     : BaseSlot(vParentStyle, BaseSlotDatas("Flow", "FLOW", ez::SlotDir::INPUT, NodeManager::instance())) {}

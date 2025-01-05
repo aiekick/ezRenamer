@@ -1,5 +1,5 @@
 ﻿#include "StringOutputSlot.h"
-#include <graph/nodeManager.h>
+#include <graph/manager/nodeManager.h>
 
 StringOutputSlot::StringOutputSlot(const BaseStyle& vParentStyle)  //
     : BaseSlot(vParentStyle, BaseSlotDatas("String", "STRING", ez::SlotDir::OUTPUT, NodeManager::instance())) {}
