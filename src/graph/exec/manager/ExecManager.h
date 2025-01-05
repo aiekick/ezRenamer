@@ -1,18 +1,32 @@
 #pragma once
 
-#include <graph/exec/sequence/ExecSequence.h>
-#include <graph/base/baseGraph.h>
-#include <graph/exec/nodes/OutputNode.h>
-#include <graph/exec/nodes/InputNode.h>
+#include <vector>
+#include <memory>
+
+#include <graph/base/baseDefs.h>
 #include <graph/exec/nodes/ToolNode.h>
-#include <ezlibs/ezCnt.hpp>
+#include <graph/exec/nodes/InputNode.h>
+#include <graph/exec/nodes/OutputNode.h>
+#include <graph/exec/sequence/ExecSequence.h>
+#include <graph/exec/nodes/abstracts/ExecNode.h>
 
 class ExecManager {
+private:  // Static
+    static std::unique_ptr<ExecManager> mp_singleton;
+
+public:  // Static
+    static ExecManager* instance();
+    static bool initInstance();
+    static void unitInstance();
+
 private:
     std::vector<ExecSequence> m_sequences;
 
 public:
-    bool analyzeGraph(const BaseGraphWeak& vGraph);
+    bool init();
+    void unit();
+
+    bool compileGraph(const BaseGraphWeak& vGraph);
     bool executeFromFile(const std::string& vFile);
     bool executeFromText(const std::string& vText);
 
@@ -23,4 +37,5 @@ private:
     InputNodes m_getInputNodesFromGraph(const BaseGraphWeak& vGraph);
     OutputNodes m_getOutputNodesFromGraph(const BaseGraphWeak& vGraph);
     ToolNodes m_getToolNodesFromGraph(const BaseGraphWeak& vGraph);
+    void m_followOutFlowSlotAndAddToSequenceRecurs(ExecNodeWeak vNode, ExecSequence& vOutSeq);
 };

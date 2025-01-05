@@ -4,17 +4,13 @@
 
 #include <imguipack/ImGuiPack.h>
 #include <ezlibs/ezGraph.hpp>
+#include <ezlibs/ezCnt.hpp>
 
-#include "baseStyle.h"
-#include "baseSlot.h"
+#include <graph/base/baseDefs.h>
 
 #include <unordered_map>
 
 #include <memory>
-
-class BaseLink;
-typedef std::shared_ptr<BaseLink> BaseLinkPtr;
-typedef std::weak_ptr<BaseLink> BaseLinkWeak;
 
 class BaseLink : public ez::UUID {
     friend class BaseGraph;
@@ -39,4 +35,6 @@ public:
     ~BaseLink() override = default;
     bool init(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd);
     bool draw();
+    const BaseSlotWeak& getInSlot() const;
+    const BaseSlotWeak& getOutSlot() const;
 };

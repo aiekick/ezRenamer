@@ -1,22 +1,16 @@
 #pragma once
 
 #include <imguipack/ImGuiPack.h>
-#include <ezlibs/ezGraph.hpp>
 #include <ezlibs/ezXmlConfig.hpp>
+#include <ezlibs/ezGraph.hpp>
 #include <ezlibs/ezCnt.hpp>
 
-#include "baseStyle.h"
-#include "baseSlot.h"
-#include "baseLink.h"
+#include <graph/base/baseDefs.h>
 
 #include "interfaces/SlotColorBankInterface.h"
 
 #include <unordered_map>
 #include <map>
-
-class BaseSlot;
-typedef std::shared_ptr<BaseSlot> BaseSlotPtr;
-typedef std::weak_ptr<BaseSlot> BaseSlotWeak;
 
 class BaseSlot  //
     : public ez::Slot,
@@ -79,7 +73,7 @@ private:
 
     // un slot peut etre attaché a plusieurs autre slots, 
     // donc plusieurs links
-    ez::cnt::DicoVector<ez::Uuid, BaseLinkWeak> m_links;
+    BaseLinkWeakCnt m_links;
 
 public:
     template <typename T>
@@ -103,6 +97,9 @@ public:
     void setColor(const ImVec4& vColor);
     void setPos(const ImVec2& vPos);
     bool draw();
+
+    bool isConnected() const;
+    const BaseLinkWeakCnt& getLinks() const;
 
     bool isAnInput();
     bool isAnOutput();

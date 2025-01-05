@@ -1,6 +1,9 @@
 #include "baseNode.h"
 #include <ezlibs/ezLog.hpp>
 
+#include <graph/base/baseSlot.h>
+#include <graph/base/baseLink.h>
+
 bool BaseNode::drawWidgets(const uint32_t& vFrame) {
     return false;
 }

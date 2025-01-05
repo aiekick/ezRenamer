@@ -6,18 +6,11 @@
 #include <ezlibs/ezGraph.hpp>
 #include <ezlibs/ezXmlConfig.hpp>
 
-#include "baseStyle.h"
-#include "baseNode.h"
-#include "baseSlot.h"
-#include "baseLink.h"
+#include <graph/base/baseDefs.h>
 
 #include <vector>
 #include <functional>
 #include <unordered_map>
-
-class BaseGraph;
-typedef std::shared_ptr<BaseGraph> BaseGraphPtr;
-typedef std::weak_ptr<BaseGraph> BaseGraphWeak;
 
 class BaseGraph  //
     : public ez::Graph,
@@ -53,7 +46,7 @@ private:  // Graph
     nd::NodeId m_contextMenuNodeId = 0;
     nd::PinId m_contextMenuSlotId = 0;
     nd::LinkId m_contextMenuLinkId = 0;
-    std::unordered_map<LinkUuid, BaseLinkPtr> m_links;  // linkId, link // for search query
+    BaseLinkPtrCnt m_links;  // linkId, link // for search query
     BgRightClickActionFunctor m_BgRightClickAction = nullptr;
     PrepareForCreateNodeFromSlotActionFunctor m_PrepareForCreateNodeFromSlotActionFunctor = nullptr;
     std::vector<nd::NodeId> m_nodesToCopy;  // for copy/paste

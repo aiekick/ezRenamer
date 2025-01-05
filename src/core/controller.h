@@ -4,11 +4,13 @@
 #include <imguipack/ImGuiPack.h>
 
 class Controller {
-public:
-    static Controller* instance() {
-        static auto _instancePtr = std::make_unique<Controller>();
-        return _instancePtr.get();
-    }
+private:  // Static
+    static std::unique_ptr<Controller> mp_singleton;
+
+public:  // Static
+    static Controller* instance();
+    static bool initInstance();
+    static void unitInstance();
 
 private:
     RenamerContainer m_renamers;
@@ -17,10 +19,12 @@ private:
 public:
     bool init();
     void unit();
+    bool drawMenu();
     bool drawControl();
     bool drawFilesList();
     bool drawPreview();
     bool drawGraph();
+    bool compileGraph();
 
 private:
     void m_getAvailableRenamers();

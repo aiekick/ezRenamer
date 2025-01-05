@@ -3,21 +3,21 @@
 #include <graph/base/baseSlot.h>
 #include <graph/library/nodesLibrary.h>
 
-std::unique_ptr<NodeManager> NodeManager::m_singleton = nullptr;
+std::unique_ptr<NodeManager> NodeManager::mp_singleton = nullptr;
 
 NodeManager* NodeManager::instance() {
-    assert(m_singleton != nullptr);
-    return m_singleton.get();
+    assert(mp_singleton != nullptr);
+    return mp_singleton.get();
 }
 
 bool NodeManager::initInstance() {
-    m_singleton = std::make_unique<NodeManager>();
+    mp_singleton = std::make_unique<NodeManager>();
     return instance()->init();
 }
 
 void NodeManager::unitInstance() {
     instance()->unit();
-    m_singleton.reset();
+    mp_singleton.reset();
 }
 
 bool NodeManager::init() {
@@ -61,6 +61,10 @@ bool NodeManager::drawGraph() {
     return m_graphPtr->drawGraph();
 }
 
+BaseGraphWeak NodeManager::getGraph() const {
+    return m_graphPtr;
+}
+
 bool NodeManager::getSlotColor(const std::string& vBaseSlotType, ImVec4& vOutColor) const {
     if (m_ColorSlots.find(vBaseSlotType) != m_ColorSlots.end()) {
         vOutColor = m_ColorSlots.at(vBaseSlotType);
@@ -79,11 +83,6 @@ bool NodeManager::getSlotColor(const std::string& vBaseSlotType, ImU32& vOutColo
 
 void NodeManager::addSlotColor(const std::string& vBaseSlotType, const ImVec4& vSlotColor) {
     m_ColorSlots[vBaseSlotType] = vSlotColor;
-}
-
-bool NodeManager::executeGraph() {
-    // on doit trouver les dernier nodes
-    return false;
 }
 
 bool NodeManager::m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vInputSlotType) {

@@ -1,6 +1,24 @@
 #include <core/controller.h>
 #include <plugins/pluginManager.h>
 #include <graph/manager/nodeManager.h>
+#include <graph/exec/manager/ExecManager.h>
+
+std::unique_ptr<Controller> Controller::mp_singleton = nullptr;
+
+Controller* Controller::instance() {
+    assert(mp_singleton != nullptr);
+    return mp_singleton.get();
+}
+
+bool Controller::initInstance() {
+    mp_singleton = std::make_unique<Controller>();
+    return instance()->init();
+}
+
+void Controller::unitInstance() {
+    instance()->unit();
+    mp_singleton.reset();
+}
 
 bool Controller::init() {
     m_getAvailableRenamers();
@@ -9,6 +27,14 @@ bool Controller::init() {
 
 void Controller::unit() {
     m_clearRenamers();
+}
+
+bool Controller::drawMenu() {
+    if (ImGui::MenuItem("Compile", "Compile graph")) {
+        compileGraph();
+        return true;
+    }
+    return false;
 }
 
 bool Controller::drawControl() {
@@ -42,6 +68,10 @@ bool Controller::drawPreview() {
 
 bool Controller::drawGraph() {
     return NodeManager::instance()->drawGraph();
+}
+
+bool Controller::compileGraph() {
+    return ExecManager::instance()->compileGraph(NodeManager::instance()->getGraph());
 }
 
 void Controller::m_getAvailableRenamers() {

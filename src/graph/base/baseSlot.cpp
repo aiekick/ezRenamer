@@ -1,6 +1,8 @@
 #include "baseSlot.h"
 #include <ezlibs/ezLog.hpp>
 
+#include <graph/base/baseLink.h>
+
 void BaseSlot::setRadius(const float vRadius) {
     getDatasRef<BaseSlotDatas>().radius = vRadius;
 }
@@ -55,6 +57,14 @@ bool BaseSlot::draw() {
     }
     ImGui::PopID();
     return false;
+}
+
+bool BaseSlot::isConnected() const {
+    return !m_links.empty();
+}
+
+const BaseLinkWeakCnt& BaseSlot::getLinks() const {
+    return m_links;
 }
 
 void BaseSlot::m_drawSlot() {

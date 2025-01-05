@@ -1,6 +1,10 @@
 #include "baseGraph.h"
 #include <ezlibs/ezLog.hpp>
 
+#include <graph/base/baseNode.h>
+#include <graph/base/baseSlot.h>
+#include <graph/base/baseLink.h>
+
 #define BACKGROUND_CONTEXT_MENU "BackgroundContextMenu"
 
 bool BaseGraph::drawGraph() {
@@ -85,16 +89,16 @@ void BaseGraph::m_drawBgContextMenuPopup() {
 }
 
 void BaseGraph::m_drawLinks() {
-    for (const auto& link : m_links) {
-        link.second->draw();
+    for (const auto& link_ptr : m_links) {
+        link_ptr->draw();
     }
 
     // show flow direction
     const auto& datas = getDatas<BaseGraphDatas>();
     if (datas.showFlow && ImGui::IsKeyPressed(datas.showFlowKey)) {
-        for (auto& link : m_links) {
-            if (link.second->m_type == datas.flowType) {
-                nd::Flow(link.second->getUuid());
+        for (auto& link_ptr : m_links) {
+            if (link_ptr->m_type == datas.flowType) {
+                nd::Flow(link_ptr->getUuid());
             }
         }
     }
@@ -408,9 +412,9 @@ BaseNodeWeak BaseGraph::m_findNodeByName(const std::string& vName) {
 BaseLinkWeak BaseGraph::m_findLink(nd::LinkId vId) {
     BaseLinkWeak ret;
     if (vId) {
-        for (const auto& link : m_links) {
-            if (link.second->m_linkId == vId) {
-                ret = link.second;
+        for (const auto& link_ptr : m_links) {
+            if (link_ptr->m_linkId == vId) {
+                ret = link_ptr;
             }
         }
     }
@@ -442,8 +446,7 @@ bool BaseGraph::m_addLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd) 
     if (startPtr != nullptr && endPtr != nullptr) {
         auto link_ptr = BaseLink::create(m_parentStyle, vStart, vEnd);
         if (link_ptr != nullptr) {
-            if (m_links.find(link_ptr->getUuid()) == m_links.end()) {
-                m_links[link_ptr->getUuid()] = link_ptr;
+            if (m_links.tryAdd(link_ptr->getUuid(), link_ptr)) {
                 if (startPtr->m_links.tryAdd(link_ptr->getUuid(), link_ptr) && endPtr->m_links.tryAdd(link_ptr->getUuid(), link_ptr)) {
                     ret = true;
                 } else {
@@ -460,7 +463,7 @@ bool BaseGraph::m_breakLink(const BaseLinkWeak& vLink) {
     bool ret = false;
     const auto link_ptr = vLink.lock();
     if (link_ptr != nullptr) {
-        if (m_links.find(link_ptr->getUuid()) != m_links.end()) {
+        if (m_links.exist(link_ptr->getUuid())) {
             const auto startPtr = link_ptr->m_in.lock();
             if (startPtr != nullptr) {
                 startPtr->m_links.erase(link_ptr->getUuid());
@@ -507,10 +510,10 @@ bool BaseGraph::m_breakLink(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo) 
 
 void BaseGraph::m_delOneSideLinks() {
     std::vector<ez::Uuid> links_to_destroy;
-    for (const auto& link : m_links) {
-        if (link.second->m_in.expired() ||   // the input side is empty OR
-            link.second->m_out.expired()) {  // the output side is empty
-            links_to_destroy.push_back(link.first);
+    for (const auto& link_ptr : m_links) {
+        if (link_ptr->m_in.expired() ||  // the input side is empty OR
+            link_ptr->m_out.expired()) {  // the output side is empty
+            links_to_destroy.push_back(link_ptr->getUuid());
         }
     }
 

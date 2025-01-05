@@ -6,15 +6,10 @@
 #include <ezlibs/ezGraph.hpp>
 #include <ezlibs/ezXmlConfig.hpp>
 
-#include "baseStyle.h"
-#include "baseSlot.h"
+#include <graph/base/baseDefs.h>
 
 #include <memory>
 #include <unordered_map>
-
-class BaseNode;
-typedef std::shared_ptr<BaseNode> BaseNodePtr;
-typedef std::weak_ptr<BaseNode> BaseNodeWeak;
 
 // to put in each derived nodes
 #define ENABLE_CLONE(className)                    \

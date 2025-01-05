@@ -1,5 +1,7 @@
 #include "baseLink.h"
 
+#include <graph/base/baseSlot.h>
+
 BaseLinkPtr BaseLink::create(const BaseStyle& vParentStyle, const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd) {
     auto link_ptr = std::make_shared<BaseLink>(vParentStyle);
     link_ptr->m_This = link_ptr;
@@ -36,4 +38,12 @@ bool BaseLink::draw() {
         ret = nd::Link(m_linkId, inPtr->m_pinID, outPtr->m_pinID, m_color, m_thick);
     }
     return ret;
+}
+
+const BaseSlotWeak& BaseLink::getInSlot() const {
+    return m_in;
+}
+
+const BaseSlotWeak& BaseLink::getOutSlot() const {
+    return m_out;
 }

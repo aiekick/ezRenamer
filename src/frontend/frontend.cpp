@@ -32,6 +32,8 @@ limitations under the License.
 #include <panes/pathsPane.h>
 #include <panes/graphPane.h>
 
+#include <core/controller.h>
+
 // panes
 #define DEBUG_PANE_ICON ICON_SDFM_BUG
 #define SCENE_PANE_ICON ICON_SDFM_FORMAT_LIST_BULLETED_TYPE
@@ -227,12 +229,16 @@ void Frontend::m_drawMainMenuBar() {
         }
 
         if (ProjectFile::Instance()->IsThereAnyProjectChanges()) {
-            ImGui::Spacing(200.0f);
+            ImGui::Spacing(100.0f);
 
             if (ImGui::MenuItem(" Save")) {
                 Action_Menu_SaveProject();
             }
         }
+
+        ImGui::Spacing(100.0f);
+
+        Controller::instance()->drawMenu();
 
         // ImGui Infos
         const auto label = ez::str::toStr("Dear ImGui %s (Docking)", ImGui::GetVersion());

@@ -20,6 +20,7 @@
 #include <project/projectFile.h>
 #include <plugins/pluginManager.h>
 #include <graph/manager/nodeManager.h>
+#include <graph/exec/manager/ExecManager.h>
 #include <core/controller.h>
 
 #include <LayoutManager.h>
@@ -424,13 +425,15 @@ bool Backend::m_InitPlugins(const ez::App& vApp) {
 bool Backend::m_InitCores() {
     bool ret = true;
     ret &= NodeManager::initInstance();
-    ret &= Controller::instance()->init();
+    ret &= ExecManager::initInstance();
+    ret &= Controller::initInstance();
     return ret;
 }
 
 void Backend::m_UnitCores() {
+    Controller::unitInstance();
+    ExecManager::unitInstance();
     NodeManager::unitInstance();
-    Controller::instance()->unit();
 }
 
 void Backend::m_UnitPlugins() {

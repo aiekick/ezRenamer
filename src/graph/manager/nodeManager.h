@@ -1,16 +1,22 @@
 #pragma once
 
 #include <imguipack/ImGuiPack.h>
-#include <graph/base/baseStyle.h>
+#include <graph/base/baseDefs.h>
 #include <graph/base/baseGraph.h>
 #include <graph/base/baseLibrary.h>
+#include <graph/base/interfaces/SlotColorBankInterface.h>
 
 #include <memory>
 #include <functional>
 
 class NodeManager : public SlotColorBankInterface {
 private: // Static
-    static std::unique_ptr<NodeManager> m_singleton;
+    static std::unique_ptr<NodeManager> mp_singleton;
+
+public:  // Static
+    static NodeManager* instance();
+    static bool initInstance();
+    static void unitInstance();
 
 private: 
     BaseStyle m_graphStyle;
@@ -28,18 +34,13 @@ private:
     BaseSlotWeak m_createNodeFromSlot;
 
 public:
-    static NodeManager* instance();
-    static bool initInstance();
-    static void unitInstance();
-
-public:
     bool init();
     void unit();
     bool drawGraph();
+    BaseGraphWeak getGraph() const;
     bool getSlotColor(const std::string& vBaseSlotType, ImVec4& vOutColor) const override;
     bool getSlotColor(const std::string& vBaseSlotType, ImU32& vOutColor) const override;
     void addSlotColor(const std::string& vBaseSlotType, const ImVec4& vSlotColor) override;
-    bool executeGraph();
 
 private:
     bool m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vSlotType);
