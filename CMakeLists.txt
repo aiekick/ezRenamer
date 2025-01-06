@@ -78,6 +78,7 @@ add_definitions(-DIMGUI_USER_CONFIG="${CMAKE_SOURCE_DIR}/src/headers/customImGui
 add_definitions(-DCUSTOM_IMWIDGETS_CONFIG="${CMAKE_SOURCE_DIR}/src/headers/customImWidgetsConfig.h")
 add_definitions(-DCUSTOM_IN_APP_GPU_PROFILER_CONFIG="${CMAKE_SOURCE_DIR}/src/headers/customInAppGpuProfiler.h")
 add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="${CMAKE_SOURCE_DIR}/src/headers/customImGuiFileDialogConfig.h")
+add_definitions(-DCUSTOM_MESSAGING_CONFIG_HEADER="${CMAKE_SOURCE_DIR}/src/headers/customMessagingConfigHeader.h")
 add_definitions(-DCUSTOM_LOG_TO_GRAPH_BACKEND_CONFIG="${CMAKE_SOURCE_DIR}/src/headers/customStrockerBackendConfig.h")
 add_definitions(-DCUSTOM_THEME_HELPER_CONFIG_HEADER="${CMAKE_SOURCE_DIR}/src/headers/customImGuiThemeHelperConfigHeader.h")
 
@@ -190,8 +191,8 @@ target_link_libraries(${PROJECT}
 
 # define for let ezRenamer detect what is the config of a plugin 
 target_compile_definitions(${PROJECT} PRIVATE -DPLUGIN_RUNTIME_CONFIG=$<$<CONFIG:Debug>:"_Debug">$<$<CONFIG:Release>:"_Release">$<$<CONFIG:MinSizeRel>:"_MinSizeRel">$<$<CONFIG:RelWithDebInfo>:"_RelWithDebInfo">)
-target_compile_definitions(${PROJECT} PRIVATE -DPROJECT_EXT=".cash")
-target_compile_definitions(${PROJECT} PRIVATE -DPROJECT_EXT_DOT_LESS="cash")
+target_compile_definitions(${PROJECT} PRIVATE -DPROJECT_EXT=".rnm")
+target_compile_definitions(${PROJECT} PRIVATE -DPROJECT_EXT_DOT_LESS="rnm")
 
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${FINAL_BIN_DIR}")
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${FINAL_BIN_DIR}")
