@@ -9,7 +9,7 @@
 #include <memory>
 #include <functional>
 
-class NodeManager : public SlotColorBankInterface {
+class NodeManager : public SlotColorBankInterface, public IDrawDebugInfos {
 private: // Static
     static std::unique_ptr<NodeManager> mp_singleton;
 
@@ -41,6 +41,7 @@ public:
     bool getSlotColor(const std::string& vBaseSlotType, ImVec4& vOutColor) const override;
     bool getSlotColor(const std::string& vBaseSlotType, ImU32& vOutColor) const override;
     void addSlotColor(const std::string& vBaseSlotType, const ImVec4& vSlotColor) override;
+    void drawDebugInfos() override;
 
 private:
     bool m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vSlotType);

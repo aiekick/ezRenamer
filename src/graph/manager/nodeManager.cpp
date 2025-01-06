@@ -58,6 +58,13 @@ void NodeManager::unit() {
 }
 
 bool NodeManager::drawGraph() {
+    if (ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("Settings")) {
+            ImGui::MenuItem("Debug", nullptr, &m_graphStyle.debugMode);
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
     return m_graphPtr->drawGraph();
 }
 
@@ -83,6 +90,10 @@ bool NodeManager::getSlotColor(const std::string& vBaseSlotType, ImU32& vOutColo
 
 void NodeManager::addSlotColor(const std::string& vBaseSlotType, const ImVec4& vSlotColor) {
     m_ColorSlots[vBaseSlotType] = vSlotColor;
+}
+
+void NodeManager::drawDebugInfos() {
+    m_graphPtr->drawDebugInfos();
 }
 
 bool NodeManager::m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vInputSlotType) {

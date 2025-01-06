@@ -14,7 +14,8 @@
 
 class BaseSlot  //
     : public ez::Slot,
-      public ez::xml::Config {
+      public ez::xml::Config,
+      public IDrawDebugInfos {
     friend class BaseGraph;
     friend class BaseNode;
     friend class BaseLink;
@@ -92,17 +93,10 @@ public:
         : m_parentStyle(vParentStyle), ez::Slot(std::make_shared<T>(vDatas)) {
         static_assert(std::is_base_of<BaseSlotDatas, T>::value, "T must derive of BaseSlotDatas");
     }
-    ~BaseSlot() override = default;
+    ~BaseSlot() override { unit(); }
 
-    bool init() override {
-        if (ez::Slot::init()) {
-            m_pinID = getUuid();
-            return true;
-        }
-        return false;
-    }
-
-    void unit() override { EZ_TOOLS_DEBUG_BREAK; }
+    bool init() override;
+    void unit() override;
 
     void setRadius(const float vRadius);
     void setColor(const ImVec4& vColor);
@@ -117,19 +111,13 @@ public:
 
     size_t getMaxConnectionCount() const;
 
-    /// called when a slot was double clicked with mouse
-    //virtual void mouseDoubleClickedOnSlot(const ImGuiMouseButton& vMouseButton);
-
-    /// will remove the slot from the list linekdSLots
-    //bool removeConnectedSlot(const BaseSlotWeak& vOtherSlot);
-
-    void drawDebugInfos();
-
      ez::xml::Nodes getXmlNodes(const std::string& vUserDatas = "") override;
     // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
      bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
 
-private:
+     void drawDebugInfos() override;
+
+ private:
     void m_drawInputWidget();
     void m_drawOutputWidget();
 

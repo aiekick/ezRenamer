@@ -16,12 +16,13 @@ class BaseGraph  //
     : public ez::Graph,
       public ez::xml::Config,
       public rnm::GuiInterface,
-      public rnm::NodeInterface {
+      public rnm::NodeInterface,
+      public IDrawDebugInfos {
 public:
     struct BaseGraphDatas : public ez::GraphDatas {
-        bool showFlow = false; // will display the flow of of link types
-        std::string flowType; // the type for show the flow with F key
-        ImGuiKey showFlowKey = ImGuiKey_Backspace; // the key who start the flow display
+        bool showFlow = false;                      // will display the flow of of link types
+        std::string flowType;                       // the type for show the flow with F key
+        ImGuiKey showFlowKey = ImGuiKey_Backspace;  // the key who start the flow display
     };
     typedef std::function<void(const BaseGraphWeak&)> BgRightClickActionFunctor;
     typedef std::function<bool(const BaseGraphWeak&, const BaseSlotWeak&)> PrepareForCreateNodeFromSlotActionFunctor;
@@ -57,9 +58,11 @@ public:  // Normal
     explicit BaseGraph(const BaseStyle& vParentStyle, const T& vDatas)  //
         : m_parentStyle(vParentStyle), ez::Graph(std::make_shared<T>(vDatas)) {
         static_assert(std::is_base_of<BaseGraphDatas, T>::value, "T must derive of BaseGraphDatas");
-        m_init();
     }
-    ~BaseGraph() override { m_unit(); }
+    ~BaseGraph() override;
+
+    bool init() override;
+    void unit() override;
 
     bool drawGraph();
 
@@ -79,6 +82,8 @@ public:  // Normal
     void setCanvasScale(const float& vScale);
 
     bool connectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo);
+    bool disconnectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo);
+    bool disconnectLink(const BaseLinkWeak& vLink);
 
     ez::xml::Nodes getXmlNodes(const std::string& vUserDatas = "") override;
     // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
@@ -86,6 +91,8 @@ public:  // Normal
 
     void setBgRightClickAction(const BgRightClickActionFunctor& vFunctor);
     void setPrepareForCreateNodeFromSlotActionFunctor(const PrepareForCreateNodeFromSlotActionFunctor& vFunctor);
+
+    void drawDebugInfos() override;
 
 public:  // Template
     template <typename T>
@@ -122,8 +129,6 @@ public:  // Template
     }
 
 private:  // Graph
-    void m_init();
-    void m_unit();
     void m_drawPopups();
     void m_drawBgContextMenuPopup();
     void m_drawLinks();
@@ -142,16 +147,16 @@ private:  // Graph
     void m_duplicateSelectedNodes(const ImVec2& vOffset);
     void m_duplicateNode(uint32_t vNodeId, const ImVec2& vOffsetPos);
 
-	// finders
+    // finders
     BaseNodeWeak m_findNode(nd::NodeId vId);
     BaseNodeWeak m_findNodeByName(const std::string& vName);
     BaseLinkWeak m_findLink(nd::LinkId vId);
     BaseSlotWeak m_findSlot(nd::PinId vId);
 
-	bool m_addLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd);
+    bool m_addLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd);
     bool m_breakLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd);
     bool m_breakLink(const BaseLinkWeak& vLink);
-    // will check each links, and will delete 
+    // will check each links, and will delete
     // all links who are connected on one side only
     void m_delOneSideLinks();
 

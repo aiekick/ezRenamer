@@ -13,15 +13,15 @@ BaseSlotWeak ExecNode::findSlotByType(ez::SlotDir vDir, const std::string& vType
         if (!vType.empty()) {
             if (vDir == ez::SlotDir::INPUT) {
                 if (!getInputFlowSlot().expired()) {
-                    auto base_pin_ptr = std::static_pointer_cast<BaseSlot>(getInputFlowSlot().lock());
-                    if (base_pin_ptr->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
+                    auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(getInputFlowSlot().lock());
+                    if (base_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
                         ret = getInputFlowSlot();
                     }
                 }
             } else if (vDir == ez::SlotDir::OUTPUT) {
                 if (!getOutputFlowSlot().expired()) {
-                    auto base_pin_ptr = std::static_pointer_cast<BaseSlot>(getOutputFlowSlot().lock());
-                    if (base_pin_ptr->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
+                    auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(getOutputFlowSlot().lock());
+                    if (base_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
                         ret = getOutputFlowSlot();
                     }
                 }

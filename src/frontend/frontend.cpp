@@ -31,6 +31,7 @@ limitations under the License.
 #include <panes/previewPane.h>
 #include <panes/pathsPane.h>
 #include <panes/graphPane.h>
+#include <panes/debugPane.h>
 
 #include <core/controller.h>
 
@@ -68,6 +69,10 @@ bool Frontend::init() {
     LayoutManager::Instance()->SetPaneDisposalRatio("LEFT", 0.25f);
     LayoutManager::Instance()->SetPaneDisposalRatio("RIGHT", 0.25f);
     LayoutManager::Instance()->SetPaneDisposalRatio("BOTTOM", 0.25f);
+
+#ifdef _DEBUG
+    LayoutManager::Instance()->AddPane(DebugPane::Instance(), "Debug", "", "LEFT", 0.25f, false, false);
+#endif
 
     LayoutManager::Instance()->AddPane(ConsolePane::Instance(), "Console", "", "BOTTOM", 0.25f, false, false);
 

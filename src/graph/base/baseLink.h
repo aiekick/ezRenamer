@@ -12,7 +12,7 @@
 
 #include <memory>
 
-class BaseLink : public ez::UUID {
+class BaseLink : public ez::UUID, public IDrawDebugInfos {
     friend class BaseGraph;
 
 private:  // Style
@@ -37,4 +37,6 @@ public:
     bool draw();
     const BaseSlotWeak& getInSlot() const;
     const BaseSlotWeak& getOutSlot() const;
+    
+    void drawDebugInfos() override;
 };

@@ -38,4 +38,5 @@ private:
     OutputNodes m_getOutputNodesFromGraph(const BaseGraphWeak& vGraph);
     ToolNodes m_getToolNodesFromGraph(const BaseGraphWeak& vGraph);
     void m_followOutFlowSlotAndAddToSequenceRecurs(ExecNodeWeak vNode, ExecSequence& vOutSeq);
+    void m_followOutFlowSlotAndAddToSequenceRecurs(BaseSlotWeak vSlot, ExecSequence& vOutSeq);
 };

@@ -163,15 +163,15 @@ void SceneMergerNode::DisplayInfosOnTopOfTheNode(BaseNodeState* vBaseNodeState)
 
 	if (vBaseNodeState && vBaseNodeState->debug_mode)
 	{
-		auto drawList = nd::GetNodeBackgroundDrawList(nodeID);
-		if (drawList)
+		auto draw_list_ptr = nd::GetNodeBackgroundDrawList(nodeID);
+		if (draw_list_ptr)
 		{
 			char debugBuffer[255] = "\0";
 			snprintf(debugBuffer, 254,
 				"Used[%s]\nCell[%i, %i]",
 				(used ? "true" : "false"), cell.x, cell.y);
 			ImVec2 txtSize = ImGui::CalcTextSize(debugBuffer);
-			drawList->AddText(pos - ImVec2(0, txtSize.y), ImGui::GetColorU32(ImGuiCol_Text), debugBuffer);
+			draw_list_ptr->AddText(pos - ImVec2(0, txtSize.y), ImGui::GetColorU32(ImGuiCol_Text), debugBuffer);
 		}
 	}
 }

@@ -21,9 +21,10 @@ class BaseNode  //
     : public ez::Node,
       public ez::xml::Config,
       public rnm::GuiInterface,
-      public rnm::TaskInterface,
-      public rnm::NodeInterface {
+      public rnm::NodeInterface,
+      public IDrawDebugInfos {
     friend class BaseGraph;
+    friend class BaseSlot;
 
 public:
     struct BaseNodeDatas : public ez::NodeDatas {
@@ -71,13 +72,7 @@ public:  // Normal
     }
     ~BaseNode() override = default;
 
-    bool init() override {
-        if (ez::Node::init()) {
-            m_nodeID = getUuid();
-            return true;
-        }
-        return false;
-    }
+    bool init() override;
 
     bool drawWidgets(const uint32_t& vFrame) override;
     bool drawNodeWidget(const uint32_t& vFrame) override;
@@ -95,6 +90,8 @@ public:  // Normal
     BaseStyle getNodeStyle();
 
     virtual BaseSlotWeak findSlotByType(ez::SlotDir vDir, const std::string& vType);
+
+    void drawDebugInfos() override;
 
 public:  // Template
     template <typename T>
@@ -121,6 +118,8 @@ protected:  // Node
     virtual bool m_drawFooter();
     virtual bool m_drawEnd();
     virtual bool m_drawHints();
+    virtual void m_slotWasJustConnected(const BaseSlotWeak& vOwnNodeSlot, const BaseSlotWeak& vExternNodeSlot); // called by vOwnNodeSlot on connection
+    virtual void m_slotWasJustDisConnected(const BaseSlotWeak& vOwnNodeSlot, const BaseSlotWeak& vExternNodeSlot);  // called by vOwnNodeSlot on dicconnection
     virtual void m_displayInfosOnTopOfTheNode();
     virtual BaseSlotWeak m_findSlot(nd::PinId vId);
 };

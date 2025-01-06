@@ -1,7 +1,30 @@
 #include "baseSlot.h"
+#include <graph/base/baseNode.h>
+#include <graph/base/baseGraph.h>
 #include <ezlibs/ezLog.hpp>
 
 #include <graph/base/baseLink.h>
+
+bool BaseSlot::init() {
+    if (ez::Slot::init()) {
+        m_pinID = getUuid();
+        return true;
+    }
+    return false;
+}
+
+void BaseSlot::unit() {
+    auto node_ptr = getParentNode<BaseNode>().lock();
+    if (node_ptr != nullptr) {
+        auto graph_ptr = node_ptr->getParentGraph<BaseGraph>().lock();
+        if (graph_ptr != nullptr) {
+            for (const auto& link : m_links) {
+                graph_ptr->disconnectLink(link);
+            }
+        }
+    }
+    ez::Slot::unit();
+}
 
 void BaseSlot::setRadius(const float vRadius) {
     getDatasRef<BaseSlotDatas>().radius = vRadius;
@@ -96,13 +119,6 @@ bool BaseSlot::isAnOutput() {
     return getDatas<BaseSlotDatas>().dir == ez::SlotDir::OUTPUT;
 }
 
-void BaseSlot::drawDebugInfos() {
-    ImGui::Text("--------------------");
-    ImGui::Text("Slot %s", getDatas<BaseSlotDatas>().name.c_str());
-    ImGui::Text(isAnInput() ? "Input" : "Output");
-    //  ImGui::Text("Count connections : %u", (uint32_t)linkedSlots.size());
-}
-
 size_t BaseSlot::getMaxConnectionCount() const {
     // we get the possibly overrides user count
     auto count = m_getMaxConnectionCount();
@@ -117,6 +133,28 @@ size_t BaseSlot::getMaxConnectionCount() const {
     }
     return count;
 }
+
+//////////////////////////////////////////////////////////////////////////////
+////// DRAW DEBUG INFOS //////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+void BaseSlot::drawDebugInfos() {
+    const auto& slotDatas = getDatas<BaseSlot::BaseSlotDatas>();
+    ImGui::Indent();
+    ImGui::Text("Slot [OUT] : %s (%s)", slotDatas.name.c_str(), slotDatas.type.c_str());
+    for (const auto& link : m_links) {
+        auto link_ptr = link.lock();
+        if (link_ptr != nullptr) {
+            link_ptr->drawDebugInfos();
+        } else {
+            ImGui::Indent();
+            ImGui::Text("Link : [%s]", "Expired");
+            ImGui::Unindent();
+        }
+    }
+    ImGui::Unindent();
+}
+
 //////////////////////////////////////////////////////////////
 //// PRIVATE /////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

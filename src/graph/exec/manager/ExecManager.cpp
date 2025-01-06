@@ -1,8 +1,11 @@
 #include "ExecManager.h"
 #include <graph/base/baseLink.h>
+#include <graph/base/baseNode.h>
 #include <graph/base/baseGraph.h>
 #include <graph/exec/nodes/InputNode.h>
 #include <graph/exec/nodes/OutputNode.h>
+#include <graph/exec/nodes/SequenceNode.h>
+#include <graph/exec/slots/FlowOutputSlot.h>
 
 std::unique_ptr<ExecManager> ExecManager::mp_singleton = nullptr;
 
@@ -107,17 +110,30 @@ void ExecManager::m_followOutFlowSlotAndAddToSequenceRecurs(ExecNodeWeak vNode, 
     auto node_ptr = vNode.lock();
     if (node_ptr != nullptr) {
         vOutSeq.addNode(vNode);
-        auto out_flow_slot_ptr = node_ptr->getOutputFlowSlot().lock();
-        if (out_flow_slot_ptr != nullptr && out_flow_slot_ptr->isConnected()) {
-            for (const auto& link : out_flow_slot_ptr->getLinks()) {
-                auto link_ptr = link.lock();
-                if (link_ptr != nullptr) {
-                    auto in_flow_slot_ptr = link_ptr->getOutSlot().lock();
-                    if (in_flow_slot_ptr != nullptr) {
-                        auto parent_node_ptr = in_flow_slot_ptr->getParentNode().lock();
-                        if (parent_node_ptr != nullptr) {
-                            m_followOutFlowSlotAndAddToSequenceRecurs(in_flow_slot_ptr->getParentNode<ExecNode>(), vOutSeq);
-                        }
+        m_followOutFlowSlotAndAddToSequenceRecurs(node_ptr->getOutputFlowSlot(), vOutSeq);
+        auto sequence_node_ptr = std::dynamic_pointer_cast<SequenceNode>(node_ptr);
+        if (sequence_node_ptr != nullptr) {
+            for (const auto& slot : sequence_node_ptr->m_getOutputSlots()) {
+                auto flow_slot_ptr = std::dynamic_pointer_cast<FlowOutputSlot>(slot.lock());
+                if (flow_slot_ptr != nullptr) {
+                    m_followOutFlowSlotAndAddToSequenceRecurs(flow_slot_ptr, vOutSeq);
+                }
+            }
+        }
+    }
+}
+
+void ExecManager::m_followOutFlowSlotAndAddToSequenceRecurs(BaseSlotWeak vSlot, ExecSequence& vOutSeq) {
+    auto out_flow_slot_ptr = vSlot.lock();
+    if (out_flow_slot_ptr != nullptr && out_flow_slot_ptr->isConnected()) {
+        for (const auto& link : out_flow_slot_ptr->getLinks()) {
+            auto link_ptr = link.lock();
+            if (link_ptr != nullptr) {
+                auto in_flow_slot_ptr = link_ptr->getOutSlot().lock();
+                if (in_flow_slot_ptr != nullptr) {
+                    auto parent_node_ptr = in_flow_slot_ptr->getParentNode().lock();
+                    if (parent_node_ptr != nullptr) {
+                        m_followOutFlowSlotAndAddToSequenceRecurs(in_flow_slot_ptr->getParentNode<ExecNode>(), vOutSeq);
                     }
                 }
             }

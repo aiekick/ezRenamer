@@ -7,6 +7,36 @@
 
 #define BACKGROUND_CONTEXT_MENU "BackgroundContextMenu"
 
+BaseGraph::~BaseGraph() {
+    unit();
+}
+
+bool BaseGraph::init() {
+    if (ez::Graph::init()) {
+        nd::Config config;
+        // disabling json loading/saving
+        config.SettingsFile = nullptr;
+        config.LoadNodeSettings = nullptr;
+        config.LoadSettings = nullptr;
+        config.SaveNodeSettings = nullptr;
+        config.SaveSettings = nullptr;
+        m_pCanvas = nd::CreateEditor(&config);
+        if (m_pCanvas != nullptr) {
+            nd::SetCurrentEditor(m_pCanvas);
+            nd::GetStyle() = m_parentStyle.style;
+            nd::EnableShortcuts(true);
+            return true;
+        }
+    }
+    return false;
+}
+
+void BaseGraph::unit() {
+    nd::SetCurrentEditor(m_pCanvas);
+    nd::DestroyEditor(m_pCanvas);
+    ez::Graph::unit();
+}
+
 bool BaseGraph::drawGraph() {
     nd::SetCurrentEditor(m_pCanvas);
 
@@ -44,27 +74,6 @@ bool BaseGraph::drawNodeWidget(const uint32_t& vFrame) {
 
 bool BaseGraph::drawWidgets(const uint32_t& vFrame) {
     return false;
-}
-
-void BaseGraph::m_init() {
-    nd::Config config;  
-    // disabling json loading/saving
-    config.SettingsFile = nullptr;
-    config.LoadNodeSettings = nullptr;
-    config.LoadSettings = nullptr;
-    config.SaveNodeSettings = nullptr;
-    config.SaveSettings = nullptr;
-    m_pCanvas = nd::CreateEditor(&config);
-    if (m_pCanvas != nullptr) {
-        nd::SetCurrentEditor(m_pCanvas);
-        nd::GetStyle() = m_parentStyle.style;
-        nd::EnableShortcuts(true);
-    }
-}
-
-void BaseGraph::m_unit() {
-    nd::SetCurrentEditor(m_pCanvas);
-    nd::DestroyEditor(m_pCanvas);
 }
 
 void BaseGraph::m_drawPopups() {
@@ -178,6 +187,45 @@ void BaseGraph::setCanvasScale(const float& vScale) {
 }
 
 //////////////////////////////////////////////////////////////////////////////
+////// CONFIGURATION /////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+ez::xml::Nodes BaseGraph::getXmlNodes(const std::string& /*vUserDatas*/) {
+    ez::xml::Node node;
+    return node.getChildren();
+}
+
+// return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
+bool BaseGraph::setFromXmlNodes(const ez::xml::Node& /*vNode*/, const ez::xml::Node& /*vParent*/, const std::string& /*vUserDatas*/) {
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+////// ACTION FUNCTORS ///////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+void BaseGraph::setBgRightClickAction(const BgRightClickActionFunctor& vFunctor) {
+    m_BgRightClickAction = vFunctor;
+}
+
+void BaseGraph::setPrepareForCreateNodeFromSlotActionFunctor(const PrepareForCreateNodeFromSlotActionFunctor& vFunctor) {
+    m_PrepareForCreateNodeFromSlotActionFunctor = vFunctor;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+////// DRAW DEBUG INFOS //////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+void BaseGraph::drawDebugInfos() {
+    ImGui::Text("Graph :");
+    ImGui::Indent();
+    for (auto& node : getNodesRef()) {
+        std::static_pointer_cast<BaseNode>(node.lock())->drawDebugInfos();
+    }
+    ImGui::Unindent();
+}
+
+//////////////////////////////////////////////////////////////////////////////
 ////// CREATE / DELETE LINKS /////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
@@ -191,8 +239,8 @@ void BaseGraph::m_doCreateLinkOrNode() {
             ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(spacing.x, -spacing.y));
             auto rectMin = ImGui::GetCursorScreenPos() - padding;
             auto rectMax = ImGui::GetCursorScreenPos() + _size_ + padding;
-            auto drawList = ImGui::GetWindowDrawList();
-            drawList->AddRectFilled(rectMin, rectMax, color, _size_.y * 0.15f);
+            auto draw_list_ptr = ImGui::GetWindowDrawList();
+            draw_list_ptr->AddRectFilled(rectMin, rectMax, color, _size_.y * 0.15f);
             ImGui::TextUnformatted(label);
         };
 
@@ -362,32 +410,6 @@ void BaseGraph::m_duplicateNode(uint32_t vNodeId, const ImVec2& vOffsetPos) {
 }
 
 //////////////////////////////////////////////////////////////////////////////
-////// CONFIGURATION /////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-
-ez::xml::Nodes BaseGraph::getXmlNodes(const std::string& /*vUserDatas*/) {
-    ez::xml::Node node;
-    return node.getChildren();
-}
-
-// return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
-bool BaseGraph::setFromXmlNodes(const ez::xml::Node& /*vNode*/, const ez::xml::Node& /*vParent*/, const std::string& /*vUserDatas*/) {
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-////// ACTION FUNCTORS ///////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-
-void BaseGraph::setBgRightClickAction(const BgRightClickActionFunctor& vFunctor) {
-    m_BgRightClickAction = vFunctor;
-}
-
-void BaseGraph::setPrepareForCreateNodeFromSlotActionFunctor(const PrepareForCreateNodeFromSlotActionFunctor& vFunctor) {
-    m_PrepareForCreateNodeFromSlotActionFunctor = vFunctor;
-}
-
-//////////////////////////////////////////////////////////////////////////////
 ////// FINDERS ///////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
@@ -539,13 +561,25 @@ bool BaseGraph::connectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo)
     return m_connectSlots(vFrom, vTo);
 }
 
+bool BaseGraph::disconnectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo) {
+    return m_disconnectSlots(vFrom, vTo);
+}
+
+bool BaseGraph::disconnectLink(const BaseLinkWeak& vLink) {
+    return m_disconnectLink(vLink);
+}
+
 bool BaseGraph::m_connectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo) {
     bool ret = false;
     const auto fromPtr = vFrom.lock();
     const auto toPtr = vTo.lock();
     if (fromPtr != nullptr && toPtr != nullptr) {
         if (ez::Graph::m_connectSlots(vFrom, vTo) == ez::RetCodes::SUCCESS) {
+            // first we connect the BaseSlot
             ret = m_addLink(vFrom, vTo);
+            // then we notify to the parent BaseNode
+            fromPtr->getParentNode<BaseNode>().lock()->m_slotWasJustConnected(vFrom, vTo);
+            toPtr->getParentNode<BaseNode>().lock()->m_slotWasJustConnected(vTo, vFrom);
         }
     }
     return ret;
@@ -557,7 +591,11 @@ bool BaseGraph::m_disconnectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak&
     const auto toPtr = vTo.lock();
     if (fromPtr != nullptr && toPtr != nullptr) {
         if (ez::Graph::m_disconnectSlots(vFrom, vTo) == ez::RetCodes::SUCCESS) {
+            // first we disconnect the BaseSlot
             ret = m_breakLink(vFrom, vTo);
+            // then we notify to the parent BaseNode
+            fromPtr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(vFrom, vTo);
+            toPtr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(vTo, vFrom);
         }
     }
     return ret;
@@ -566,8 +604,12 @@ bool BaseGraph::m_disconnectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak&
 bool BaseGraph::m_disconnectLink(const BaseLinkWeak& vLink) {
     bool ret = false;
     auto link_ptr = vLink.lock();
-    if (ez::Graph::m_disconnectSlots(link_ptr->m_in, link_ptr->m_out) == ez::RetCodes::SUCCESS) {
+    if (link_ptr != nullptr && ez::Graph::m_disconnectSlots(link_ptr->m_in, link_ptr->m_out) == ez::RetCodes::SUCCESS) {
+        // first we disconnect the BaseSlot
         ret = m_breakLink(link_ptr->m_in, link_ptr->m_out);
+        // then we notify to the parent BaseNode
+        link_ptr->m_in.lock()->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(link_ptr->m_in, link_ptr->m_out);
+        link_ptr->m_out.lock()->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(link_ptr->m_out, link_ptr->m_in);
     }
     return ret;
 }

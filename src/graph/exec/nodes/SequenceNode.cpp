@@ -14,3 +14,33 @@ bool SequenceNode::init() {
     createChildSlot<FlowOutputSlot>();
     return ret;
 }
+
+void SequenceNode::m_slotWasJustConnected(const BaseSlotWeak& vOwnNodeSlot, const BaseSlotWeak& vExternNodeSlot) {
+    auto slot_ptr = vOwnNodeSlot.lock();
+    if (slot_ptr->getDatas().dir == ez::SlotDir::OUTPUT) {
+        m_removeUnusedOutputSlotsAndAddOneAtEnd();
+    }
+}
+
+void SequenceNode::m_slotWasJustDisConnected(const BaseSlotWeak& vOwnNodeSlot, const BaseSlotWeak& vExternNodeSlot) {
+    auto slot_ptr = vOwnNodeSlot.lock();
+    if (slot_ptr->getDatas().dir == ez::SlotDir::OUTPUT) {
+        m_removeUnusedOutputSlotsAndAddOneAtEnd();
+    }
+}
+
+void SequenceNode::m_removeUnusedOutputSlotsAndAddOneAtEnd() {
+    std::vector<BaseSlotWeak> slotsToRemove;
+    for (const auto& slot : m_getOutputSlots()) {
+        auto slot_ptr = std::static_pointer_cast<FlowOutputSlot>(slot.lock());
+        if (!slot_ptr->isConnected()) {
+            slotsToRemove.push_back(slot_ptr);
+        }
+    }
+    // now remove
+    for (const auto& slot : slotsToRemove) {
+        m_delSlot(slot);
+    }
+    // now add a slot at end
+    createChildSlot<FlowOutputSlot>();
+}

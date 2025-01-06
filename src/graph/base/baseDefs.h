@@ -7,6 +7,7 @@
 #include <ImGuiPack.h>
 
 struct BaseStyle {
+    bool debugMode = false;
     nd::Style style;
 };
 
@@ -27,3 +28,8 @@ typedef std::weak_ptr<BaseNode> BaseNodeWeak;
 class BaseSlot;
 typedef std::shared_ptr<BaseSlot> BaseSlotPtr;
 typedef std::weak_ptr<BaseSlot> BaseSlotWeak;
+
+class IDrawDebugInfos {
+public:
+    virtual void drawDebugInfos() = 0;
+};

@@ -47,3 +47,16 @@ const BaseSlotWeak& BaseLink::getInSlot() const {
 const BaseSlotWeak& BaseLink::getOutSlot() const {
     return m_out;
 }
+
+//////////////////////////////////////////////////////////////////////////////
+////// DRAW DEBUG INFOS //////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+void BaseLink::drawDebugInfos() {
+    ImGui::Indent();
+    ImGui::Text(
+        "Link : %s -> %s",  //
+        m_in.lock()->getDatas<BaseSlot::BaseSlotDatas>().name.c_str(),
+        m_out.lock()->getDatas<BaseSlot::BaseSlotDatas>().name.c_str());
+    ImGui::Unindent();
+}

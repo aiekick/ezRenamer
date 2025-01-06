@@ -1,29 +1,26 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
-// PVS-Studio Static Graph Analyzer for C, C++ and C#: http://www.viva64.com
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <panes/graphPane.h>
-#include <core/controller.h>
+#include "debugPane.h"
+#include <graph/manager/nodeManager.h>
 
-GraphPane::GraphPane() = default;
-GraphPane::~GraphPane() {
+DebugPane::DebugPane() = default;
+DebugPane::~DebugPane() {
     Unit();
 }
 
-bool GraphPane::Init() {
+bool DebugPane::Init() {
     return true;
 }
 
-void GraphPane::Unit() {
-}
-
-void GraphPane::Load() {
+void DebugPane::Unit() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
 //// IMGUI PANE ///////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 
-bool GraphPane::DrawPanes(const uint32_t& vCurrentFrame, bool* vOpened, ImGuiContext* vContextPtr, void* /*vUserDatas*/) {
+bool DebugPane::DrawPanes(const uint32_t& /*vCurrentFrame*/, bool* vOpened, ImGuiContext* vContextPtr, void* /*vUserDatas*/) {
     ImGui::SetCurrentContext(vContextPtr);
     bool change = false;
     if (vOpened != nullptr && *vOpened) {
@@ -36,25 +33,11 @@ bool GraphPane::DrawPanes(const uint32_t& vCurrentFrame, bool* vOpened, ImGuiCon
             else
                 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_MenuBar;
 #endif
-            Controller::instance()->drawGraph();
         }
+
+        NodeManager::instance()->drawDebugInfos();
 
         ImGui::End();
     }
     return change;
-}
-
-bool GraphPane::DrawOverlays(const uint32_t& /*vCurrentFrame*/, const ImRect& /*vRect*/, ImGuiContext* vContextPtr, void* /*vUserDatas*/) {
-    ImGui::SetCurrentContext(vContextPtr);
-    return false;
-}
-
-bool GraphPane::DrawDialogsAndPopups(const uint32_t& /*vCurrentFrame*/, const ImRect& /*vRect*/, ImGuiContext* vContextPtr, void* /*vUserDatas*/) {
-    ImGui::SetCurrentContext(vContextPtr);    
-    return false;
-}
-
-bool GraphPane::DrawWidgets(const uint32_t& /*vCurrentFrame*/, ImGuiContext* vContextPtr, void* /*vUserDatas*/) {
-    ImGui::SetCurrentContext(vContextPtr);
-    return false;
 }

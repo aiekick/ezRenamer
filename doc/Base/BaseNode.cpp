@@ -792,18 +792,18 @@ bool BaseNode::DrawEnd(BaseNodeState *vBaseNodeState)
 
 	if (ImGui::IsItemVisible())
 	{
-		auto drawList = nd::GetNodeBackgroundDrawList(nodeID);
-		if (drawList)
+		auto draw_list_ptr = nd::GetNodeBackgroundDrawList(nodeID);
+		if (draw_list_ptr)
 		{
 			if (m_HeaderRect.GetSize().y > 0.0f)
 			{
 				const auto halfBorderWidth = nd::GetStyle().NodeBorderWidth * 0.5f;
-				/*drawList->AddRectFilled(
+				/*draw_list_ptr->AddRectFilled(
 					m_HeaderRect.Min - ImVec2(nd::GetStyle().NodePadding.x - halfBorderWidth, 4 - halfBorderWidth),
 					m_HeaderRect.Max + ImVec2(nd::GetStyle().NodePadding.z - halfBorderWidth, 0),
 					ImGui::GetColorU32(m_HeaderColor), nd::GetStyle().NodeRounding, 1 | 2);*/
 				auto alpha = static_cast<int>(255 * ImGui::GetStyle().Alpha);
-				drawList->AddLine(
+				draw_list_ptr->AddLine(
 					ImVec2(m_HeaderRect.Min.x - (nd::GetStyle().NodePadding.x - halfBorderWidth), m_HeaderRect.Max.y - 0.5f),
 					ImVec2(m_HeaderRect.Max.x + (nd::GetStyle().NodePadding.z - halfBorderWidth), m_HeaderRect.Max.y - 0.5f),
 					ImColor(255, 255, 255, 96 * alpha / (3 * 255)), 1.0f);
@@ -813,7 +813,7 @@ bool BaseNode::DrawEnd(BaseNodeState *vBaseNodeState)
 		}
 		else
 		{
-			LogVarDebugError("why drawList is null ?? in BaseNode::DrawEnd");
+			LogVarDebugError("why draw_list_ptr is null ?? in BaseNode::DrawEnd");
 		}
 	}
 
@@ -909,15 +909,15 @@ void BaseNode::DisplayInfosOnTopOfTheNode(BaseNodeState *vBaseNodeState)
 {
 	if (vBaseNodeState && vBaseNodeState->debug_mode)
 	{
-		auto drawList = nd::GetNodeBackgroundDrawList(nodeID);
-		if (drawList)
+		auto draw_list_ptr = nd::GetNodeBackgroundDrawList(nodeID);
+		if (draw_list_ptr)
 		{
 			char debugBuffer[255] = "\0";
 			snprintf(debugBuffer, 254, 
 				"Used(%s)\nCell(%i, %i)"/*\nPos(%.1f, %.1f)\nSize(%.1f, %.1f)*/, 
 				(used?"true":"false"), cell.x, cell.y/*, pos.x, pos.y, size.x, size.y*/);
 			ImVec2 txtSize = ImGui::CalcTextSize(debugBuffer);
-			drawList->AddText(pos - ImVec2(0, txtSize.y), ImGui::GetColorU32(ImGuiCol_Text), debugBuffer);
+			draw_list_ptr->AddText(pos - ImVec2(0, txtSize.y), ImGui::GetColorU32(ImGuiCol_Text), debugBuffer);
 		}
 	}
 }
@@ -1425,8 +1425,8 @@ void BaseNode::DoCreateLinkOrNode(BaseNodeState *vBaseNodeState)
 			auto rectMin = ImGui::GetCursorScreenPos() - padding;
 			auto rectMax = ImGui::GetCursorScreenPos() + _size_ + padding;
 
-			auto drawList = ImGui::GetWindowDrawList();
-			drawList->AddRectFilled(rectMin, rectMax, color, _size_.y * 0.15f);
+			auto draw_list_ptr = ImGui::GetWindowDrawList();
+			draw_list_ptr->AddRectFilled(rectMin, rectMax, color, _size_.y * 0.15f);
 			ImGui::TextUnformatted(label);
 		};
 
