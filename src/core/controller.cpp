@@ -2,6 +2,7 @@
 #include <plugins/pluginManager.h>
 #include <graph/manager/nodeManager.h>
 #include <graph/exec/manager/ExecManager.h>
+#include <res/fontIcons.h>
 
 std::unique_ptr<Controller> Controller::mp_singleton = nullptr;
 
@@ -29,12 +30,23 @@ void Controller::unit() {
     m_clearRenamers();
 }
 
-bool Controller::drawMenu() {
-    if (ImGui::MenuItem("Compile", "Compile graph")) {
+bool Controller::drawMenu(float& vOutWidth) {
+    bool ret = false;
+    float last_cur_pos = ImGui::GetCursorPosX();
+    if (ImGui::MenuItem(ICON_FONT_HAMMER "##Compile", "Compile graph")) {
         compileGraph();
-        return true;
+        ret = true;
     }
-    return false;
+    if (ImGui::MenuItem(ICON_FONT_PLAY "##Play", "Play graph")) {
+        playGraph();
+        ret = true;
+    }
+    if (ImGui::MenuItem(ICON_FONT_BUG "##Debug", "Debug graph")) {
+        debugGraph();
+        ret = true;
+    }
+    vOutWidth = ImGui::GetCursorPosX() - last_cur_pos + ImGui::GetStyle().FramePadding.x;
+    return ret;
 }
 
 bool Controller::drawControl() {
@@ -72,6 +84,14 @@ bool Controller::drawGraph() {
 
 bool Controller::compileGraph() {
     return ExecManager::instance()->compileGraph(NodeManager::instance()->getGraph());
+}
+
+bool Controller::playGraph() {
+    return false;
+}
+
+bool Controller::debugGraph() {
+    return false;
 }
 
 void Controller::m_getAvailableRenamers() {

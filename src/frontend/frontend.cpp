@@ -35,18 +35,6 @@ limitations under the License.
 
 #include <core/controller.h>
 
-// panes
-#define DEBUG_PANE_ICON ICON_SDFM_BUG
-#define SCENE_PANE_ICON ICON_SDFM_FORMAT_LIST_BULLETED_TYPE
-#define TUNING_PANE_ICON ICON_SDFM_TUNE
-#define CONSOLE_PANE_ICON ICON_SDFMT_COMMENT_TEXT_MULTIPLE
-
-// features
-#define GRID_ICON ICON_SDFMT_GRID
-#define MOUSE_ICON ICON_SDFMT_MOUSE
-#define CAMERA_ICON ICON_SDFMT_CAMCORDER
-#define GIZMO_ICON ICON_SDFMT_AXIS_ARROW
-
 using namespace std::placeholders;
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -162,7 +150,10 @@ void Frontend::OpenAboutDialog() {
 }
 
 void Frontend::m_drawMainMenuBar() {
+    static float s_controller_menu_size = 0.0f;
+    static float s_translation_menu_size = 0.0f;
     if (ImGui::BeginMainMenuBar()) {
+        float full_width = ImGui::GetContentRegionAvail().x;
         if (ImGui::BeginMenu(" Project")) {
             if (ImGui::MenuItem(" New")) {
                 Action_Menu_NewProject();
@@ -204,14 +195,7 @@ void Frontend::m_drawMainMenuBar() {
 
             ImGui::EndMenu();
         }
-
-        ImGui::Spacing();
-
-        const auto& io = ImGui::GetIO();
-        LayoutManager::Instance()->DisplayMenu(io.DisplaySize);
-
-        ImGui::Spacing();
-
+        LayoutManager::Instance()->DisplayMenu(ImGui::GetIO().DisplaySize);
         if (ImGui::BeginMenu("Tools")) {
             if (ImGui::MenuItem("Settings")) {
                 SettingsDialog::Instance()->OpenDialog();
@@ -230,27 +214,21 @@ void Frontend::m_drawMainMenuBar() {
 
             ImGui::EndMenu();
         }
-
         if (ProjectFile::Instance()->IsThereAnyProjectChanges()) {
-            ImGui::Spacing(100.0f);
-
+            ImGui::Spacing(20.0f);
             if (ImGui::MenuItem(" Save")) {
                 Action_Menu_SaveProject();
             }
         }
 
-        ImGui::Spacing(100.0f);
-
-        Controller::instance()->drawMenu();
+        ImGui::SpacingFromStart((full_width - s_controller_menu_size) * 0.5f);
+        Controller::instance()->drawMenu(s_controller_menu_size);
 
         // ImGui Infos
         const auto label = ez::str::toStr("Dear ImGui %s (Docking)", ImGui::GetVersion());
         const auto size = ImGui::CalcTextSize(label.c_str());
-        static float s_translation_menu_size = 0.0f;
-
         ImGui::Spacing(ImGui::GetContentRegionAvail().x - size.x - s_translation_menu_size - ImGui::GetStyle().FramePadding.x * 2.0f);
         ImGui::Text("%s", label.c_str());
-
         s_translation_menu_size = TranslationHelper::Instance()->DrawMenu();
 
         ImGui::EndMainMenuBar();

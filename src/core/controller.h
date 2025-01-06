@@ -19,12 +19,14 @@ private:
 public:
     bool init();
     void unit();
-    bool drawMenu();
+    bool drawMenu(float& vOutWidth);
     bool drawControl();
     bool drawFilesList();
     bool drawPreview();
     bool drawGraph();
     bool compileGraph();
+    bool playGraph();
+    bool debugGraph();
 
 private:
     void m_getAvailableRenamers();

@@ -393,11 +393,11 @@ bool Backend::m_InitImGui() {
             }
         }
         {  // icon font
-            static const ImWchar icons_ranges[] = {ICON_MIN_STRO, ICON_MAX_STRO, 0};
+            static const ImWchar icons_ranges[] = {ICON_MIN_FONT, ICON_MAX_FONT, 0};
             ImFontConfig icons_config;
             icons_config.MergeMode = true;
             icons_config.PixelSnapH = true;
-            auto fontPtr = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_STRO, 16.0f * dpiScaleFactor, &icons_config, icons_ranges);
+            auto fontPtr = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_FONT, 16.0f * dpiScaleFactor, &icons_config, icons_ranges);
             if (fontPtr == nullptr) {
                 assert(0);  // failed to load font
             } else {
