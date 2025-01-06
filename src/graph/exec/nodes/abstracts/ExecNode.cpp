@@ -31,6 +31,22 @@ BaseSlotWeak ExecNode::findSlotByType(ez::SlotDir vDir, const std::string& vType
     return ret;
 }
 
+void ExecNode::drawDebugInfos() {
+    Parent::drawDebugInfos();
+    ImGui::Indent();
+    if (!getInputFlowSlot().expired()) {
+        getInputFlowSlot().lock()->drawDebugInfos();
+    } else {
+        // not created by the derived node for a reason
+    }
+    if (!getOutputFlowSlot().expired()) {
+        getOutputFlowSlot().lock()->drawDebugInfos();
+    } else {
+        // not created by the derived node for a reason
+    }
+    ImGui::Unindent();
+}
+
 bool ExecNode::m_drawHeader() {
     ImGui::BeginHorizontal("header");
     if (!getInputFlowSlot().expired()) {
@@ -81,6 +97,17 @@ BaseSlotWeak ExecNode::m_findSlot(nd::PinId vId) {
                 ret = getOutputFlowSlot();
             }
         }
+    }
+    return ret;
+}
+
+BaseLinkWeakCnt ExecNode::m_getConnectedLinks() {
+    BaseLinkWeakCnt ret = Parent::m_getConnectedLinks();
+    if (!getInputFlowSlot().expired()) {
+        ret.tryMerge(getInputFlowSlot().lock()->getLinks());
+    }
+    if (!getOutputFlowSlot().expired()) {
+        ret.tryMerge(getOutputFlowSlot().lock()->getLinks());
     }
     return ret;
 }

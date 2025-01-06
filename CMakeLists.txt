@@ -126,10 +126,12 @@ source_group(main FILES ${MAIN_SOURCES})
 file(GLOB_RECURSE SRC_SOURCES ${CMAKE_SOURCE_DIR}/src/*.*)
 source_group(TREE ${CMAKE_SOURCE_DIR}/src PREFIX src FILES ${SRC_SOURCES})
 
-# Doc Sources
-file(GLOB_RECURSE DOC_SOURCES ${CMAKE_SOURCE_DIR}/doc/*.*)
-source_group(TREE ${CMAKE_SOURCE_DIR}/doc PREFIX doc FILES ${DOC_SOURCES})
-set_property(SOURCE ${DOC_SOURCES} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
+if (MSVC)
+	# Doc Sources
+	file(GLOB_RECURSE DOC_SOURCES ${CMAKE_SOURCE_DIR}/doc/*.*)
+	source_group(TREE ${CMAKE_SOURCE_DIR}/doc PREFIX doc FILES ${DOC_SOURCES})
+	set_property(SOURCE ${DOC_SOURCES} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
+endif()
 
 # cmake Sources for have it the visual studio tree of the App
 file(GLOB_RECURSE PROJECT_CMAKE_FILES ${CMAKE_SOURCE_DIR}/cmake/*.cmake)

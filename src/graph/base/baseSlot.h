@@ -96,7 +96,6 @@ public:
     ~BaseSlot() override { unit(); }
 
     bool init() override;
-    void unit() override;
 
     void setRadius(const float vRadius);
     void setColor(const ImVec4& vColor);

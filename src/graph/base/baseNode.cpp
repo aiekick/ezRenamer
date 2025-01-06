@@ -94,7 +94,7 @@ void BaseNode::drawDebugInfos() {
         if (base_slot_ptr != nullptr) {
             base_slot_ptr->drawDebugInfos();
         } else {
-            ImGui::Text("Slot [IN] : [%s]", "Expired");
+            ImGui::Text("Slot [IN] : [%s]", "Empty");
         }
     }
 
@@ -103,10 +103,9 @@ void BaseNode::drawDebugInfos() {
         if (base_slot_ptr != nullptr) {
             base_slot_ptr->drawDebugInfos();
         } else {
-            ImGui::Text("Slot [OUT] : [%s]", "Expired");
+            ImGui::Text("Slot [OUT] : [%s]", "Empty");
         }
     }
-
     ImGui::Unindent();
 }
 
@@ -259,6 +258,22 @@ BaseSlotWeak BaseNode::m_findSlot(nd::PinId vId) {
                 break;
             }
         }
+    }
+    return ret;
+}
+
+// willr eturn all connected link from all slots
+// for destruction by the graph
+// since ther links are owned by the graph
+BaseLinkWeakCnt BaseNode::m_getConnectedLinks() {
+    BaseLinkWeakCnt ret;
+    for (const auto& slot : m_getInputSlots()) {
+        auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+        ret.tryMerge(base_slot_ptr->getLinks());
+    }
+    for (const auto& slot : m_getOutputSlots()) {
+        auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+        ret.tryMerge(base_slot_ptr->getLinks());
     }
     return ret;
 }

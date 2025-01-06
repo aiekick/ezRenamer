@@ -219,8 +219,13 @@ void BaseGraph::setPrepareForCreateNodeFromSlotActionFunctor(const PrepareForCre
 void BaseGraph::drawDebugInfos() {
     ImGui::Text("Graph :");
     ImGui::Indent();
+    ImGui::Text("Nodes :");
     for (auto& node : getNodesRef()) {
         std::static_pointer_cast<BaseNode>(node.lock())->drawDebugInfos();
+    }
+    ImGui::Text("Links :");
+    for (auto& link_ptr : m_links) {
+        link_ptr->drawDebugInfos();
     }
     ImGui::Unindent();
 }
@@ -504,6 +509,7 @@ bool BaseGraph::m_breakLink(const BaseLinkWeak& vLink) {
                 endPtr->m_links.erase(link_ptr->getUuid());
             }
             m_links.erase(link_ptr->getUuid());
+            ret = true;
         }
     }
     return ret;
@@ -590,13 +596,12 @@ bool BaseGraph::m_disconnectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak&
     const auto fromPtr = vFrom.lock();
     const auto toPtr = vTo.lock();
     if (fromPtr != nullptr && toPtr != nullptr) {
-        if (ez::Graph::m_disconnectSlots(vFrom, vTo) == ez::RetCodes::SUCCESS) {
-            // first we disconnect the BaseSlot
-            ret = m_breakLink(vFrom, vTo);
-            // then we notify to the parent BaseNode
-            fromPtr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(vFrom, vTo);
-            toPtr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(vTo, vFrom);
-        }
+        ez::Graph::m_disconnectSlots(vFrom, vTo);
+        // first we disconnect the BaseSlot
+        ret = m_breakLink(vFrom, vTo);
+        // then we notify to the parent BaseNode
+        fromPtr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(vFrom, vTo);
+        toPtr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(vTo, vFrom);
     }
     return ret;
 }
@@ -604,9 +609,10 @@ bool BaseGraph::m_disconnectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak&
 bool BaseGraph::m_disconnectLink(const BaseLinkWeak& vLink) {
     bool ret = false;
     auto link_ptr = vLink.lock();
-    if (link_ptr != nullptr && ez::Graph::m_disconnectSlots(link_ptr->m_in, link_ptr->m_out) == ez::RetCodes::SUCCESS) {
-        // first we disconnect the BaseSlot
-        ret = m_breakLink(link_ptr->m_in, link_ptr->m_out);
+    if (link_ptr != nullptr) {
+        ez::Graph::m_disconnectSlots(link_ptr->m_in, link_ptr->m_out);
+        // first we disconnect the BaseLink
+        ret = m_breakLink(link_ptr);
         // then we notify to the parent BaseNode
         link_ptr->m_in.lock()->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(link_ptr->m_in, link_ptr->m_out);
         link_ptr->m_out.lock()->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(link_ptr->m_out, link_ptr->m_in);
@@ -619,17 +625,15 @@ bool BaseGraph::m_disconnectLink(const BaseLinkWeak& vLink) {
 //////////////////////////////////////////////////////////////////////////////
 
 bool BaseGraph::m_delNode(const BaseNodeWeak& vNode) {
-    bool ret = false;
-
-    // when we delete a node, their slot are deleted
-    // when a slot is deleted, its link is reseted
-    // so we can juste iterate links who are saved in teh graph
-    // and when we see a link, who have a least on extermity empty, we can delete the link
-
-    if (ez::Graph::m_delNode(vNode.lock()) == ez::RetCodes::SUCCESS) {
-        m_delOneSideLinks();
-        ret = true;
+    auto node_ptr = vNode.lock();
+    if (node_ptr != nullptr) {
+        // we will frist break all links who are connected to the node
+        const auto node_links = node_ptr->m_getConnectedLinks();
+        for (const auto& link : node_links) {
+            m_disconnectLink(link); // we dont 
+        }
     }
 
-    return ret;
+    // then we can just delete the node
+    return (ez::Graph::m_delNode(vNode.lock()) == ez::RetCodes::SUCCESS);
 }

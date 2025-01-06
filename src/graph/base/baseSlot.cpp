@@ -13,19 +13,6 @@ bool BaseSlot::init() {
     return false;
 }
 
-void BaseSlot::unit() {
-    auto node_ptr = getParentNode<BaseNode>().lock();
-    if (node_ptr != nullptr) {
-        auto graph_ptr = node_ptr->getParentGraph<BaseGraph>().lock();
-        if (graph_ptr != nullptr) {
-            for (const auto& link : m_links) {
-                graph_ptr->disconnectLink(link);
-            }
-        }
-    }
-    ez::Slot::unit();
-}
-
 void BaseSlot::setRadius(const float vRadius) {
     getDatasRef<BaseSlotDatas>().radius = vRadius;
 }
@@ -140,19 +127,17 @@ size_t BaseSlot::getMaxConnectionCount() const {
 
 void BaseSlot::drawDebugInfos() {
     const auto& slotDatas = getDatas<BaseSlot::BaseSlotDatas>();
-    ImGui::Indent();
-    ImGui::Text("Slot [OUT] : %s (%s)", slotDatas.name.c_str(), slotDatas.type.c_str());
+    ImGui::Text("Slot [%s] : %s (%s)", ((slotDatas.dir == ez::SlotDir::INPUT) ? "IN" : "OUT"), slotDatas.name.c_str(), slotDatas.type.c_str());
     for (const auto& link : m_links) {
         auto link_ptr = link.lock();
+        ImGui::Indent();
         if (link_ptr != nullptr) {
             link_ptr->drawDebugInfos();
         } else {
-            ImGui::Indent();
             ImGui::Text("Link : [%s]", "Expired");
-            ImGui::Unindent();
         }
+        ImGui::Unindent();
     }
-    ImGui::Unindent();
 }
 
 //////////////////////////////////////////////////////////////

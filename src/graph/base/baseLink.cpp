@@ -53,10 +53,8 @@ const BaseSlotWeak& BaseLink::getOutSlot() const {
 //////////////////////////////////////////////////////////////////////////////
 
 void BaseLink::drawDebugInfos() {
-    ImGui::Indent();
     ImGui::Text(
         "Link : %s -> %s",  //
         m_in.lock()->getDatas<BaseSlot::BaseSlotDatas>().name.c_str(),
         m_out.lock()->getDatas<BaseSlot::BaseSlotDatas>().name.c_str());
-    ImGui::Unindent();
 }

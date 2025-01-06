@@ -31,7 +31,7 @@ void SequenceNode::m_slotWasJustDisConnected(const BaseSlotWeak& vOwnNodeSlot, c
 
 void SequenceNode::m_removeUnusedOutputSlotsAndAddOneAtEnd() {
     std::vector<BaseSlotWeak> slotsToRemove;
-    for (const auto& slot : m_getOutputSlots()) {
+    for (const auto& slot : this->m_getOutputSlots()) {
         auto slot_ptr = std::static_pointer_cast<FlowOutputSlot>(slot.lock());
         if (!slot_ptr->isConnected()) {
             slotsToRemove.push_back(slot_ptr);

@@ -379,22 +379,17 @@ bool Backend::m_InitImGui() {
 #ifdef USE_DECORATIONS_FOR_RESIZE_CHILD_WINDOWS
     io.ConfigViewportsNoDecoration = false;  // toujours mettre une frame aux fenetres enfants
 #endif
-
-    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-    ImGuiStyle& style = ImGui::GetStyle();
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-        style.WindowRounding = 0.0f;
-        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-    }
+    
+    float dpiScaleFactor = 3.0f;
 
     // fonts
     {
         {  // main font
-            auto fontPtr = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_RM, 50.0f);
+            auto fontPtr = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_RM, 16.0f * dpiScaleFactor);
             if (fontPtr == nullptr) {
                 assert(0);  // failed to load font
             } else {
-                fontPtr->Scale = 16.0f / 50.0f;
+                fontPtr->Scale = 1.0f / dpiScaleFactor;
             }
         }
         {  // icon font
@@ -402,15 +397,23 @@ bool Backend::m_InitImGui() {
             ImFontConfig icons_config;
             icons_config.MergeMode = true;
             icons_config.PixelSnapH = true;
-            auto fontPtr = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_STRO, 50.0f, &icons_config, icons_ranges);
+            auto fontPtr = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_STRO, 16.0f * dpiScaleFactor, &icons_config, icons_ranges);
             if (fontPtr == nullptr) {
                 assert(0);  // failed to load font
             } else {
-                fontPtr->Scale = 16.0f / 50.0f;
+                fontPtr->Scale = 1.0f / dpiScaleFactor;
             }
         }
     }    
 
+    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+    ImGuiStyle& style = ImGui::GetStyle();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        style.WindowRounding = 0.0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    }
+    style.ScaleAllSizes(dpiScaleFactor);
+    
     // Setup Platform/Renderer bindings
     if (ImGui_ImplGlfw_InitForOpenGL(m_MainWindowPtr, true) &&  //
         ImGui_ImplOpenGL3_Init(m_GlslVersion)) {
