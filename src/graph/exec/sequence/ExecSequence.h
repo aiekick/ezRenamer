@@ -19,5 +19,5 @@ public:
     // return true if the first node is an input
     // and if the last is an output
     // else return false
-    bool ExecSequence::isValid() const;
+    bool isValid() const;
 };
