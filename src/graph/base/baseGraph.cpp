@@ -22,7 +22,7 @@ bool BaseGraph::init() {
         config.SaveSettings = nullptr;
         m_pCanvas = nd::CreateEditor(&config);
         if (m_pCanvas != nullptr) {
-            nd::SetCurrentEditor(m_pCanvas);
+            setCurrentEditor();
             nd::GetStyle() = m_parentStyle.style;
             nd::EnableShortcuts(true);
             return true;
@@ -32,13 +32,16 @@ bool BaseGraph::init() {
 }
 
 void BaseGraph::unit() {
-    nd::SetCurrentEditor(m_pCanvas);
-    nd::DestroyEditor(m_pCanvas);
+    setCurrentEditor();
     ez::Graph::unit();
 }
 
-bool BaseGraph::drawGraph() {
+void BaseGraph::setCurrentEditor() const {
     nd::SetCurrentEditor(m_pCanvas);
+}
+
+bool BaseGraph::drawGraph() {
+    setCurrentEditor();
 
     //DrawNodeGraphStyleMenu();
     
@@ -119,29 +122,29 @@ void BaseGraph::m_drawLinks() {
 
 void BaseGraph::zoomToContent() const {
     if (m_pCanvas) {
-        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
-        ax::NodeEditor::NavigateToContent(true);
+        setCurrentEditor();
+        nd::NavigateToContent(true);
     }
 }
 
 void BaseGraph::navigateToContent() const {
     if (m_pCanvas) {
-        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
-        ax::NodeEditor::NavigateToContent(false);
+        setCurrentEditor();
+        nd::NavigateToContent(false);
     }
 }
 
 void BaseGraph::zoomToSelection() const {
     if (m_pCanvas) {
-        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
-        ax::NodeEditor::NavigateToSelection(true);
+        setCurrentEditor();
+        nd::NavigateToSelection(true);
     }
 }
 
 void BaseGraph::navigateToSelection() const {
     if (m_pCanvas) {
-        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
-        ax::NodeEditor::NavigateToSelection(false);
+        setCurrentEditor();
+        nd::NavigateToSelection(false);
     }
 }
 
@@ -156,8 +159,8 @@ ImVec2 BaseGraph::getMousePos() const {
 
 ImVec2 BaseGraph::getCanvasOffset() const {
     if (m_pCanvas) {
-        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
-        return ax::NodeEditor::GetCanvasOffset();
+        setCurrentEditor();
+        return nd::GetCanvasOffset();
     }
 
     return ImVec2(0, 0);
@@ -165,8 +168,8 @@ ImVec2 BaseGraph::getCanvasOffset() const {
 
 float BaseGraph::getCanvasScale() const {
     if (m_pCanvas) {
-        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
-        return ax::NodeEditor::GetCanvasScale();
+        nd::SetCurrentEditor(m_pCanvas);
+        return nd::GetCanvasScale();
     }
 
     return 1.0f;
@@ -174,15 +177,15 @@ float BaseGraph::getCanvasScale() const {
 
 void BaseGraph::setCanvasOffset(const ImVec2& vOffset) {
     if (m_pCanvas) {
-        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
-        ax::NodeEditor::SetCanvasOffset(vOffset);
+        setCurrentEditor();
+        nd::SetCanvasOffset(vOffset);
     }
 }
 
 void BaseGraph::setCanvasScale(const float& vScale) {
     if (m_pCanvas) {
-        ax::NodeEditor::SetCurrentEditor(m_pCanvas);
-        ax::NodeEditor::SetCanvasScale(vScale);
+        setCurrentEditor();
+        nd::SetCanvasScale(vScale);
     }
 }
 
@@ -379,22 +382,22 @@ void BaseGraph::m_doShorcutsOnNode() {
 //////////////////////////////////////////////////////////////////////////////
 
 void BaseGraph::m_copySelectedNodes() {
-    auto countSelectecdNodes = ax::NodeEditor::GetSelectedObjectCount();
+    auto countSelectecdNodes = nd::GetSelectedObjectCount();
     m_nodesToCopy.resize(countSelectecdNodes);
-    ax::NodeEditor::GetActionContextNodes(m_nodesToCopy.data(), static_cast<int32_t>(m_nodesToCopy.size()));
+    nd::GetActionContextNodes(m_nodesToCopy.data(), static_cast<int32_t>(m_nodesToCopy.size()));
 
     // calcul du point de centre de tout ces nodes
     // sa servira d'offset avec le point de destinatiion
     m_nodesCopyOffset = ImVec2(0, 0);
     for (const auto& id : m_nodesToCopy) {
-        m_nodesCopyOffset += ax::NodeEditor::GetNodePosition(id) * 0.5f;
+        m_nodesCopyOffset += nd::GetNodePosition(id) * 0.5f;
     }
 }
 
 void BaseGraph::m_pasteNodesAtMousePos() {
-    ax::NodeEditor::Suspend();  // necessaire pour avoir le bon MousePos
-    auto newOffset = ax::NodeEditor::ScreenToCanvas(ImGui::GetMousePos()) - m_nodesCopyOffset;
-    ax::NodeEditor::Resume();
+    nd::Suspend();  // necessaire pour avoir le bon MousePos
+    auto newOffset = nd::ScreenToCanvas(ImGui::GetMousePos()) - m_nodesCopyOffset;
+    nd::Resume();
     m_duplicateSelectedNodes(newOffset);
 }
 

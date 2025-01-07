@@ -64,6 +64,8 @@ public:  // Normal
     bool init() override;
     void unit() override;
 
+    void setCurrentEditor() const;
+
     bool drawGraph();
 
     bool drawNodeWidget(const uint32_t& vFrame) override;

@@ -1,5 +1,6 @@
 #include "baseLayout.h"
-#include <graph/base/baseNode.h>
+#include <ezlibs/ezLog.hpp>
+#include <graph/base/baseSlot.h>
 #include <graph/base/baseLink.h>
 #include <graph/base/baseGraph.h>
 
@@ -14,28 +15,27 @@ float BaseLayout::s_NodeCentering = 1.0f;
 //// PUBLIC /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 
-void BaseLayout::applyLayout(const BaseGraphWeak& vGraph) {
+void BaseLayout::applyLayout(const BaseGraphWeak &vGraph) {
     if (!vGraph.expired()) {
         auto graphPtr = vGraph.lock();
         if (graphPtr) {
             if (!graphPtr->getNodes().empty()) {
-                m_nodes = &graphPtr->getNodes();  // on prend le temps de l'execution de cette fonction
-
+                m_nodes.clear();
+                for (const auto &node : graphPtr->getNodes()) {
+                    auto node_ptr = std::static_pointer_cast<BaseNode>(node.lock());
+                    m_nodes.tryAdd(node_ptr->getUuid(), node_ptr);
+                }
                 m_calcLayout(vGraph);
-
-                    ApplyPositionsInGraph();
-                    graphPtr->NavigateToContent();
-
-                m_nodes = nullptr;
+                m_applyPositionsInGraph(vGraph);
+                graphPtr->navigateToContent();
             }
         }
     }
-
     clear();
 }
 
 void BaseLayout::clear() {
-    m_nodes = nullptr;
+    m_nodes.clear();
     m_columns.clear();
 }
 
@@ -65,22 +65,21 @@ bool BaseLayout::drawSettings() {
 void BaseLayout::ColumnContainer::addNode(const BaseNodeWeak &vNode) {
     if (!vNode.expired()) {
         auto node_ptr = vNode.lock();
-        if (node_ptr!=nullptr) {
-            const auto &node_datas = node_ptr->getDatas<BaseNode::BaseNodeDatas>();
+        if (node_ptr != nullptr) {
+            auto &node_datas = node_ptr->getDatasRef<BaseNode::BaseNodeDatas>();
             if (node_datas.layout.inserted) {
                 LogVarDebugError("le node a deja été inséré.. (ColumnContainerStruct::AddNode)");
             }
 
-            if (nodes.find(node_datas.layout.cell.y) != nodes.end()) 
-            {  // deja existant
+            if (nodes.find(node_datas.layout.cell.y) != nodes.end()) {  // deja existant
                 // on va trouver le celle.y max dans les ndoes
-                int mcy = node_datas.layout.cell.y;
+                int32_t mcy = node_datas.layout.cell.y;
                 for (auto sec_node : nodes) {
                     if (!sec_node.second.expired()) {
                         auto secPtr = sec_node.second.lock();
                         if (secPtr) {
                             const auto &sec_node_datas = node_ptr->getDatas<BaseNode::BaseNodeDatas>();
-                            mcy = ez::maxi(mcy, secPtr->cell.y);
+                            mcy = ez::maxi(mcy, sec_node_datas.layout.cell.y);
                         }
                     }
                 }
@@ -89,16 +88,16 @@ void BaseLayout::ColumnContainer::addNode(const BaseNodeWeak &vNode) {
             }
 
             size.x = ez::maxi<float>(size.x, node_ptr->m_size.x);
-            size.y += (nodes.empty() ? 0.0f : BaseLayout::s_NodeSpacing.y) + ptr->m_size.y;
-            nodes[ptr->cell.y] = vNode;
-            ptr->inserted = true;
+            size.y += (nodes.empty() ? 0.0f : BaseLayout::s_NodeSpacing.y) + node_ptr->m_size.y;
+            nodes[node_datas.layout.cell.y] = vNode;
+            node_datas.layout.inserted = true;
         }
     }
 }
 
 void BaseLayout::ColumnContainer::clear() {
     nodes.clear();
-    m_size = ImVec2(0, 0);
+    size = ImVec2(0, 0);
     offset = ImVec2(0, 0);
 }
 
@@ -107,69 +106,93 @@ void BaseLayout::ColumnContainer::clear() {
 /////////////////////////////////////////////////////////////////////////////////////
 
 void BaseLayout::m_calcLayout(const BaseGraphWeak &vGraph) {
-    if (!vGraph.expired()) {
-        auto ptr = vGraph.lock();
-        if (ptr) {
-            m_infLoopNodeDetector.clear();
-            m_columns.clear();
-            m_resetNodeStates();
-            m_classifyNodes(ptr->rootFuncName);
-            m_addNodesInCells();
-            m_definePositionsOfNodes();
-        }
+    auto graph_ptr = vGraph.lock();
+    if (graph_ptr) {
+        m_infLoopNodeDetector.clear();
+        m_columns.clear();
+        m_resetNodeStates();
+        m_classifyNodes("");
+        m_addNodesInCells();
+        m_definePositionsOfNodes();
     }
 }
 
 void BaseLayout::m_resetNodeStates() {
-    if (m_nodes) {
+    if (!m_nodes.empty()) {
         // on doit effacer l'indicatif de colonne sinon rien ne sera mit en colonne
         // et le layout ne layoutera rien du tout du coup
-        for (auto nodePair : *m_nodes) {
-            auto node = nodePair.second;
-            if (node) {
-                node->cell = ez::ivec2(-1);  // -1 pour que le 1er node (genre 'main') soit mit dans la colonne 0, sinon il serait ignoré
-                node->inserted = false;      // pour voir si on insere le node plusieurs fois (utilité que pour debug)
-                node->used = false;          // node utiisié ou non, pour cacher les nodes qui servent a rien
+        for (auto node : m_nodes) {
+            auto node_ptr = node.lock();
+            if (node_ptr != nullptr) {
+                auto &node_datas = node_ptr->getDatasRef<BaseNode::BaseNodeDatas>();
+                node_datas.layout.cell = ez::ivec2(-1);  // -1 pour que le 1er node (genre 'main') soit mit dans la colonne 0, sinon il serait ignoré
+                node_datas.layout.inserted = false;      // pour voir si on insere le node plusieurs fois (utilité que pour debug)
+                node_datas.layout.used = false;          // node utiisié ou non, pour cacher les nodes qui servent a rien
             }
         }
     }
 }
 
 void BaseLayout::m_classifyNodes(std::string vRootFunction) {
-    if (m_nodes) {
+    if (!m_nodes.empty()) {
         // on parcours l'arbo on set les node a used is used, uniforms et calls
         // tres important, on isole les nodes qui servent a rien par used
-        for (auto nodePair : *m_nodes) {
-            auto node = nodePair.second;
-            if (node) {
+        for (auto node : m_nodes) {
+            auto node_ptr = std::static_pointer_cast<ExecNode>(node.lock());
+            if (node_ptr != nullptr) {
                 bool connected = false;
-                for (auto &slot : node->m_Outputs) {
-                    connected |= slot.second->connected;
+                for (auto &slot : node_ptr->m_getOutputSlotsRef()) {
+                    auto slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+                    connected |= slot_ptr->isConnected();
+                }
+                auto out_flow_slot_ptr = node_ptr->getOutputFlowSlot().lock();
+                if (out_flow_slot_ptr != nullptr) {
+                    connected |= node_ptr->getOutputFlowSlot().lock()->isConnected();
                 }
                 if (!connected) {
+                    auto &node_datas = node_ptr->getDatasRef<BaseNode::BaseNodeDatas>();
+
                     // le node racine est utilisé, sinon non et on le marque comme tel
                     // car apres on va propager cet etat a tout ces enfants
-                    node->used = (node->name == vRootFunction) || node->rootUsed;
+                    node_datas.layout.used = (node_datas.name == vRootFunction) || node_datas.layout.rootUsed;
 
                     // start node
-                    SetColumnOfNodesRecurs(node, 0);
+                    m_setColumnOfNodesRecurs(node_ptr, 0);
                 }
             }
         }
     }
 }
 
-void BaseLayout::m_setColumnOfNodesRecurs(const BaseNodeWeak &vNode, ez::ivec2 vNodeCell) {
-    if (vNode.expired())
-        return;
-    if (IsThereAnInfiniteLoopForNode(vNode))
-        return;
-    auto nodePtr = vNode.lock();
-    if (!nodePtr)
-        return;
+void BaseLayout::m_callInputSlot(const ez::SlotWeak &vSlot, const BaseNode::BaseNodeDatas &vNodeDatas, int32_t vCellIdx) {
+    auto slot_ptr = vSlot.lock();
+    if (slot_ptr != nullptr) {
+        if (slot_ptr->m_getConnectedSlots().size() == 1) {
+            auto other_slot_ptr = slot_ptr->m_getConnectedSlots().begin()->lock();
+            if (other_slot_ptr != nullptr) {
+                auto other_node_ptr = std::static_pointer_cast<ExecNode>(other_slot_ptr->getParentNode().lock());
+                if (other_node_ptr != nullptr) {
+                    auto &other_node_datas = other_node_ptr->getDatasRef<BaseNode::BaseNodeDatas>();
+                    if (vNodeDatas.layout.used) {  // on propage le used que si il est a true
+                        other_node_datas.layout.used = vNodeDatas.layout.used;
+                    }
+                    m_setColumnOfNodesRecurs(other_node_ptr, vNodeDatas.layout.cell + ez::ivec2(1, vCellIdx));
+                }
+            }
+        } else if (slot_ptr->m_getConnectedSlots().size() > 1) {
+            LogVarDebugError("c'est pas normal qu'un call ait plusieurs inputs");
+        }
+    }
+}
 
-    if (nodePtr->cell.x < vNodeCell.x) {
-        nodePtr->cell = vNodeCell;
+void BaseLayout::m_setColumnOfNodesRecurs(const ExecNodeWeak &vNode, ez::ivec2 vNodeCell) {
+    if (vNode.expired() || m_isThereAnInfiniteLoopForNode(vNode)) {
+        return;
+    }
+    auto node_ptr = vNode.lock();
+    auto &node_datas = node_ptr->getDatasRef<BaseNode::BaseNodeDatas>();
+    if (node_datas.layout.cell.x < vNodeCell.x) {
+        node_datas.layout.cell = vNodeCell;
 
         // on dit ou doit etre placé le node
         // position qui pourra etre réevaluée plus tard, si un enfant l'utilse aussi
@@ -179,49 +202,29 @@ void BaseLayout::m_setColumnOfNodesRecurs(const BaseNodeWeak &vNode, ez::ivec2 v
         // compliquant de facto la regle : un node ne doit appartenir qu'a une seule colonne
     }
 
-    int cellIdx = 0;
-
     // call childs
-    for (const auto &call : nodePtr->m_Inputs) {
-        if (call.second->linkedSlots.m_size() == 1) {
-            auto otherSlot = *call.second->linkedSlots.begin();
-            if (!otherSlot.expired()) {
-                auto otherSlotPtr = otherSlot.lock();
-                if (otherSlotPtr) {
-                    if (!otherSlotPtr->parentNode.expired()) {
-                        auto parentPtr = otherSlotPtr->parentNode.lock();
-                        if (parentPtr) {
-                            if (nodePtr->used)  // on propage le used que si il est a true
-                                parentPtr->used = nodePtr->used;
-                            SetColumnOfNodesRecurs(otherSlotPtr->parentNode, nodePtr->cell + ez::ivec2(1, cellIdx));
-                        }
-                    }
-                }
-            }
-        } else if (call.second->linkedSlots.m_size() > 1) {
-            LogVarDebugError("c'est pas normal qu'un call ait plusieurs inputs");
-        }
-        cellIdx++;
+    int32_t cellIdx = 0;
+    for (const auto &slot : node_ptr->m_getInputSlots()) {
+        m_callInputSlot(slot, node_datas, cellIdx);
+        ++cellIdx;
     }
+    m_callInputSlot(node_ptr->getInputFlowSlot(), node_datas, cellIdx);
+    ++cellIdx;
 }
 
 void BaseLayout::m_addNodesInCells() {
-    if (m_nodes) {
-        for (auto &nodePair : *m_nodes) {
-            auto node = nodePair.second;
-            if (node) {
-                m_addNodeInCell(node);
-            }
+    if (!m_nodes.empty()) {
+        for (auto node : m_nodes) {
+            m_addNodeInCell(node);
         }
     }
 }
 
 void BaseLayout::m_addNodeInCell(const BaseNodeWeak &vNode) {
-    if (!vNode.expired()) {
-        auto nodePtr = vNode.lock();
-        if (nodePtr) {
-            m_columns[nodePtr->cell.x].AddNode(vNode);
-        }
+    auto node_ptr = vNode.lock();
+    if (node_ptr) {
+        auto &node_datas = node_ptr->getDatasRef<BaseNode::BaseNodeDatas>();
+        m_columns[node_datas.layout.cell.x].addNode(vNode);
     }
 }
 
@@ -235,9 +238,9 @@ void BaseLayout::m_definePositionsOfNodes() {
         if (columnPair.first == 0) {
             column.offset.x = 0.0f;
         } else {
-            column.offset.x = lastOffset.x - s_NodeSpacing.x - column.m_size.x;
+            column.offset.x = lastOffset.x - s_NodeSpacing.x - column.size.x;
         }
-        column.offset.y = column.m_size.y * -0.5f;  // centrage des colonne en y
+        column.offset.y = column.size.y * -0.5f;  // centrage des colonne en y
 
         // on va centrer les nodes en x dans la colonne
         // po va placer les nodes en y les uns a la suite des autres
@@ -248,9 +251,9 @@ void BaseLayout::m_definePositionsOfNodes() {
             if (!node.expired()) {
                 auto nodePtr = node.lock();
                 if (nodePtr) {
-                    nextNodeBottomPosY += ((nodeIdx == 0) ? 0.0f : s_NodeSpacing.y);                                         // on ajoute l'espace ci besoin au curseur
-                    nodePtr->m_pos.x = column.offset.x + column.m_size.x * s_NodeCentering - nodePtr->m_size.x * s_NodeCentering;  // centrage x du node dans la colonne
-                    nodePtr->m_pos.y = nextNodeBottomPosY;                                                                     // position du node en y
+                    nextNodeBottomPosY += ((nodeIdx == 0) ? 0.0f : s_NodeSpacing.y);  // on ajoute l'espace ci besoin au curseur
+                    nodePtr->m_pos.x = column.offset.x + column.size.x * s_NodeCentering - nodePtr->m_size.x * s_NodeCentering;  // centrage x du node dans la colonne
+                    nodePtr->m_pos.y = nextNodeBottomPosY;                                                                      // position du node en y
 
                     nodeIdx++;
                     nextNodeBottomPosY += nodePtr->m_size.y;  // on place le curseur de position au bas du node que l'on vient de placer
@@ -266,27 +269,22 @@ void BaseLayout::m_definePositionsOfNodes() {
 //// SECURITY ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-bool BaseLayout::m_isThereAnInfiniteLoopForNode(const BaseNodeWeak &vNode)  // recursive func SetColumnOfNodesRecurs
-{
+bool BaseLayout::m_isThereAnInfiniteLoopForNode(const BaseNodeWeak &vNode) {  // recursive func SetColumnOfNodesRecurs
     bool res = false;
-
-    if (!vNode.expired()) {
-        auto nodePtr = vNode.lock();
-        if (nodePtr) {
-            uintptr_t nodeId = nodePtr->GetNodeID();
-            if (m_InfLoopNodeDetector.find(nodeId) == m_InfLoopNodeDetector.end()) {
-                m_InfLoopNodeDetector[nodeId] = 0;
-            } else {
-                m_InfLoopNodeDetector[nodeId]++;
-            }
-
-            if (m_InfLoopNodeDetector[nodeId] > 50) {
-                LogVarDebugError("Maybe, we have an infinite loop for node %s", nodePtr->name.c_str());
-                res = true;
-            }
+    auto node_ptr = vNode.lock();
+    if (node_ptr != nullptr) {
+        auto node_id = node_ptr->getUuid();
+        if (m_infLoopNodeDetector.find(node_id) == m_infLoopNodeDetector.end()) {
+            m_infLoopNodeDetector[node_id] = 0;
+        } else {
+            ++m_infLoopNodeDetector[node_id];
+        }
+        if (m_infLoopNodeDetector[node_id] > 50) {
+            const auto &node_datas = node_ptr->getDatas<BaseNode::BaseNodeDatas>();
+            LogVarDebugError("Maybe, we have an infinite loop for node %s", node_datas.name.c_str());
+            res = true;
         }
     }
-
     return res;
 }
 
@@ -294,13 +292,13 @@ bool BaseLayout::m_isThereAnInfiniteLoopForNode(const BaseNodeWeak &vNode)  // r
 //// FINAL ///////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-void BaseLayout::m_applyPositionsInGraph() {
-    if (m_nodes) {
-        namespace nd = ax::NodeEditor;
-        for (const auto &node : *m_nodes) {
-            auto nodePtr = node.second;
-            if (nodePtr) {
-                nd::SetNodePosition(nodePtr->m_nodeID, nodePtr->m_pos);
+void BaseLayout::m_applyPositionsInGraph(const BaseGraphWeak &vGraph) {
+    if (!m_nodes.empty()) {
+        vGraph.lock()->setCurrentEditor();
+        for (auto node : m_nodes) {
+            auto node_ptr = std::static_pointer_cast<BaseNode>(node.lock());
+            if (node_ptr != nullptr) {
+                nd::SetNodePosition(node_ptr->getUuid(), node_ptr->m_pos);
             }
         }
     }

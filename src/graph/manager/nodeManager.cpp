@@ -63,8 +63,45 @@ bool NodeManager::drawGraph() {
             ImGui::MenuItem("Debug", nullptr, &m_graphStyle.debugMode);
             ImGui::EndMenu();
         }
+
+        if (ImGui::MenuItem("Auto layout")) {
+            m_baseLayout.applyLayout(m_graphPtr);
+        }
+
+        m_graphPtr->setCurrentEditor();
+
+        if (nd::GetSelectedObjectCount()) {
+            if (ImGui::BeginMenu("Selection")) {
+                if (ImGui::MenuItem("Zoom on Selection")) {
+                    m_graphPtr->zoomToSelection();
+                }
+                if (ImGui::MenuItem("Center on Selection")) {
+                    m_graphPtr->navigateToSelection();
+                }
+                ImGui::EndMenu();
+            }
+        }
+
+        if (ImGui::BeginMenu("Content")) {
+            if (ImGui::MenuItem("Zoom on Content")) {
+                m_graphPtr->zoomToContent();
+            }
+
+            if (ImGui::MenuItem("Center on Content")) {
+                m_graphPtr->navigateToContent();
+            }
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Style")) {
+            m_baseLayout.drawSettings();
+            ImGui::EndMenu();
+        }
+
         ImGui::EndMenuBar();
     }
+
     return m_graphPtr->drawGraph();
 }
 

@@ -3,6 +3,7 @@
 #include <imguipack/ImGuiPack.h>
 #include <graph/base/baseDefs.h>
 #include <graph/base/baseGraph.h>
+#include <graph/base/baseLayout.h>
 #include <graph/base/baseLibrary.h>
 #include <graph/base/interfaces/SlotColorBankInterface.h>
 
@@ -23,8 +24,9 @@ private:
     BaseGraph::BaseGraphDatas m_graphConfig;
     BaseGraphPtr m_graphPtr = nullptr;
     std::map<std::string, ImVec4> m_ColorSlots;
-    BaseLibrary m_nodesLibrary;
+    BaseLayout m_baseLayout;
 
+    BaseLibrary m_nodesLibrary;
     // Library to show, can be filtered from m_nodesLibrary or not
     BaseLibrary m_libraryToShow;
 
