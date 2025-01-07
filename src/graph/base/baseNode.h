@@ -23,6 +23,7 @@ class BaseNode  //
       public rnm::GuiInterface,
       public rnm::NodeInterface,
       public IDrawDebugInfos {
+    friend class BaseLayout;
     friend class BaseGraph;
     friend class BaseSlot;
 

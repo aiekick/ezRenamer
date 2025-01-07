@@ -1,37 +1,42 @@
 #pragma once
+#pragma warning(disable : 4251)
 
+#include <ImGuiPack.h>
+#include <graph/base/baseDefs.h>
+#include <ezlibs/ezCnt.hpp>
 #include <map>
-#include <unordered_map>
-#include <apis/ezRenamerPluginApi.h>
-#include <ezlibs/ezTools.hpp>
+#include <cstdint>
 
-class LayoutNodeInterface {
+class BaseLayout {
 public:
-    class NodeLayout {
-    private:
-        ez::ivec2 m_cell = ez::ivec2(-1);  // layout x:column, y:row
-        bool m_isLayouted = false;         // pour voir si il y a des doublon dasn des colonnes
-        bool m_isRoot = false;             // ce node est le root
+    static ImVec2 s_NodeSpacing;
+    static float s_NodeCentering;
+
+private:
+    struct ColumnContainer {
+        std::map<int, BaseNodeWeak> nodes;
+        ImVec2 size;
+        ImVec2 offset;
+        void addNode(const BaseNodeWeak& vNode);
+        void clear();
     };
-    virtual bool isUsed() = 0;               // is used for hide unused nodes
-    virtual bool isShown() = 0;              // is shown for not layout hidden nodes
-    virtual NodeLayout& getLayoutRef() = 0;  // layout
-    virtual ez::fvec2 getPos() = 0;          // get node pos
-    virtual ez::fvec2 getSize() = 0;         // get node pos
-};
+    ez::cnt::DicoVector<ez::Uuid, BaseNodeWeak> m_nodes;
+    std::map<int32_t, ColumnContainer> m_columns;
+    std::map<ez::Uuid, int32_t> m_infLoopNodeDetector;
 
-class LayoutManagerInterface {
 public:
-    virtual bool applyLayout(BaseNodeWeak) = 0;
-    virtual bool drawSettings() = 0;
-};
-
-class BaseLayoutManager {
-public:
-    void applyLayout(BaseNodeWeak vGraphNode);
+    void applyLayout(const BaseGraphWeak& vGraphNode);
     void clear();
     bool drawSettings();
 
-    private:
-    void setCurrentLayout();
+private:
+    void m_calcLayout(const BaseGraphWeak& vGraph);
+    void m_resetNodeStates();
+    void m_classifyNodes(std::string vRootFunction);
+    void m_setColumnOfNodesRecurs(const BaseNodeWeak& vNode, ez::ivec2 vNodeCell);
+    void m_addNodesInCells();
+    void m_addNodeInCell(const BaseNodeWeak& vNode);
+    void m_definePositionsOfNodes();
+    bool m_isThereAnInfiniteLoopForNode(const BaseNodeWeak& vNode);  // recursive func SetColumnOfNodesRecurs
+    void m_applyPositionsInGraph();
 };
