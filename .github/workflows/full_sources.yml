@@ -1,4 +1,4 @@
-name: Win
+name: Full sources
 
 on:
   push:
