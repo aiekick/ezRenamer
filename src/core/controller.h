@@ -16,6 +16,12 @@ private:
     RenamerContainer m_renamers;
     rnm::RenamerModuleWeak m_selectedRenamer;
 
+    struct Files {
+        ImGuiListClipper listClipper;
+        std::vector<std::pair<std::string,std::string>> files;
+        int32_t selectedIndex = -1;
+    } m_files;
+
 public:
     bool init();
     void unit();
@@ -27,6 +33,7 @@ public:
     bool compileGraph();
     bool playGraph();
     bool debugGraph();
+    void setInputFiles(const std::vector<std::string>& vFiles);
 
 private:
     void m_getAvailableRenamers();

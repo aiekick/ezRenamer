@@ -56,6 +56,15 @@ static void glfw_window_close_callback(GLFWwindow* window) {
     Frontend::Instance()->Action_Window_CloseApp();
 }
 
+static void glfw_drop_callback(GLFWwindow* window, int path_count, const char* paths[]) {
+    std::vector<std::string> files;
+    files.reserve(path_count);
+    for (int idx = 0; idx < path_count; ++idx) {
+        files.push_back(paths[idx]);
+    }
+    Controller::instance()->setInputFiles(files);
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 //// PUBLIC //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
@@ -334,8 +343,9 @@ bool Backend::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& v
 
 bool Backend::m_InitWindow() {
     glfwSetErrorCallback(glfw_error_callback);
-    if (!glfwInit())
+    if (!glfwInit()) {
         return false;
+    }
 
     // GL 3.0 + GLSL 130
     m_GlslVersion = "#version 130";
@@ -357,6 +367,7 @@ bool Backend::m_InitWindow() {
         return false;
     }
 
+    glfwSetDropCallback(m_MainWindowPtr, glfw_drop_callback);
     glfwSetWindowCloseCallback(m_MainWindowPtr, glfw_window_close_callback);
 
     return true;
@@ -380,7 +391,7 @@ bool Backend::m_InitImGui() {
     io.ConfigViewportsNoDecoration = false;  // toujours mettre une frame aux fenetres enfants
 #endif
     
-    float dpiScaleFactor = 3.0f;
+    float dpiScaleFactor = 100.0f / 16.0f;
 
     // fonts
     {

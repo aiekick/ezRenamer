@@ -33,6 +33,8 @@ limitations under the License.
 #include <panes/graphPane.h>
 #include <panes/debugPane.h>
 
+#include <res/fontIcons.h>
+
 #include <core/controller.h>
 
 using namespace std::placeholders;
@@ -52,7 +54,7 @@ Frontend::~Frontend() = default;
 bool Frontend::init() {
     m_build_themes();
 
-    LayoutManager::Instance()->Init("Layouts", "Default Layout");
+    LayoutManager::Instance()->Init(ICON_FONT_MONITOR_DASHBOARD " Layouts", "Default Layout");
 
     LayoutManager::Instance()->SetPaneDisposalRatio("LEFT", 0.25f);
     LayoutManager::Instance()->SetPaneDisposalRatio("RIGHT", 0.25f);
@@ -64,9 +66,9 @@ bool Frontend::init() {
 
     LayoutManager::Instance()->AddPane(ConsolePane::Instance(), "Console", "", "BOTTOM", 0.25f, false, false);
 
-    LayoutManager::Instance()->AddPane(ControlPane::Instance(), "Tuning", "", "RIGHT", 0.25f, true, true);
+    LayoutManager::Instance()->AddPane(ControlPane::Instance(), "Tuning", "", "RIGHT", 0.25f, false, false);
     //LayoutManager::Instance()->AddPane(PreviewPane::Instance(), "Preview", "", "BOTTOM", 0.0f, true, false);
-    LayoutManager::Instance()->AddPane(PathsPane::Instance(), "Paths", "", "BOTTOM", 0.3f, true, false);
+    LayoutManager::Instance()->AddPane(PathsPane::Instance(), "Paths", "", "BOTTOM", 0.3f, false, false);
     LayoutManager::Instance()->AddPane(GraphPane::Instance(), "Graph", "", "CENTRAL", 0.0f, true, false);
     
     // InitPanes is done in m_InitPanes, because a specific order is needed
@@ -154,7 +156,7 @@ void Frontend::m_drawMainMenuBar() {
     static float s_translation_menu_size = 0.0f;
     if (ImGui::BeginMainMenuBar()) {
         float full_width = ImGui::GetContentRegionAvail().x;
-        if (ImGui::BeginMenu(" Project")) {
+        if (ImGui::BeginMenu(ICON_FONT_ARCHIVE " Project")) {
             if (ImGui::MenuItem(" New")) {
                 Action_Menu_NewProject();
             }
@@ -196,7 +198,7 @@ void Frontend::m_drawMainMenuBar() {
             ImGui::EndMenu();
         }
         LayoutManager::Instance()->DisplayMenu(ImGui::GetIO().DisplaySize);
-        if (ImGui::BeginMenu("Tools")) {
+        if (ImGui::BeginMenu(ICON_FONT_SETTINGS " Tools")) {
             if (ImGui::MenuItem("Settings")) {
                 SettingsDialog::Instance()->OpenDialog();
             }
@@ -204,10 +206,11 @@ void Frontend::m_drawMainMenuBar() {
             if (ImGui::BeginMenu("Styles")) {
                 ImGuiThemeHelper::Instance()->DrawMenu();
 
+#ifdef _DEBUG
                 ImGui::Separator();
-
                 ImGui::MenuItem("Show ImGui", "", &m_ShowImGui);
                 ImGui::MenuItem("Show ImGui Metric/Debug", "", &m_ShowMetric);
+#endif
 
                 ImGui::EndMenu();
             }
@@ -224,11 +227,14 @@ void Frontend::m_drawMainMenuBar() {
         ImGui::SpacingFromStart((full_width - s_controller_menu_size) * 0.5f);
         Controller::instance()->drawMenu(s_controller_menu_size);
 
-        // ImGui Infos
+#ifdef _DEBUG
         const auto label = ez::str::toStr("Dear ImGui %s (Docking)", ImGui::GetVersion());
         const auto size = ImGui::CalcTextSize(label.c_str());
         ImGui::Spacing(ImGui::GetContentRegionAvail().x - size.x - s_translation_menu_size - ImGui::GetStyle().FramePadding.x * 2.0f);
         ImGui::Text("%s", label.c_str());
+#else
+        ImGui::SpacingFromStart(full_width - s_translation_menu_size);
+#endif
         s_translation_menu_size = TranslationHelper::Instance()->DrawMenu();
 
         ImGui::EndMainMenuBar();
@@ -239,14 +245,13 @@ void Frontend::m_drawMainStatusBar() {
     if (ImGui::BeginMainStatusBar()) {
         Messaging::Instance()->DrawStatusBar();
 
-        //  ImGui Infos
+#ifdef _DEBUG
         const auto& io = ImGui::GetIO();
         const auto fps = ez::str::toStr("%.1f ms/frame (%.1f fps)", 1000.0f / io.Framerate, io.Framerate);
         const auto size = ImGui::CalcTextSize(fps.c_str());
         ImGui::Spacing(ImGui::GetContentRegionAvail().x - size.x - ImGui::GetStyle().FramePadding.x * 2.0f);
         ImGui::Text("%s", fps.c_str());
-
-        // Frontend::sAnyWindowsHovered |= ImGui::IsWindowHovered();
+#endif
 
         ImGui::EndMainStatusBar();
     }

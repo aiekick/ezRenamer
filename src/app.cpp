@@ -11,15 +11,17 @@
 #include <ezlibs/ezLog.hpp>
 #include <ezlibs/ezFigFont.hpp> 
 
+#include <headers/customMessagingConfigHeader.h>
+
 // messaging
 #define MESSAGING_CODE_INFOS 0
-#define MESSAGING_LABEL_INFOS "Infos"
+#define MESSAGING_LABEL_INFOS  "Infos"
 #define MESSAGING_CODE_WARNINGS 1
-#define MESSAGING_LABEL_WARNINGS "Warnings"
+#define MESSAGING_LABEL_WARNINGS  "Warnings"
 #define MESSAGING_CODE_ERRORS 2
 #define MESSAGING_CODE_DEBUG 3
-#define MESSAGING_LABEL_ERRORS "Errors"
-#define MESSAGING_LABEL_DEBUG "Debug"
+#define MESSAGING_LABEL_ERRORS  "Errors"
+#define MESSAGING_LABEL_DEBUG  "Debug"
 
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
@@ -31,10 +33,10 @@ int App::run(int argc, char** argv) {
     std::cout << ezRenamer_FigFontLabel << std::endl;
     std::cout << "-----------" << std::endl;
     LogVarLightInfo("[[ %s Beta v%s ]]", ezRenamer_Label, ezRenamer_BuildId);
-    Messaging::Instance()->AddCategory(MESSAGING_CODE_INFOS, "Info(s)", MESSAGING_LABEL_INFOS, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
-    Messaging::Instance()->AddCategory(MESSAGING_CODE_WARNINGS, "Warning(s)", MESSAGING_LABEL_WARNINGS, ImVec4(0.8f, 0.8f, 0.0f, 1.0f));
-    Messaging::Instance()->AddCategory(MESSAGING_CODE_ERRORS, "Error(s)", MESSAGING_LABEL_ERRORS, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
-    Messaging::Instance()->AddCategory(MESSAGING_CODE_DEBUG, "Debug(s)", MESSAGING_LABEL_DEBUG, ImVec4(0.8f, 0.8f, 0.0f, 1.0f));
+    Messaging::Instance()->AddCategory(MESSAGING_CODE_INFOS, "Info(s)", BAR_LABEL_INFOS, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
+    Messaging::Instance()->AddCategory(MESSAGING_CODE_WARNINGS, "Warning(s)", BAR_LABEL_WARNINGS, ImVec4(0.8f, 0.8f, 0.0f, 1.0f));
+    Messaging::Instance()->AddCategory(MESSAGING_CODE_ERRORS, "Error(s)", ICON_FONT_SPACE_INVADERS, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
+    Messaging::Instance()->AddCategory(MESSAGING_CODE_DEBUG, "Debug(s)", BAR_LABEL_ERROR, ImVec4(0.8f, 0.8f, 0.0f, 1.0f));
     Messaging::Instance()->SetLayoutManager(LayoutManager::Instance());
     ez::Log::instance()->setStandardLogMessageFunctor([](const int& vType, const std::string& vMessage) {
         MessageData msg_datas;

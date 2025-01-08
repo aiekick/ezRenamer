@@ -66,6 +66,46 @@ bool Controller::drawControl() {
 }
 
 bool Controller::drawFilesList() {
+    bool change = false;
+    static ImGuiTableFlags flags =        //
+        ImGuiTableFlags_SizingFixedFit |  //
+        ImGuiTableFlags_RowBg |           //
+        ImGuiTableFlags_Hideable |        //
+        ImGuiTableFlags_ScrollY |         //
+        ImGuiTableFlags_NoHostExtendY;
+    ImGui::PushID(this);
+    if (ImGui::BeginTable("##FilesList", 2, flags)) {
+        ImGui::TableSetupScrollFreeze(0, 1);  // Make header always visible
+        ImGui::TableSetupColumn("Inputs files", ImGuiTableColumnFlags_WidthFixed, -1, 0);
+        ImGui::TableSetupColumn("Outputs files", ImGuiTableColumnFlags_WidthFixed, -1, 0);
+        ImGui::TableHeadersRow();
+        m_files.listClipper.Begin(static_cast<int32_t>(m_files.files.size()), ImGui::GetTextLineHeightWithSpacing());
+        while (m_files.listClipper.Step()) {
+            for (int32_t idx = m_files.listClipper.DisplayStart; idx < m_files.listClipper.DisplayEnd; ++idx) {
+                if (idx < 0) {
+                    continue;
+                }
+                const auto& file = m_files.files.at(idx);
+                ImGui::TableNextRow();
+                if (ImGui::TableNextColumn()) {  // inputs
+                    if (ImGui::Selectable(
+                            file.first.c_str(),
+                            m_files.selectedIndex > -1 && m_files.selectedIndex == idx,  //
+                            ImGuiSelectableFlags_SpanAllColumns)) {
+                        change = true;
+                        m_files.selectedIndex = idx;
+                    }
+                }
+                if (ImGui::TableNextColumn()) {  // outputs
+                    ImGui::Text("%s", file.second.c_str());
+                }
+            }
+        }
+        m_files.listClipper.End();
+
+        ImGui::EndTable();
+    }
+    ImGui::PopID();
     return false;
 }
 
@@ -92,6 +132,14 @@ bool Controller::playGraph() {
 
 bool Controller::debugGraph() {
     return false;
+}
+
+void Controller::setInputFiles(const std::vector<std::string>& vFiles) {
+    m_files.files.clear();
+    m_files.selectedIndex = -1;
+    for (const auto& file : vFiles) {
+        m_files.files.push_back(std::make_pair(file, ""));
+    }
 }
 
 void Controller::m_getAvailableRenamers() {
