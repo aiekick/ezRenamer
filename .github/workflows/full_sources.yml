@@ -6,7 +6,7 @@ on:
     - master
 
 jobs:
-  build_Win_latest:
+  full_sources:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
