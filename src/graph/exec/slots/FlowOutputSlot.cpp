@@ -2,7 +2,7 @@
 #include <graph/manager/nodeManager.h>
 
 FlowOutputSlot::FlowOutputSlot(const BaseStyle& vParentStyle)  //
-    : Parent(vParentStyle, BaseSlotDatas("Flow", "FLOW", ez::SlotDir::OUTPUT, NodeManager::instance())) {}
+    : Parent(vParentStyle, BaseSlotDatas("Flow", "FLOW", ez::SlotDir::OUTPUT, NodeManager::Instance())) {}
 
 bool FlowOutputSlot::init() {
     auto ret = Parent::init();

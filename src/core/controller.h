@@ -8,7 +8,7 @@ private:  // Static
     static std::unique_ptr<Controller> mp_singleton;
 
 public:  // Static
-    static Controller* instance();
+    static Controller* Instance();
     static bool initInstance();
     static void unitInstance();
 

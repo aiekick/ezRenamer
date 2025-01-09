@@ -2,7 +2,7 @@
 #include <graph/manager/nodeManager.h>
 
 TextOutputSlot::TextOutputSlot(const BaseStyle& vParentStyle)  //
-    : Parent(vParentStyle, BaseSlotDatas("Text", "TEXT", ez::SlotDir::OUTPUT, NodeManager::instance())) {}
+    : Parent(vParentStyle, BaseSlotDatas("Text", "TEXT", ez::SlotDir::OUTPUT, NodeManager::Instance())) {}
 
 bool TextOutputSlot::init() {
     auto ret = Parent::init();

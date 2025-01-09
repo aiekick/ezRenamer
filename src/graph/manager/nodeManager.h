@@ -6,16 +6,17 @@
 #include <graph/base/baseLayout.h>
 #include <graph/base/baseLibrary.h>
 #include <graph/base/interfaces/SlotColorBankInterface.h>
+#include <ezlibs/ezXmlConfig.hpp>
 
 #include <memory>
 #include <functional>
 
-class NodeManager : public SlotColorBankInterface, public IDrawDebugInfos {
+class NodeManager : public SlotColorBankInterface, public IDrawDebugInfos, public ez::xml::Config {
 private: // Static
     static std::unique_ptr<NodeManager> mp_singleton;
 
 public:  // Static
-    static NodeManager* instance();
+    static NodeManager* Instance();
     static bool initInstance();
     static void unitInstance();
 
@@ -44,6 +45,8 @@ public:
     bool getSlotColor(const std::string& vBaseSlotType, ImU32& vOutColor) const override;
     void addSlotColor(const std::string& vBaseSlotType, const ImVec4& vSlotColor) override;
     void drawDebugInfos() override;
+    ez::xml::Nodes NodeManager::getXmlNodes(const std::string& vUserDatas) override ;
+    bool NodeManager::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
 
 private:
     bool m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vSlotType);

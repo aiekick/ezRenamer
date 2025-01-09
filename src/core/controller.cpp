@@ -6,18 +6,18 @@
 
 std::unique_ptr<Controller> Controller::mp_singleton = nullptr;
 
-Controller* Controller::instance() {
+Controller* Controller::Instance() {
     assert(mp_singleton != nullptr);
     return mp_singleton.get();
 }
 
 bool Controller::initInstance() {
     mp_singleton = std::make_unique<Controller>();
-    return instance()->init();
+    return Instance()->init();
 }
 
 void Controller::unitInstance() {
-    instance()->unit();
+    Instance()->unit();
     mp_singleton.reset();
 }
 
@@ -102,7 +102,6 @@ bool Controller::drawFilesList() {
             }
         }
         m_files.listClipper.End();
-
         ImGui::EndTable();
     }
     ImGui::PopID();
@@ -119,11 +118,11 @@ bool Controller::drawPreview() {
 }
 
 bool Controller::drawGraph() {
-    return NodeManager::instance()->drawGraph();
+    return NodeManager::Instance()->drawGraph();
 }
 
 bool Controller::compileGraph() {
-    return ExecManager::instance()->compileGraph(NodeManager::instance()->getGraph());
+    return ExecManager::Instance()->compileGraph(NodeManager::Instance()->getGraph());
 }
 
 bool Controller::playGraph() {

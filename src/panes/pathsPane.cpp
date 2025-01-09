@@ -34,7 +34,7 @@ bool PathsPane::DrawPanes(const uint32_t& /*vCurrentFrame*/, bool* vOpened, ImGu
             else
                 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_MenuBar;
 #endif
-            change |= Controller::instance()->drawFilesList();
+            change |= Controller::Instance()->drawFilesList();
         }
 
 

@@ -247,10 +247,10 @@ ez::xml::Nodes BaseSlot::getXmlNodes(const std::string& /*vUserDatas*/) {
 }
 
 // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
-bool BaseSlot::setFromXmlNodes(const ez::xml::Node& /*vNode*/, const ez::xml::Node& /*vParent*/, const std::string& /*vUserDatas*/) {
-    // const auto& strName = vNode.getName();
-    // const auto& strValue = vNode.getContent();
-    // const auto& strParentName = vParent.getName();
+bool BaseSlot::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
+    const auto& strName = vNode.getName();
+    const auto& strValue = vNode.getContent();
+    const auto& strParentName = vParent.getName();
 
     /*if (strName == "slot" && strParentName == "node") {
         uint32_t _index = 0U;

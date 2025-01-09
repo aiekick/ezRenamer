@@ -33,6 +33,6 @@ int main(int argc, char** argv) {
         res = EXIT_FAILURE;
         EZ_TOOLS_DEBUG_BREAK;
     }
-    ez::Log::instance()->close();
+    ez::Log::Instance()->close();
     return res;
 }

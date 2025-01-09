@@ -35,7 +35,7 @@ bool DebugPane::DrawPanes(const uint32_t& /*vCurrentFrame*/, bool* vOpened, ImGu
 #endif
         }
 
-        NodeManager::instance()->drawDebugInfos();
+        NodeManager::Instance()->drawDebugInfos();
 
         ImGui::End();
     }

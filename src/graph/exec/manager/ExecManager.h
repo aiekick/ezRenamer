@@ -15,7 +15,7 @@ private:  // Static
     static std::unique_ptr<ExecManager> mp_singleton;
 
 public:  // Static
-    static ExecManager* instance();
+    static ExecManager* Instance();
     static bool initInstance();
     static void unitInstance();
 

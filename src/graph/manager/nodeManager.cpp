@@ -5,18 +5,18 @@
 
 std::unique_ptr<NodeManager> NodeManager::mp_singleton = nullptr;
 
-NodeManager* NodeManager::instance() {
+NodeManager* NodeManager::Instance() {
     assert(mp_singleton != nullptr);
     return mp_singleton.get();
 }
 
 bool NodeManager::initInstance() {
     mp_singleton = std::make_unique<NodeManager>();
-    return instance()->init();
+    return Instance()->init();
 }
 
 void NodeManager::unitInstance() {
-    instance()->unit();
+    Instance()->unit();
     mp_singleton.reset();
 }
 
@@ -131,6 +131,18 @@ void NodeManager::addSlotColor(const std::string& vBaseSlotType, const ImVec4& v
 
 void NodeManager::drawDebugInfos() {
     m_graphPtr->drawDebugInfos();
+}
+
+ez::xml::Nodes NodeManager::getXmlNodes(const std::string& /*vUserDatas*/) {
+    ez::xml::Node node;
+    return node.getChildren();
+}
+
+bool NodeManager::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
+    const auto& strName = vNode.getName();
+    const auto& strValue = vNode.getContent();
+    const auto& strParentName = vParent.getName();
+    return true;
 }
 
 bool NodeManager::m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vInputSlotType) {

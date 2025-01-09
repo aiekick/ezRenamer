@@ -2,7 +2,7 @@
 #include <graph/manager/nodeManager.h>
 
 StringOutputSlot::StringOutputSlot(const BaseStyle& vParentStyle)  //
-    : Parent(vParentStyle, BaseSlotDatas("String", "STRING", ez::SlotDir::OUTPUT, NodeManager::instance())) {}
+    : Parent(vParentStyle, BaseSlotDatas("String", "STRING", ez::SlotDir::OUTPUT, NodeManager::Instance())) {}
 
 bool StringOutputSlot::init() {
     auto ret = Parent::init();

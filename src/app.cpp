@@ -38,7 +38,7 @@ int App::run(int argc, char** argv) {
     Messaging::Instance()->AddCategory(MESSAGING_CODE_ERRORS, "Error(s)", ICON_FONT_SPACE_INVADERS, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
     Messaging::Instance()->AddCategory(MESSAGING_CODE_DEBUG, "Debug(s)", BAR_LABEL_ERROR, ImVec4(0.8f, 0.8f, 0.0f, 1.0f));
     Messaging::Instance()->SetLayoutManager(LayoutManager::Instance());
-    ez::Log::instance()->setStandardLogMessageFunctor([](const int& vType, const std::string& vMessage) {
+    ez::Log::Instance()->setStandardLogMessageFunctor([](const int& vType, const std::string& vMessage) {
         MessageData msg_datas;
         const auto& type = vType;
         Messaging::Instance()->AddMessage(vMessage, type, false, msg_datas, {});

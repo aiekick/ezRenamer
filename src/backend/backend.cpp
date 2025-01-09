@@ -62,7 +62,7 @@ static void glfw_drop_callback(GLFWwindow* window, int path_count, const char* p
     for (int idx = 0; idx < path_count; ++idx) {
         files.push_back(paths[idx]);
     }
-    Controller::instance()->setInputFiles(files);
+    Controller::Instance()->setInputFiles(files);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -320,6 +320,7 @@ void Backend::m_IncFrame() {
 ez::xml::Nodes Backend::getXmlNodes(const std::string& vUserDatas) {
     ez::xml::Node node;
     node.addChilds(Frontend::Instance()->getXmlNodes(vUserDatas));
+    node.addChilds(NodeManager::Instance()->getXmlNodes(vUserDatas));
     node.addChilds(SettingsDialog::Instance()->getXmlNodes(vUserDatas));
     node.addChild("project").setContent(ProjectFile::Instance()->GetProjectFilepathName());
     return node.getChildren();
@@ -332,6 +333,7 @@ bool Backend::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& v
     if (strName == "project") {
         NeedToLoadProject(strValue);
     } 
+    Frontend::Instance()->setFromXmlNodes(vNode, vParent, vUserDatas);
     Frontend::Instance()->setFromXmlNodes(vNode, vParent, vUserDatas);
     SettingsDialog::Instance()->setFromXmlNodes(vNode, vParent, vUserDatas);
     return true;

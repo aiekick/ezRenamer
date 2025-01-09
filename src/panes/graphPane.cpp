@@ -36,7 +36,7 @@ bool GraphPane::DrawPanes(const uint32_t& vCurrentFrame, bool* vOpened, ImGuiCon
             else
                 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_MenuBar;
 #endif
-            Controller::instance()->drawGraph();
+            Controller::Instance()->drawGraph();
         }
 
         ImGui::End();

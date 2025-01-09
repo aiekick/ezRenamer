@@ -225,7 +225,7 @@ void Frontend::m_drawMainMenuBar() {
         }
 
         ImGui::SpacingFromStart((full_width - s_controller_menu_size) * 0.5f);
-        Controller::instance()->drawMenu(s_controller_menu_size);
+        Controller::Instance()->drawMenu(s_controller_menu_size);
 
 #ifdef _DEBUG
         const auto label = ez::str::toStr("Dear ImGui %s (Docking)", ImGui::GetVersion());

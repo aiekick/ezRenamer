@@ -33,7 +33,7 @@ bool ControlPane::DrawPanes(const uint32_t& /*vCurrentFrame*/, bool* vOpened, Im
             else
                 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_MenuBar;
 #endif
-            change |= Controller::instance()->drawControl();
+            change |= Controller::Instance()->drawControl();
         }
 
         ImGui::End();

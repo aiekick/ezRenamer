@@ -9,18 +9,18 @@
 
 std::unique_ptr<ExecManager> ExecManager::mp_singleton = nullptr;
 
-ExecManager* ExecManager::instance() {
+ExecManager* ExecManager::Instance() {
     assert(mp_singleton != nullptr);
     return mp_singleton.get();
 }
 
 bool ExecManager::initInstance() {
     mp_singleton = std::make_unique<ExecManager>();
-    return instance()->init();
+    return Instance()->init();
 }
 
 void ExecManager::unitInstance() {
-    instance()->unit();
+    Instance()->unit();
     mp_singleton.reset();
 }
 
