@@ -194,8 +194,21 @@ void BaseGraph::setCanvasScale(const float& vScale) {
 //////////////////////////////////////////////////////////////////////////////
 
 ez::xml::Nodes BaseGraph::getXmlNodes(const std::string& /*vUserDatas*/) {
-    ez::xml::Node node;
-    return node.getChildren();
+    ez::xml::Node xml;
+    auto nodes = xml.addChild("nodes");
+    for (const auto& node : getNodes()) {
+        auto node_ptr = std::static_pointer_cast<BaseNode>(node.lock());
+        if (node_ptr != nullptr) {
+            nodes.addChilds(node_ptr->getXmlNodes());
+        }
+    }
+    auto links = xml.addChild("links");
+    for (const auto& link_ptr : m_links) {
+        if (link_ptr != nullptr) {
+            links.addChilds(link_ptr->getXmlNodes());
+        }    
+    }
+    return xml.getChildren();
 }
 
 // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)

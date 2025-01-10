@@ -234,16 +234,10 @@ size_t BaseSlot::m_getMaxConnectionCount() const {
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 ez::xml::Nodes BaseSlot::getXmlNodes(const std::string& /*vUserDatas*/) {
-    ez::xml::Node node;
-    /*res += vOffset +
-        ez::toStr(
-               "<slot index=\"%u\" name=\"%s\" type=\"%s\" place=\"%s\" id=\"%u\"/>\n",
-               index,
-               name.c_str(),
-               slotType.c_str(),
-               sGetStringFromBaseSlotPlaceEnum(slotPlace).c_str(),
-               (uint32_t)GetSlotID());*/
-    return node.getChildren();
+    ez::xml::Node xml;
+    auto slot_datas = getDatas<BaseSlotDatas>();
+    xml.addChild("slot").addAttribute("name", slot_datas.name).addAttribute("type", slot_datas.type).addAttribute("id", getUuid());
+    return xml.getChildren();
 }
 
 // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)

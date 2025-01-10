@@ -58,3 +58,17 @@ void BaseLink::drawDebugInfos() {
         m_in.lock()->getDatas<BaseSlot::BaseSlotDatas>().name.c_str(),
         m_out.lock()->getDatas<BaseSlot::BaseSlotDatas>().name.c_str());
 }
+
+//////////////////////////////////////////////////////////////////////////////
+////// CONFIGURATION /////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+ez::xml::Nodes BaseLink::getXmlNodes(const std::string& vUserDatas) {
+    ez::xml::Node xml;
+    xml.addChild("link").addAttribute("in", m_in.lock()->getUuid()).addAttribute("out", m_out.lock()->getUuid());
+    return xml.getChildren();
+}
+
+bool BaseLink::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
+    return true;
+}

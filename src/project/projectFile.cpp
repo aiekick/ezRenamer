@@ -23,8 +23,8 @@ limitations under the License.
 #include <ezlibs/ezFile.hpp>
 
 #include <LayoutManager.h>
-
 #include <systems/settingsDialog.h>
+#include <graph/manager/nodeManager.h>
 
 ProjectFile::ProjectFile() = default;
 
@@ -168,6 +168,7 @@ bool ProjectFile::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Nod
     if (strName == "config") {
         return true;
     } else if (strName == "project") {
+        NodeManager::Instance()->setFromXmlNodes(vNode, vParent, vUserDatas);
         LayoutManager::Instance()->RecursParsingConfig(vNode, vParent, vUserDatas);
         SettingsDialog::Instance()->RecursParsingConfig(vNode, vParent, vUserDatas);
     }

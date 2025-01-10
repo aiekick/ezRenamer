@@ -334,7 +334,7 @@ bool Backend::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& v
         NeedToLoadProject(strValue);
     } 
     Frontend::Instance()->setFromXmlNodes(vNode, vParent, vUserDatas);
-    Frontend::Instance()->setFromXmlNodes(vNode, vParent, vUserDatas);
+    NodeManager::Instance()->setFromXmlNodes(vNode, vParent, vUserDatas);
     SettingsDialog::Instance()->setFromXmlNodes(vNode, vParent, vUserDatas);
     return true;
 }

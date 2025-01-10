@@ -1,4 +1,5 @@
 #include "nodeManager.h"
+#include <project/projectFile.h>
 #include <graph/base/baseNode.h>
 #include <graph/base/baseSlot.h>
 #include <graph/library/nodesLibrary.h>
@@ -133,15 +134,22 @@ void NodeManager::drawDebugInfos() {
     m_graphPtr->drawDebugInfos();
 }
 
-ez::xml::Nodes NodeManager::getXmlNodes(const std::string& /*vUserDatas*/) {
-    ez::xml::Node node;
-    return node.getChildren();
+ez::xml::Nodes NodeManager::getXmlNodes(const std::string& vUserDatas) {
+    ez::xml::Node xml;
+    if (vUserDatas == "app") {
+    } else if (vUserDatas == "project") {
+        xml.addChilds(m_graphPtr->getXmlNodes());
+    }
+    return xml.getChildren();
 }
 
 bool NodeManager::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
     const auto& strName = vNode.getName();
     const auto& strValue = vNode.getContent();
     const auto& strParentName = vParent.getName();
+    if (vUserDatas == "app") {    
+    } else if (vUserDatas == "project") {
+    }
     return true;
 }
 
@@ -177,6 +185,7 @@ void NodeManager::m_showLibrary() {
                     // and we must check what happen
                     LogVarDebugError("Fail to found a slot of type [%s] for node of type [%s]", wanted_slot_type.c_str(), entryToCreate.nodeType.c_str());
                 }
+                ProjectFile::Instance()->SetProjectChange();
             }
         }
     }

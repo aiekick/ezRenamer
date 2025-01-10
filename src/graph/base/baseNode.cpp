@@ -40,8 +40,20 @@ bool BaseNode::drawNode() {
 }
 
 ez::xml::Nodes BaseNode::getXmlNodes(const std::string& vUserDatas) {
-    ez::xml::Node node;
-    return node.getChildren();
+    ez::xml::Node xml;
+    const auto& node_datas = getDatas<BaseNodeDatas>();
+    auto node = xml.addChild("node").addAttribute("name", node_datas.name).addAttribute("type", node_datas.type).addAttribute("id", getUuid());
+    auto slots_in = node.addChild("inputs");
+    for (const auto& slot : m_getInputSlots()) {
+        auto slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+        slots_in.addChilds(slot_ptr->getXmlNodes());
+    }
+    auto slots_out = node.addChild("outputs");
+    for (const auto& slot : m_getInputSlots()) {
+        auto slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+        slots_out.addChilds(slot_ptr->getXmlNodes());
+    }
+    return xml.getChildren();
 }
 
 // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
