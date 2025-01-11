@@ -50,17 +50,17 @@ public:
               nodeColor(vNodeColor) {}
     };
     typedef std::map<CategoryName, BaseLibrary> CategoriesCnt;
-    typedef std::map<NodeLabel, LibraryEntry> LibraryEntriesCnt;
+    typedef std::map<NodeType, LibraryEntry> LibraryEntriesCnt;
 
 private:
     CategoryName m_categoryName;
-    std::map<NodeLabel, LibraryEntry> m_entries;
+    std::map<NodeType, LibraryEntry> m_entries;
     CategoriesCnt m_subCategories;
 
     // for display on top of the popup.
     // only for categories (Inputs, Outputs) not plugins
     CategoriesCnt m_mainSubCategories;
-    std::map<NodeLabel, LibraryEntry> m_mainEntries;
+    std::map<NodeType, LibraryEntry> m_mainEntries;
 
 public:
     void clear();
@@ -92,6 +92,14 @@ public:
     /// <returns></returns>
     BaseNodeWeak createChildNodeInGraph(const LibraryEntry& vEntry, const BaseGraphWeak& vGraph);
 
+    /// <summary>
+    /// will create a child node in graph
+    /// </summary>
+    /// <param name="vNodeType"></param>
+    /// <param name="vGraph"></param>
+    /// <returns></returns>
+    BaseNodeWeak createChildNodeInGraph(const NodeType& vNodeType, const BaseGraphWeak& vGraph);
+
 private:
     BaseLibrary* m_addCategory(const CategoryName& vCategoryName, CategoriesCnt& vCategories);
     bool m_showMenu(LibraryEntry& vOutEntry, int32_t vLevel);
@@ -99,4 +107,5 @@ private:
     bool m_filterNodesForSomeInputSlotTypes(const SlotTypes& vInputSlotTypes, int32_t vLevel);
     bool m_filterCategories(const SlotTypes& vInputSlotTypes, CategoriesCnt& vCategories, int32_t vLevel);
     bool m_filterEntries(const SlotTypes& vInputSlotTypes, LibraryEntriesCnt& vEntries);
+    bool m_findEntryFromNodeType(const NodeType& vNodeType, BaseLibrary::LibraryEntry& vOutEntry) const;
 };

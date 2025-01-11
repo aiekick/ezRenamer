@@ -93,8 +93,8 @@ void BaseGraph::m_drawPopups() {
 
 void BaseGraph::m_drawBgContextMenuPopup() {
     if (ImGui::BeginPopup(BACKGROUND_CONTEXT_MENU)) {
-        if (m_BgRightClickAction != nullptr) {
-            m_BgRightClickAction(m_getThis<BaseGraph>());
+        if (m_BgRightClickActionFunctor != nullptr) {
+            m_BgRightClickActionFunctor(m_getThis<BaseGraph>());
         }
         ImGui::EndPopup();
     }
@@ -195,33 +195,63 @@ void BaseGraph::setCanvasScale(const float& vScale) {
 
 ez::xml::Nodes BaseGraph::getXmlNodes(const std::string& /*vUserDatas*/) {
     ez::xml::Node xml;
-    auto nodes = xml.addChild("nodes");
-    for (const auto& node : getNodes()) {
-        auto node_ptr = std::static_pointer_cast<BaseNode>(node.lock());
-        if (node_ptr != nullptr) {
-            nodes.addChilds(node_ptr->getXmlNodes());
+    setCurrentEditor();
+    xml.addChild("canvas")                              //
+        .addAttribute("offset", nd::GetCanvasOffset())  //
+        .addAttribute("scale", nd::GetCanvasScale());
+    if (!getNodes().empty()) {
+        auto& nodes = xml.addChild("nodes");
+        for (const auto& node : getNodes()) {
+            auto node_ptr = std::static_pointer_cast<BaseNode>(node.lock());
+            if (node_ptr != nullptr) {
+                nodes.addChilds(node_ptr->getXmlNodes());
+            }
         }
     }
-    auto links = xml.addChild("links");
-    for (const auto& link_ptr : m_links) {
-        if (link_ptr != nullptr) {
-            links.addChilds(link_ptr->getXmlNodes());
-        }    
+    if (!m_links.empty()) {
+        auto& links = xml.addChild("links");
+        for (const auto& link_ptr : m_links) {
+            if (link_ptr != nullptr) {
+                links.addChilds(link_ptr->getXmlNodes());
+            }
+        }
     }
     return xml.getChildren();
 }
 
 // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
-bool BaseGraph::setFromXmlNodes(const ez::xml::Node& /*vNode*/, const ez::xml::Node& /*vParent*/, const std::string& /*vUserDatas*/) {
-    return true;
+bool BaseGraph::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
+    const auto& strName = vNode.getName();
+    //const auto& strValue = vNode.getContent();
+    //const auto& strParentName = vParent.getName();
+    if (strName == "canvas") {
+        setCurrentEditor();
+        if (vNode.isAttributeExist("offset")) {
+            nd::SetCanvasOffset(vNode.getAttribute<ImVec2>("offset"));
+        }
+        if (vNode.isAttributeExist("scale")) {
+            nd::SetCanvasScale(vNode.getAttribute<float>("scale"));
+        }
+    } else if (strName == "node") {
+        if (m_LoadNodeFromXmlFunctor(m_getThis<BaseGraph>(), vNode, vParent)) {
+            RecursParsingConfigChilds(vNode, vUserDatas);
+        }
+    } else if (strName == "links") {
+
+    }
+    return false;  // prevent xml node childs exploring
 }
 
 //////////////////////////////////////////////////////////////////////////////
 ////// ACTION FUNCTORS ///////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-void BaseGraph::setBgRightClickAction(const BgRightClickActionFunctor& vFunctor) {
-    m_BgRightClickAction = vFunctor;
+void BaseGraph::setLoadNodeFromXmlFunctor(const LoadNodeFromXmlFunctor& vFunctor) {
+    m_LoadNodeFromXmlFunctor = vFunctor;
+}
+
+void BaseGraph::setBgRightClickActionFunctor(const BgRightClickActionFunctor& vFunctor) {
+    m_BgRightClickActionFunctor = vFunctor;
 }
 
 void BaseGraph::setPrepareForCreateNodeFromSlotActionFunctor(const PrepareForCreateNodeFromSlotActionFunctor& vFunctor) {
@@ -268,8 +298,8 @@ void BaseGraph::m_doCreateLinkOrNode() {
         // new link
         nd::PinId startSlotId = 0, endSlotId = 0;
         if (nd::QueryNewLink(&startSlotId, &endSlotId)) {
-            auto start_slot_ptr = m_findSlot(startSlotId).lock();
-            auto end_slot_ptr = m_findSlot(endSlotId).lock();
+            auto start_slot_ptr = m_findSlotById(startSlotId).lock();
+            auto end_slot_ptr = m_findSlotById(endSlotId).lock();
             if (start_slot_ptr != nullptr && end_slot_ptr != nullptr) {
                 if (end_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().dir == ez::SlotDir::OUTPUT &&
                     start_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().dir == ez::SlotDir::INPUT) {  // if start and end are inverted
@@ -305,7 +335,7 @@ void BaseGraph::m_doCreateLinkOrNode() {
         // new node
         nd::PinId slotId = 0;
         if (nd::QueryNewNode(&slotId)) {
-            auto slot_ptr = m_findSlot(slotId).lock();
+            auto slot_ptr = m_findSlotById(slotId).lock();
             if (slot_ptr != nullptr) {
                 if (slot_ptr->getDatas<ez::SlotDatas>().dir == ez::SlotDir::INPUT) {
                     if ((slot_ptr->getLinks().size() + 1) > slot_ptr->getMaxConnectionCount()) {
@@ -473,12 +503,12 @@ BaseLinkWeak BaseGraph::m_findLink(nd::LinkId vId) {
     return ret;
 }
 
-BaseSlotWeak BaseGraph::m_findSlot(nd::PinId vId) {
+BaseSlotWeak BaseGraph::m_findSlotById(nd::PinId vId) {
     BaseSlotWeak ret;
     if (vId) {
         for (const auto& node : getNodes()) {
             auto base_node_ptr = std::static_pointer_cast<BaseNode>(node.lock());
-            ret = base_node_ptr->m_findSlot(vId);
+            ret = base_node_ptr->m_findSlotById(vId);
             if (!ret.expired()) {
                 break;
             }

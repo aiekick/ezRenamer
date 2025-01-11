@@ -104,6 +104,8 @@ bool ProjectFile::Save() {
     if (m_NeverSaved) {
         return false;
     }
+    SaveConfigFile(m_ProjectFilePathName, "project", "project");
+    SetProjectChange(false);
     return false;
 }
 
@@ -155,22 +157,15 @@ std::string ProjectFile::GetProjectFilepathName() const {
 
 ez::xml::Nodes ProjectFile::getXmlNodes(const std::string& vUserDatas) {
     ez::xml::Node node;
-    node.setName("project");
+    node.addChilds(NodeManager::Instance()->getXmlNodes(vUserDatas));
     node.addChilds(LayoutManager::Instance()->getXmlNodes(vUserDatas));
     node.addChilds(SettingsDialog::Instance()->getXmlNodes(vUserDatas));
     return node.getChildren();
 }
 
 bool ProjectFile::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
-    const auto& strName = vNode.getName();
-    //const auto& strValue = vNode.getContent();
-    //const auto& strParentName = vParent.getName();
-    if (strName == "config") {
-        return true;
-    } else if (strName == "project") {
-        NodeManager::Instance()->setFromXmlNodes(vNode, vParent, vUserDatas);
-        LayoutManager::Instance()->RecursParsingConfig(vNode, vParent, vUserDatas);
-        SettingsDialog::Instance()->RecursParsingConfig(vNode, vParent, vUserDatas);
-    }
+    NodeManager::Instance()->setFromXmlNodes(vNode, vParent, vUserDatas);
+    LayoutManager::Instance()->RecursParsingConfig(vNode, vParent, vUserDatas);
+    SettingsDialog::Instance()->RecursParsingConfig(vNode, vParent, vUserDatas);
     return true;
 }

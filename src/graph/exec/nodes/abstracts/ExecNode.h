@@ -28,7 +28,9 @@ public:
 protected:
     bool m_drawHeader() override;
     bool m_drawHints() override;
-    BaseSlotWeak m_findSlot(nd::PinId vId) override;
+    BaseSlotWeak m_findSlotById(nd::PinId vId);
+    BaseSlotWeak m_findSlotByName(const std::string& vName);
+    BaseSlotWeak m_findSlotByType(const std::string& vType);
     virtual BaseLinkWeakCnt m_getConnectedLinks();
 };
 

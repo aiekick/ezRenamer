@@ -32,6 +32,10 @@ bool BaseLibrary::emptyEntries() const {
 }
 
 void BaseLibrary::addLibraryEntry(const LibraryEntry& vLibraryEntry) {
+    if (vLibraryEntry.nodeType.empty()) {
+        LogVarError("Cant add entry cause nodeType is empty");
+        return;
+    }
     if (vLibraryEntry.nodeLabel.empty()) {
         LogVarError("Cant add entry cause nodeLabel is empty");
         return;
@@ -61,9 +65,9 @@ void BaseLibrary::addLibraryEntry(const LibraryEntry& vLibraryEntry) {
             }
         }
         if (vLibraryEntry.nodePath == TOP_LEVEL_CATEGORY_LESS_NODES_CATEGORY_NAME) {  // special cat, on top without category
-            pCat->m_mainEntries[vLibraryEntry.nodeLabel] = vLibraryEntry;
+            pCat->m_mainEntries[vLibraryEntry.nodeType] = vLibraryEntry;
         } else {
-            pCat->m_entries[vLibraryEntry.nodeLabel] = vLibraryEntry;
+            pCat->m_entries[vLibraryEntry.nodeType] = vLibraryEntry;
         }
     }
 }
@@ -74,6 +78,14 @@ bool BaseLibrary::showMenu(LibraryEntry& vOutEntry) {
 
 bool BaseLibrary::filterNodesForSomeInputSlotTypes(const SlotTypes& vInputSlotTypes) {
     return m_filterNodesForSomeInputSlotTypes(vInputSlotTypes, 0);
+}
+
+BaseNodeWeak BaseLibrary::createChildNodeInGraph(const NodeType& vNodeType, const BaseGraphWeak& vGraph) {
+    LibraryEntry entry;
+    if (m_findEntryFromNodeType(vNodeType, entry)) {
+        return createChildNodeInGraph(entry, vGraph);
+    }
+    return {};
 }
 
 BaseNodeWeak BaseLibrary::createChildNodeInGraph(const LibraryEntry& vEntry, const BaseGraphWeak& vGraph) {
@@ -107,7 +119,7 @@ bool BaseLibrary::m_showContent(LibraryEntry& vOutEntry, int32_t vLevel) {
         }
         ImGui::SetNextWindowViewport(ImGui::GetWindowViewport()->ID);
         for (auto& item : m_mainEntries) {
-            if (ImGui::MenuItem(item.first.c_str())) {
+            if (ImGui::MenuItem(item.second.nodeLabel.c_str())) {
                 vOutEntry = item.second;
                 ret = true;
                 // no break for not show a glitch when the others
@@ -125,7 +137,7 @@ bool BaseLibrary::m_showContent(LibraryEntry& vOutEntry, int32_t vLevel) {
     }
     ImGui::SetNextWindowViewport(ImGui::GetWindowViewport()->ID);
     for (auto& item : m_entries) {
-        if (ImGui::MenuItem(item.first.c_str())) {
+        if (ImGui::MenuItem(item.second.nodeLabel.c_str())) {
             vOutEntry = item.second;
             ret = true;
             // no break for not show a glitch when the others
@@ -201,4 +213,26 @@ bool BaseLibrary::m_filterEntries(const SlotTypes& vInputSlotTypes, LibraryEntri
         vEntries.erase(node_label);
     }
     return ret;
+}
+
+bool BaseLibrary::m_findEntryFromNodeType(const NodeType& vNodeType, BaseLibrary::LibraryEntry& vOutEntry) const {
+    if (m_mainEntries.find(vNodeType) != m_mainEntries.end()) {
+        vOutEntry = m_mainEntries.at(vNodeType);
+        return true;
+    } else if (m_entries.find(vNodeType) != m_entries.end()) {
+        vOutEntry = m_entries.at(vNodeType);
+        return true;
+    } else {
+        for (const auto& cat : m_mainSubCategories) {
+            if (cat.second.m_findEntryFromNodeType(vNodeType, vOutEntry)) {
+                return true;
+            }
+        }  
+        for (const auto& cat : m_subCategories) {
+            if (cat.second.m_findEntryFromNodeType(vNodeType, vOutEntry)) {
+                return true;
+            }
+        }        
+    }
+    return false;
 }

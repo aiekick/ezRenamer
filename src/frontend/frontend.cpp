@@ -413,10 +413,6 @@ void Frontend::Action_Menu_SaveProject() {
     m_ActionSystem.Add([this]() {
         if (!Backend::Instance()->SaveProject()) {
             CloseUnSavedDialog();
-            IGFD::FileDialogConfig config;
-            config.countSelectionMax = 1;
-            config.flags = ImGuiFileDialogFlags_Modal;
-            ImGuiFileDialog::Instance()->OpenDialog("SaveProjectDlg", "Save Project File", PROJECT_EXT, config);
         }
         return true;
     });

@@ -26,6 +26,7 @@ public:
     };
     typedef std::function<void(const BaseGraphWeak&)> BgRightClickActionFunctor;
     typedef std::function<bool(const BaseGraphWeak&, const BaseSlotWeak&)> PrepareForCreateNodeFromSlotActionFunctor;
+    typedef std::function<bool(const BaseGraphWeak&, const ez::xml::Node&, const ez::xml::Node&)> LoadNodeFromXmlFunctor;
     typedef ez::Uuid LinkUuid;
 
 public:  // Static
@@ -48,7 +49,8 @@ private:  // Graph
     nd::PinId m_contextMenuSlotId = 0;
     nd::LinkId m_contextMenuLinkId = 0;
     BaseLinkPtrCnt m_links;  // linkId, link // for search query
-    BgRightClickActionFunctor m_BgRightClickAction = nullptr;
+    LoadNodeFromXmlFunctor m_LoadNodeFromXmlFunctor = nullptr;
+    BgRightClickActionFunctor m_BgRightClickActionFunctor = nullptr;
     PrepareForCreateNodeFromSlotActionFunctor m_PrepareForCreateNodeFromSlotActionFunctor = nullptr;
     std::vector<nd::NodeId> m_nodesToCopy;  // for copy/paste
     ImVec2 m_nodesCopyOffset;
@@ -91,7 +93,8 @@ public:  // Normal
     // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
     bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
 
-    void setBgRightClickAction(const BgRightClickActionFunctor& vFunctor);
+    void setLoadNodeFromXmlFunctor(const LoadNodeFromXmlFunctor& vFunctor);
+    void setBgRightClickActionFunctor(const BgRightClickActionFunctor& vFunctor);
     void setPrepareForCreateNodeFromSlotActionFunctor(const PrepareForCreateNodeFromSlotActionFunctor& vFunctor);
 
     void drawDebugInfos() override;
@@ -153,7 +156,7 @@ private:  // Graph
     BaseNodeWeak m_findNode(nd::NodeId vId);
     BaseNodeWeak m_findNodeByName(const std::string& vName);
     BaseLinkWeak m_findLink(nd::LinkId vId);
-    BaseSlotWeak m_findSlot(nd::PinId vId);
+    BaseSlotWeak m_findSlotById(nd::PinId vId);
 
     bool m_addLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd);
     bool m_breakLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd);

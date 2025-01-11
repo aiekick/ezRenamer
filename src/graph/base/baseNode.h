@@ -122,7 +122,10 @@ protected:  // Node
     virtual void m_slotWasJustConnected(const BaseSlotWeak& vOwnNodeSlot, const BaseSlotWeak& vExternNodeSlot); // called by vOwnNodeSlot on connection
     virtual void m_slotWasJustDisConnected(const BaseSlotWeak& vOwnNodeSlot, const BaseSlotWeak& vExternNodeSlot);  // called by vOwnNodeSlot on dicconnection
     virtual void m_displayInfosOnTopOfTheNode();
-    virtual BaseSlotWeak m_findSlot(nd::PinId vId);
+    virtual BaseSlotWeak m_findSlotById(nd::PinId vId);
+    virtual BaseSlotWeak m_findSlotByType(const std::string& vType);
+    virtual BaseSlotWeak m_findSlotByName(const std::string& vName);
+    virtual BaseSlotWeak m_findSlotByTypeAndName(const std::string& vType, const std::string& vName);
     virtual BaseLinkWeakCnt m_getConnectedLinks();
 };
 

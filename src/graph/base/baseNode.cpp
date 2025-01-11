@@ -42,22 +42,48 @@ bool BaseNode::drawNode() {
 ez::xml::Nodes BaseNode::getXmlNodes(const std::string& vUserDatas) {
     ez::xml::Node xml;
     const auto& node_datas = getDatas<BaseNodeDatas>();
-    auto node = xml.addChild("node").addAttribute("name", node_datas.name).addAttribute("type", node_datas.type).addAttribute("id", getUuid());
-    auto slots_in = node.addChild("inputs");
-    for (const auto& slot : m_getInputSlots()) {
-        auto slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
-        slots_in.addChilds(slot_ptr->getXmlNodes());
+    auto& node = xml.addChild("node")                        //
+                     .addAttribute("name", node_datas.name)  //
+                     .addAttribute("type", node_datas.type)  //
+                     .addAttribute("id", getUuid())          //
+                     .addAttribute("pos", m_pos);
+    if (!m_getInputSlots().empty()) {
+        auto& slots_in = node.addChild("inputs");
+        for (const auto& slot : m_getInputSlots()) {
+            auto slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+            slots_in.addChilds(slot_ptr->getXmlNodes());
+        }
     }
-    auto slots_out = node.addChild("outputs");
-    for (const auto& slot : m_getInputSlots()) {
-        auto slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
-        slots_out.addChilds(slot_ptr->getXmlNodes());
+    if (!m_getOutputSlots().empty()) {
+        auto& slots_out = node.addChild("outputs");
+        for (const auto& slot : m_getOutputSlots()) {
+            auto slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+            slots_out.addChilds(slot_ptr->getXmlNodes());
+        }
     }
     return xml.getChildren();
 }
 
 // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
 bool BaseNode::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
+    const auto& strName = vNode.getName();
+    //const auto& strValue = vNode.getContent();
+    //const auto& strParentName = vParent.getName();
+    if (strName == "node") {
+        const auto& node_datas = getDatas<BaseNodeDatas>();
+        m_pos = vNode.getAttribute<ImVec2>("pos");
+        setUuid(vNode.getAttribute<ez::Uuid>("id"));
+        m_nodeID = getUuid();
+        nd::SetNodePosition(m_nodeID, m_pos);
+        RecursParsingConfigChilds(vNode, vUserDatas);
+    } else if (strName == "slot") {
+        auto type = vNode.getAttribute("type");
+        auto name = vNode.getAttribute("name");
+        auto slot_ptr = m_findSlotByTypeAndName(type, name).lock();
+        if (slot_ptr != nullptr) {
+            slot_ptr->setFromXmlNodes(vNode, vParent, vUserDatas);
+        }
+    } 
     return true;
 }
 
@@ -253,25 +279,78 @@ void BaseNode::m_displayInfosOnTopOfTheNode() {
     }
 }
 
-BaseSlotWeak BaseNode::m_findSlot(nd::PinId vId) {
-    BaseSlotWeak ret;
+BaseSlotWeak BaseNode::m_findSlotById(nd::PinId vId) {
     if (vId) {
         for (const auto& slot : m_getInputSlots()) {
             auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
             if (base_slot_ptr->m_pinID == vId) {
-                ret = base_slot_ptr;
-                break;
+                return base_slot_ptr;
             }
         }
         for (const auto& slot : m_getOutputSlots()) {
             auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
             if (base_slot_ptr->m_pinID == vId) {
-                ret = base_slot_ptr;
-                break;
+                return base_slot_ptr;
             }
         }
     }
-    return ret;
+    return {};
+}
+
+BaseSlotWeak BaseNode::m_findSlotByType(const std::string& vType) {
+    if (!vType.empty()) {
+        for (const auto& slot : m_getInputSlots()) {
+            auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+            if (base_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
+                return base_slot_ptr;
+            }
+        }
+        for (const auto& slot : m_getOutputSlots()) {
+            auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+            if (base_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
+                return base_slot_ptr;
+            }
+        }
+    }
+    return {};
+}
+
+BaseSlotWeak BaseNode::m_findSlotByName(const std::string& vName) {
+    if (!vName.empty()) {
+        for (const auto& slot : m_getInputSlots()) {
+            auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+            if (base_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().name == vName) {
+                return base_slot_ptr;
+            }
+        }
+        for (const auto& slot : m_getOutputSlots()) {
+            auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+            if (base_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().name == vName) {
+                return base_slot_ptr;
+            }
+        }
+    }
+    return {};
+}
+
+BaseSlotWeak BaseNode::m_findSlotByTypeAndName(const std::string& vType, const std::string& vName) {
+    if (!vName.empty()) {
+        for (const auto& slot : m_getInputSlots()) {
+            auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+            const auto& datas = base_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>();
+            if (datas.type == vType && datas.name == vName) {
+                return base_slot_ptr;
+            }
+        }
+        for (const auto& slot : m_getOutputSlots()) {
+            auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+            const auto& datas = base_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>();
+            if (datas.type == vType && datas.name == vName) {
+                return base_slot_ptr;
+            }
+        }
+    }
+    return {};
 }
 
 // willr eturn all connected link from all slots

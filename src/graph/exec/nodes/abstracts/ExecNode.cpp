@@ -84,8 +84,8 @@ bool ExecNode::m_drawHints() {
     return ret;
 }
 
-BaseSlotWeak ExecNode::m_findSlot(nd::PinId vId) {
-    BaseSlotWeak ret = Parent::m_findSlot(vId);
+BaseSlotWeak ExecNode::m_findSlotById(nd::PinId vId) {
+    BaseSlotWeak ret = Parent::m_findSlotById(vId);
     if (ret.expired()) {
         if (!getInputFlowSlot().expired()) {
             if (getInputFlowSlot().lock()->getUuid() == vId.Get()) {
@@ -94,6 +94,40 @@ BaseSlotWeak ExecNode::m_findSlot(nd::PinId vId) {
         }
         if (!getOutputFlowSlot().expired()) {
             if (getOutputFlowSlot().lock()->getUuid() == vId.Get()) {
+                ret = getOutputFlowSlot();
+            }
+        }
+    }
+    return ret;
+}
+
+BaseSlotWeak ExecNode::m_findSlotByName(const std::string& vName) {
+    BaseSlotWeak ret = Parent::m_findSlotByName(vName);
+    if (ret.expired()) {
+        if (!getInputFlowSlot().expired()) {
+            if (getInputFlowSlot().lock()->getDatas<BaseSlot::BaseSlotDatas>().name == vName) {
+                ret = getInputFlowSlot();
+            }
+        }
+        if (!getOutputFlowSlot().expired()) {
+            if (getOutputFlowSlot().lock()->getDatas<BaseSlot::BaseSlotDatas>().name == vName) {
+                ret = getOutputFlowSlot();
+            }
+        }
+    }
+    return ret;
+}
+
+BaseSlotWeak ExecNode::m_findSlotByType(const std::string& vType) {
+    BaseSlotWeak ret = Parent::m_findSlotByType(vType);
+    if (ret.expired()) {
+        if (!getInputFlowSlot().expired()) {
+            if (getInputFlowSlot().lock()->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
+                ret = getInputFlowSlot();
+            }
+        }
+        if (!getOutputFlowSlot().expired()) {
+            if (getOutputFlowSlot().lock()->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
                 ret = getOutputFlowSlot();
             }
         }

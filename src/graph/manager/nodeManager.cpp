@@ -1,4 +1,5 @@
 #include "nodeManager.h"
+#include <ezlibs/ezImGui.hpp>
 #include <project/projectFile.h>
 #include <graph/base/baseNode.h>
 #include <graph/base/baseSlot.h>
@@ -29,7 +30,11 @@ bool NodeManager::init() {
     m_graphConfig.flowType = "FLOW";
     m_graphConfig.showFlowKey = ImGuiKey_Backspace;
     m_graphPtr = BaseGraph::create(m_graphStyle, m_graphConfig);
-    m_graphPtr->setBgRightClickAction(             //
+    m_graphPtr->setLoadNodeFromXmlFunctor(                                 //
+        [this](const BaseGraphWeak& vGraph, const ez::xml::Node& vNode, const ez::xml::Node& vParent) {  //
+            return m_loadNodeFromXml(vGraph, vNode, vParent);
+        });
+    m_graphPtr->setBgRightClickActionFunctor(      //
         [this](const BaseGraphWeak& /*vGraph*/) {  //
             m_showLibrary();
         });
@@ -147,10 +152,27 @@ bool NodeManager::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Nod
     const auto& strName = vNode.getName();
     const auto& strValue = vNode.getContent();
     const auto& strParentName = vParent.getName();
-    if (vUserDatas == "app") {    
+    if (vUserDatas == "app") {
     } else if (vUserDatas == "project") {
+        m_graphPtr->setFromXmlNodes(vNode, vParent, vUserDatas);
     }
-    return true;
+    return false;  // prevent xml node childs exploring
+}
+
+BaseNodeWeak NodeManager::createChildNodeInGraph(const BaseLibrary::NodeType& vNodeType, const BaseGraphWeak& vGraph) {
+    return m_nodesLibrary.createChildNodeInGraph(vNodeType, vGraph);
+}
+
+bool NodeManager::m_loadNodeFromXml(const BaseGraphWeak& vGraph, const ez::xml::Node& vNode, const ez::xml::Node& vParent) {
+    auto graph_ptr = vGraph.lock();
+    if (graph_ptr != nullptr) {
+        auto node_type = vNode.getAttribute("type");
+        auto node_ptr = createChildNodeInGraph(node_type, vGraph).lock();
+        if (node_ptr != nullptr) {
+            node_ptr->setFromXmlNodes(vNode, vParent, {});
+        }
+    }
+    return false;
 }
 
 bool NodeManager::m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vInputSlotType) {

@@ -235,7 +235,7 @@ size_t BaseSlot::m_getMaxConnectionCount() const {
 
 ez::xml::Nodes BaseSlot::getXmlNodes(const std::string& /*vUserDatas*/) {
     ez::xml::Node xml;
-    auto slot_datas = getDatas<BaseSlotDatas>();
+    const auto& slot_datas = getDatas<BaseSlotDatas>();
     xml.addChild("slot").addAttribute("name", slot_datas.name).addAttribute("type", slot_datas.type).addAttribute("id", getUuid());
     return xml.getChildren();
 }
@@ -243,42 +243,10 @@ ez::xml::Nodes BaseSlot::getXmlNodes(const std::string& /*vUserDatas*/) {
 // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
 bool BaseSlot::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
     const auto& strName = vNode.getName();
-    const auto& strValue = vNode.getContent();
-    const auto& strParentName = vParent.getName();
-
-    /*if (strName == "slot" && strParentName == "node") {
-        uint32_t _index = 0U;
-        std::string _name;
-        std::string _type = "NONE";
-        BaseSlot::PlaceEnum _place = BaseSlot::PlaceEnum::NONE;
-        uint32_t _m_pinID = 0U;
-
-        for (const tinyxml2::XMLAttribute* attr = vElem->FirstAttribute(); attr != nullptr; attr = attr->Next()) {
-            std::string attName = attr->Name();
-            std::string attValue = attr->Value();
-
-            if (attName == "index")
-                _index = ez::ivariant(attValue).GetU();
-            else if (attName == "name")
-                _name = attValue;
-            else if (attName == "type")
-                _type = attValue;
-            else if (attName == "place")
-                _place = sGetBaseSlotPlaceEnumFromString(attValue);
-            else if (attName == "id")
-                _m_pinID = ez::ivariant(attValue).GetU();
-        }
-
-        if (index == _index && slotType == _type && slotPlace == _place && !idAlreadySetbyXml) {
-            m_pinID = _m_pinID;
-            idAlreadySetbyXml = true;
-
-            // pour eviter que des slots aient le meme id qu'un nodePtr
-            BaseNode::freeNodeId = ez::maxi<uint32_t>(BaseNode::freeNodeId, (uint32_t)GetSlotID()) + 1U;
-
-            return false;
-        }
-    }*/
-
-    return true;
+    const auto& datas = getDatas<BaseSlotDatas>();
+    if ((datas.name == vNode.getAttribute("name")) &&  //
+        (datas.type == vNode.getAttribute("type"))) {
+        setUuid(vNode.getAttribute<ez::Uuid>("id"));
+    }
+    return false;
 }

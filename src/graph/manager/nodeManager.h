@@ -45,10 +45,12 @@ public:
     bool getSlotColor(const std::string& vBaseSlotType, ImU32& vOutColor) const override;
     void addSlotColor(const std::string& vBaseSlotType, const ImVec4& vSlotColor) override;
     void drawDebugInfos() override;
-    ez::xml::Nodes NodeManager::getXmlNodes(const std::string& vUserDatas) override ;
-    bool NodeManager::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
+    ez::xml::Nodes getXmlNodes(const std::string& vUserDatas) override ;
+    bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
+    BaseNodeWeak createChildNodeInGraph(const BaseLibrary::NodeType& vNodeType, const BaseGraphWeak& vGraph);
 
 private:
+    bool m_loadNodeFromXml(const BaseGraphWeak& vGraph, const ez::xml::Node& vNode, const ez::xml::Node& vParent);
     bool m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vSlotType);
     void m_showLibrary();
 };
