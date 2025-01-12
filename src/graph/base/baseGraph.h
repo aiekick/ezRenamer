@@ -45,15 +45,16 @@ private:  // Common
 private:  // Graph
     nd::EditorContext* m_pCanvas{nullptr};
     ImVec2 m_openPopupPosition;
-    nd::NodeId m_contextMenuNodeId = 0;
-    nd::PinId m_contextMenuSlotId = 0;
-    nd::LinkId m_contextMenuLinkId = 0;
+    nd::NodeId m_contextMenuNodeId{};
+    nd::PinId m_contextMenuSlotId{};
+    nd::LinkId m_contextMenuLinkId{};
     BaseLinkPtrCnt m_links;  // linkId, link // for search query
-    LoadNodeFromXmlFunctor m_LoadNodeFromXmlFunctor = nullptr;
-    BgRightClickActionFunctor m_BgRightClickActionFunctor = nullptr;
-    PrepareForCreateNodeFromSlotActionFunctor m_PrepareForCreateNodeFromSlotActionFunctor = nullptr;
+    LoadNodeFromXmlFunctor m_LoadNodeFromXmlFunctor{nullptr};
+    BgRightClickActionFunctor m_BgRightClickActionFunctor{nullptr};
+    PrepareForCreateNodeFromSlotActionFunctor m_PrepareForCreateNodeFromSlotActionFunctor{nullptr};
     std::vector<nd::NodeId> m_nodesToCopy;  // for copy/paste
     ImVec2 m_nodesCopyOffset;
+    bool m_graphChanged{false};
 
 public:  // Normal
     template <typename T>
@@ -78,12 +79,10 @@ public:  // Normal
     void zoomToSelection() const;
     void navigateToSelection() const;
 
-    ImVec2 getMousePos() const;
+    void setGraphChanged(bool vFlag);
+    bool isGraphChanged() const;
 
-    ImVec2 getCanvasOffset() const;
-    float getCanvasScale() const;
-    void setCanvasOffset(const ImVec2& vOffset);
-    void setCanvasScale(const float& vScale);
+    ImVec2 getMousePos() const;
 
     bool connectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo);
     bool disconnectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo);
@@ -111,6 +110,7 @@ public:  // Template
             if (m_addNode(node_ptr) != ez::RetCodes::SUCCESS) {
                 node_ptr.reset();
             } else {
+                setCurrentEditor();
                 nd::SetNodePosition(node_ptr->m_nodeID, m_openPopupPosition);
             }
         }
@@ -126,6 +126,7 @@ public:  // Template
             if (m_addNode(duplicated_node_ptr) != ez::RetCodes::SUCCESS) {
                 duplicated_node_ptr.reset();
             } else {
+                setCurrentEditor();
                 nd::SetNodePosition(duplicated_node_ptr->m_nodeID, m_openPopupPosition);
             }
             return duplicated_node_ptr;

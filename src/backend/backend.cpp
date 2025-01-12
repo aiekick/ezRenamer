@@ -296,7 +296,10 @@ void Backend::m_MainLoop() {
         glfwSwapBuffers(m_MainWindowPtr);
 
         // mainframe post actions
-        PostRenderingActions();
+        if (m_CurrentFrame > 0) {
+            // > 1 is needed for the graph offset and scale can be applied
+            PostRenderingActions();
+        } 
 
         ++m_CurrentFrame;
 

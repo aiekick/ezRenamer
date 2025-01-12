@@ -108,6 +108,11 @@ bool NodeManager::drawGraph() {
         ImGui::EndMenuBar();
     }
 
+    if (m_graphPtr->isGraphChanged()) {
+        ProjectFile::Instance()->SetProjectChange();
+        m_graphPtr->setGraphChanged(false);
+    }
+
     return m_graphPtr->drawGraph();
 }
 

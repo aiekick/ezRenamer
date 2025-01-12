@@ -41,15 +41,22 @@ void BaseGraph::setCurrentEditor() const {
 }
 
 bool BaseGraph::drawGraph() {
+    bool changed = false;
     setCurrentEditor();
-
-    //DrawNodeGraphStyleMenu();
     
+    const auto canvas_offset = nd::GetCanvasOffset();
+    const auto canvas_scale = nd::GetCanvasScale();
+
     nd::Begin("GraphNode");
 
     if (!getNodes().empty()) {
         for (auto& node : getNodesRef()) {
-            std::static_pointer_cast<BaseNode>(node.lock())->drawNode();
+            auto node_ptr = std::static_pointer_cast<BaseNode>(node.lock());
+            const auto node_pos = node_ptr->m_pos;
+            changed |= node_ptr->drawNode();
+            if (node_ptr->m_pos != node_pos) {
+                m_graphChanged = true;
+            }
         }
 
         m_drawLinks();
@@ -65,10 +72,14 @@ bool BaseGraph::drawGraph() {
     nd::Resume();
 
     nd::End();
+
+    if ((canvas_offset != nd::GetCanvasOffset()) || (canvas_scale != nd::GetCanvasScale())) {
+        m_graphChanged = true;
+    }
+
     nd::SetCurrentEditor(nullptr);
 
-    //DoGraphActions(&m_BaseNodeState);
-    return false;
+    return changed;
 }
 
 bool BaseGraph::drawNodeWidget(const uint32_t& vFrame) {
@@ -77,6 +88,14 @@ bool BaseGraph::drawNodeWidget(const uint32_t& vFrame) {
 
 bool BaseGraph::drawWidgets(const uint32_t& vFrame) {
     return false;
+}
+
+void BaseGraph::setGraphChanged(bool vFlag) {
+    m_graphChanged = vFlag;
+}
+
+bool BaseGraph::isGraphChanged() const {
+    return m_graphChanged;
 }
 
 void BaseGraph::m_drawPopups() {
@@ -157,38 +176,6 @@ ImVec2 BaseGraph::getMousePos() const {
     return ImGui::GetMousePos();
 }
 
-ImVec2 BaseGraph::getCanvasOffset() const {
-    if (m_pCanvas) {
-        setCurrentEditor();
-        return nd::GetCanvasOffset();
-    }
-
-    return ImVec2(0, 0);
-}
-
-float BaseGraph::getCanvasScale() const {
-    if (m_pCanvas) {
-        nd::SetCurrentEditor(m_pCanvas);
-        return nd::GetCanvasScale();
-    }
-
-    return 1.0f;
-}
-
-void BaseGraph::setCanvasOffset(const ImVec2& vOffset) {
-    if (m_pCanvas) {
-        setCurrentEditor();
-        nd::SetCanvasOffset(vOffset);
-    }
-}
-
-void BaseGraph::setCanvasScale(const float& vScale) {
-    if (m_pCanvas) {
-        setCurrentEditor();
-        nd::SetCanvasScale(vScale);
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////////
 ////// CONFIGURATION /////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -224,12 +211,9 @@ bool BaseGraph::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node&
     const auto& strName = vNode.getName();
     if (strName == "canvas") {
         setCurrentEditor();
-        if (vNode.isAttributeExist("offset")) {
-            nd::SetCanvasOffset(vNode.getAttribute<ImVec2>("offset"));
-        }
-        if (vNode.isAttributeExist("scale")) {
-            nd::SetCanvasScale(vNode.getAttribute<float>("scale"));
-        }
+        nd::SetCanvasView(                         //
+            vNode.getAttribute<ImVec2>("offset"),  //
+            vNode.getAttribute<float>("scale"));
     } else if (strName == "node") {
         if (m_LoadNodeFromXmlFunctor(m_getThis<BaseGraph>(), vNode, vParent)) {
             RecursParsingConfigChilds(vNode, vUserDatas);
