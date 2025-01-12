@@ -12,6 +12,7 @@ public:
         m_flowInputSlotPtr = BaseSlot::create<FlowInputSlot>(vParentStyle);
         if (m_flowInputSlotPtr != nullptr) {
             m_flowInputSlotPtr->setParentNode(vParentNode);
+            m_flowInputSlotPtr->setUuid(m_flowInputSlotPtr->getUuid());
             return true;
         }
         return false;

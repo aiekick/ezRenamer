@@ -11,6 +11,7 @@ public:
         m_flowOutputSlotPtr = BaseSlot::create<FlowOutputSlot>(vParentStyle);
         if (m_flowOutputSlotPtr != nullptr) {
             m_flowOutputSlotPtr->setParentNode(vParentNode);
+            m_flowOutputSlotPtr->setUuid(m_flowOutputSlotPtr->getUuid());
             return true;
         }
         return false;

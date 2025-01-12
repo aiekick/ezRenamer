@@ -104,6 +104,7 @@ public:  // Template
         static_assert(std::is_base_of<BaseSlot, T>::value, "T must derive of BaseSlot");
         auto slot_ptr = std::make_shared<T>(m_parentStyle);
         slot_ptr->m_setThis(slot_ptr);
+        slot_ptr->setUuid(slot_ptr->getUuid());  // call the virtual setUuid for derived classes
         if (!slot_ptr->init()) {
             slot_ptr.reset();
         } else {
