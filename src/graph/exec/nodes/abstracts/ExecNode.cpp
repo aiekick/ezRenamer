@@ -7,22 +7,24 @@ bool ExecNode::init() {
     return Parent::init();
 }
 
-BaseSlotWeak ExecNode::findSlotByType(ez::SlotDir vDir, const std::string& vType) {
-    BaseSlotWeak ret = Parent::findSlotByType(vDir, vType);
+BaseSlotWeak ExecNode::findSlotByTypeAndOptionalName(ez::SlotDir vDir, const std::string& vType, const std::string& vName) {
+    BaseSlotWeak ret = Parent::findSlotByTypeAndOptionalName(vDir, vType, vName);
     if (ret.expired()) {
         if (!vType.empty()) {
             if (vDir == ez::SlotDir::INPUT) {
                 if (!getInputFlowSlot().expired()) {
                     auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(getInputFlowSlot().lock());
-                    if (base_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
-                        ret = getInputFlowSlot();
+                    const auto& datas = base_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>();
+                    if (datas.type == vType) {
+                        ret = base_slot_ptr; // we have only one slot, so no need to search for name
                     }
                 }
             } else if (vDir == ez::SlotDir::OUTPUT) {
                 if (!getOutputFlowSlot().expired()) {
                     auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(getOutputFlowSlot().lock());
-                    if (base_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
-                        ret = getOutputFlowSlot();
+                    const auto& datas = base_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>();
+                    if (datas.type == vType) {
+                        ret = base_slot_ptr;  // we have only one slot, so no need to search for name
                     }
                 }
             }
@@ -45,6 +47,56 @@ void ExecNode::drawDebugInfos() {
         // not created by the derived node for a reason
     }
     ImGui::Unindent();
+}
+
+ez::xml::Nodes ExecNode::getXmlNodes(const std::string& vUserDatas) {
+    ez::xml::Node xml;
+    xml.addChilds(BaseNode::getXmlNodes(vUserDatas));
+    auto& node = xml.getChildren().back();
+    if (!getInputFlowSlot().expired()) {
+        auto& slots_in = node.getOrAddChild("inputs");
+        auto slot_ptr = getInputFlowSlot().lock();
+        const auto& slot_datas = slot_ptr->getDatas<BaseSlot::BaseSlotDatas>();
+        slots_in.addChild("slot")
+            .addAttribute("name", slot_datas.name)     //
+            .addAttribute("type", slot_datas.type)     //
+            .addAttribute("gid", slot_ptr->getUuid())  //
+            .addAttribute("lid", "MainInFlow");
+    }
+    if (!getOutputFlowSlot().expired()) {
+        auto& slots_out = node.getOrAddChild("outputs");
+        auto slot_ptr = getOutputFlowSlot().lock();
+        const auto& slot_datas = slot_ptr->getDatas<BaseSlot::BaseSlotDatas>();
+        slots_out.addChild("slot")
+            .addAttribute("name", slot_datas.name)     //
+            .addAttribute("type", slot_datas.type)     //
+            .addAttribute("gid", slot_ptr->getUuid())  //
+            .addAttribute("lid", "MainOutFlow");
+    }
+    return xml.getChildren();
+}
+
+// return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
+bool ExecNode::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
+    const auto& strName = vNode.getName();
+    if (strName == "node") {
+        BaseNode::setFromXmlNodes(vNode, vParent, vUserDatas);
+    } else if (strName == "slot") {
+        BaseNode::setFromXmlNodes(vNode, vParent, vUserDatas);
+        const auto& lid = vNode.getAttribute("lid");
+        if (lid == "MainInFlow") {
+            if (!getInputFlowSlot().expired()) {
+                auto slot_ptr = getInputFlowSlot().lock();
+                slot_ptr->setUuid(vNode.getAttribute<ez::Uuid>("gid"));
+            }
+        } else if (lid == "MainOutFlow") {
+            if (!getOutputFlowSlot().expired()) {
+                auto slot_ptr = getOutputFlowSlot().lock();
+                slot_ptr->setUuid(vNode.getAttribute<ez::Uuid>("gid"));
+            }
+        }
+    }
+    return true;
 }
 
 bool ExecNode::m_drawHeader() {
@@ -94,40 +146,6 @@ BaseSlotWeak ExecNode::m_findSlotById(nd::PinId vId) {
         }
         if (!getOutputFlowSlot().expired()) {
             if (getOutputFlowSlot().lock()->getUuid() == vId.Get()) {
-                ret = getOutputFlowSlot();
-            }
-        }
-    }
-    return ret;
-}
-
-BaseSlotWeak ExecNode::m_findSlotByName(const std::string& vName) {
-    BaseSlotWeak ret = Parent::m_findSlotByName(vName);
-    if (ret.expired()) {
-        if (!getInputFlowSlot().expired()) {
-            if (getInputFlowSlot().lock()->getDatas<BaseSlot::BaseSlotDatas>().name == vName) {
-                ret = getInputFlowSlot();
-            }
-        }
-        if (!getOutputFlowSlot().expired()) {
-            if (getOutputFlowSlot().lock()->getDatas<BaseSlot::BaseSlotDatas>().name == vName) {
-                ret = getOutputFlowSlot();
-            }
-        }
-    }
-    return ret;
-}
-
-BaseSlotWeak ExecNode::m_findSlotByType(const std::string& vType) {
-    BaseSlotWeak ret = Parent::m_findSlotByType(vType);
-    if (ret.expired()) {
-        if (!getInputFlowSlot().expired()) {
-            if (getInputFlowSlot().lock()->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
-                ret = getInputFlowSlot();
-            }
-        }
-        if (!getOutputFlowSlot().expired()) {
-            if (getOutputFlowSlot().lock()->getDatas<BaseSlot::BaseSlotDatas>().type == vType) {
                 ret = getOutputFlowSlot();
             }
         }

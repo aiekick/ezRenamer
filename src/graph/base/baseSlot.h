@@ -79,9 +79,9 @@ private:  // Common
     const BaseStyle& m_parentStyle;
 
 private:
-    ImVec2 m_pos;
-    ImVec2 m_size;
-    nd::PinId m_pinID = 0;
+    ImVec2 m_pos{};
+    ImVec2 m_size{};
+    nd::PinId m_pinID{};
 
     // un slot peut etre attaché a plusieurs autre slots, 
     // donc plusieurs links
@@ -116,15 +116,17 @@ public:
 
      void drawDebugInfos() override;
 
+     void setUuid(const ez::Uuid vUUID) override;
+
+     nd::PinId getPinID() { return m_pinID; }
+
  private:
     void m_drawInputWidget();
     void m_drawOutputWidget();
 
-
 protected:
     ImVec2 m_getPos() { return m_pos; }
     ImVec2 m_getSize() { return m_size; }
-    nd::PinId m_getPinID() { return m_pinID; }
     void m_drawSlot();
     virtual void m_drawBaseSlot(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);
     virtual void m_drawHoveredSlotText(const ImVec2& vCenter, bool vConnected, ImU32 vColor, ImU32 vInnerColor);

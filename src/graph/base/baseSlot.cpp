@@ -7,7 +7,6 @@
 
 bool BaseSlot::init() {
     if (ez::Slot::init()) {
-        m_pinID = getUuid();
         return true;
     }
     return false;
@@ -119,6 +118,11 @@ size_t BaseSlot::getMaxConnectionCount() const {
         count = ez::clamp<size_t>(count, 1U, 1024U);  // 1024 is big enough i guess :)
     }
     return count;
+}
+
+void BaseSlot::setUuid(const ez::Uuid vUUID) {
+    ez::UUID::setUuid(vUUID);
+    m_pinID = getUuid();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -235,18 +239,10 @@ size_t BaseSlot::m_getMaxConnectionCount() const {
 
 ez::xml::Nodes BaseSlot::getXmlNodes(const std::string& /*vUserDatas*/) {
     ez::xml::Node xml;
-    const auto& slot_datas = getDatas<BaseSlotDatas>();
-    xml.addChild("slot").addAttribute("name", slot_datas.name).addAttribute("type", slot_datas.type).addAttribute("id", getUuid());
     return xml.getChildren();
 }
 
 // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
-bool BaseSlot::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
-    const auto& strName = vNode.getName();
-    const auto& datas = getDatas<BaseSlotDatas>();
-    if ((datas.name == vNode.getAttribute("name")) &&  //
-        (datas.type == vNode.getAttribute("type"))) {
-        setUuid(vNode.getAttribute<ez::Uuid>("id"));
-    }
+bool BaseSlot::setFromXmlNodes(const ez::xml::Node& /*vNode*/, const ez::xml::Node& /*vParent*/, const std::string& /*vUserDatas*/) {
     return false;
 }

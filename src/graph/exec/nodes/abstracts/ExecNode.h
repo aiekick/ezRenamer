@@ -22,8 +22,10 @@ public:
     explicit ExecNode(const BaseStyle& vParentStyle);
     ENABLE_CLONE(ExecNode);
     bool init() override;
-    BaseSlotWeak findSlotByType(ez::SlotDir vDir, const std::string& vType) override;
+    BaseSlotWeak findSlotByTypeAndOptionalName(ez::SlotDir vDir, const std::string& vType, const std::string& vName) override;
     void drawDebugInfos() override;
+    ez::xml::Nodes getXmlNodes(const std::string& vUserDatas) override;
+    bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
 
 protected:
     bool m_drawHeader() override;

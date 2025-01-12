@@ -11,6 +11,8 @@ public:
     explicit SequenceNode(const BaseStyle& vParentStyle);
     ENABLE_CLONE(SequenceNode);
     bool init() override;
+    ez::xml::Nodes getXmlNodes(const std::string& vUserDatas) override;
+    bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
 
 protected:
     void m_slotWasJustConnected(const BaseSlotWeak& vOwnNodeSlot, const BaseSlotWeak& vExternNodeSlot) final;

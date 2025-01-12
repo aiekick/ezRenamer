@@ -33,3 +33,21 @@ class IDrawDebugInfos {
 public:
     virtual void drawDebugInfos() = 0;
 };
+
+#include <istream>
+#include <ostream>
+
+// for ez::xml::getAttribute<nd::Pinid>()
+
+static inline std::istream& operator>>(std::istream& vIn, nd::PinId& vType) {
+    uintptr_t v;
+    if (vIn >> v) {
+        vType = static_cast<nd::PinId>(v);
+    }
+    return vIn;
+}
+
+static inline std::ostream& operator<<(std::ostream& vOut, const nd::PinId& vType) {
+    vOut << static_cast<uintptr_t>(vType);
+    return vOut;
+}

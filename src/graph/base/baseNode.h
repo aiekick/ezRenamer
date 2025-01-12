@@ -47,10 +47,12 @@ private:  // Style
     const BaseStyle& m_parentStyle;
     BaseStyle m_nodeStyle;
 
-private:  // Node
+protected:  // Node
     ImVec2 m_pos{};
     ImVec2 m_size{};
     nd::NodeId m_nodeID{};
+
+private:  // Node
     ImRect m_headerRect{};
     bool m_isHovered{false};
     bool m_isSelected{false};
@@ -90,9 +92,11 @@ public:  // Normal
     const BaseStyle& getParentStyle();
     BaseStyle getNodeStyle();
 
-    virtual BaseSlotWeak findSlotByType(ez::SlotDir vDir, const std::string& vType);
+    virtual BaseSlotWeak findSlotByTypeAndOptionalName(ez::SlotDir vDir, const std::string& vType, const std::string& vName);
 
     void drawDebugInfos() override;
+
+    void setUuid(const ez::Uuid vUUID) override;
 
 public:  // Template
     template <typename T>
@@ -123,9 +127,9 @@ protected:  // Node
     virtual void m_slotWasJustDisConnected(const BaseSlotWeak& vOwnNodeSlot, const BaseSlotWeak& vExternNodeSlot);  // called by vOwnNodeSlot on dicconnection
     virtual void m_displayInfosOnTopOfTheNode();
     virtual BaseSlotWeak m_findSlotById(nd::PinId vId);
-    virtual BaseSlotWeak m_findSlotByType(const std::string& vType);
-    virtual BaseSlotWeak m_findSlotByName(const std::string& vName);
-    virtual BaseSlotWeak m_findSlotByTypeAndName(const std::string& vType, const std::string& vName);
     virtual BaseLinkWeakCnt m_getConnectedLinks();
+
+
+
 };
 

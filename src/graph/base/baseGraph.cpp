@@ -222,8 +222,6 @@ ez::xml::Nodes BaseGraph::getXmlNodes(const std::string& /*vUserDatas*/) {
 // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
 bool BaseGraph::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
     const auto& strName = vNode.getName();
-    //const auto& strValue = vNode.getContent();
-    //const auto& strParentName = vParent.getName();
     if (strName == "canvas") {
         setCurrentEditor();
         if (vNode.isAttributeExist("offset")) {
@@ -237,7 +235,11 @@ bool BaseGraph::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node&
             RecursParsingConfigChilds(vNode, vUserDatas);
         }
     } else if (strName == "links") {
-
+        for (const auto& child : vNode.getChildren()) {
+            const auto& slot_in = m_findSlotById(child.getAttribute<nd::PinId>("in"));
+            const auto& slot_out = m_findSlotById(child.getAttribute<nd::PinId>("out"));
+            m_connectSlots(slot_in, slot_out);
+        }
     }
     return false;  // prevent xml node childs exploring
 }

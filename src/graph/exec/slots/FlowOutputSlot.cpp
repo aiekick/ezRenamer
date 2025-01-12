@@ -13,7 +13,7 @@ bool FlowOutputSlot::init() {
 }
 
 void FlowOutputSlot::drawSlot() {
-    nd::BeginPin(getUuid(), nd::PinKind::Output);
+    nd::BeginPin(getPinID(), nd::PinKind::Output);
     Parent::m_drawSlot();
     nd::EndPin();
 }

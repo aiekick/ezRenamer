@@ -196,7 +196,8 @@ void NodeManager::m_showLibrary() {
                 auto slot_ptr = m_createNodeFromSlot.lock();
                 auto new_node_ptr = new_node.lock();
                 auto wanted_slot_type = slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().type;
-                auto found_slot = new_node_ptr->findSlotByType(ez::SlotDir::INPUT, wanted_slot_type);
+                auto wanted_slot_name = slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().name;
+                auto found_slot = new_node_ptr->findSlotByTypeAndOptionalName(ez::SlotDir::INPUT, wanted_slot_type, wanted_slot_name);
                 // a slot of the good type was found
                 // we will connect it
                 if (!found_slot.expired()) {
