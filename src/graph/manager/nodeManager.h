@@ -39,6 +39,7 @@ private:
 public:
     bool init();
     void unit();
+    void clear();
     bool drawGraph();
     BaseGraphWeak getGraph() const;
     bool getSlotColor(const std::string& vBaseSlotType, ImVec4& vOutColor) const override;
@@ -48,6 +49,8 @@ public:
     ez::xml::Nodes getXmlNodes(const std::string& vUserDatas) override ;
     bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) override;
     BaseNodeWeak createChildNodeInGraph(const BaseLibrary::NodeType& vNodeType, const BaseGraphWeak& vGraph);
+    void beforeXmlLoading();
+    void afterXmlLoading();
 
 private:
     bool m_loadNodeFromXml(const BaseGraphWeak& vGraph, const ez::xml::Node& vNode, const ez::xml::Node& vParent);

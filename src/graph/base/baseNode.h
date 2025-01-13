@@ -56,6 +56,7 @@ private:  // Node
     ImRect m_headerRect{};
     bool m_isHovered{false};
     bool m_isSelected{false};
+    bool m_xmlLoading = false;
 
 private:  // Graph
     nd::EditorContext* m_pNodeGraphContext{nullptr};
@@ -98,6 +99,9 @@ public:  // Normal
 
     void setUuid(const ez::Uuid vUUID) override;
 
+    void beforeXmlLoading() override;
+    void afterXmlLoading() override;
+
 public:  // Template
     template <typename T>
     std::weak_ptr<T> createChildSlot() {
@@ -129,8 +133,6 @@ protected:  // Node
     virtual void m_displayInfosOnTopOfTheNode();
     virtual BaseSlotWeak m_findSlotById(nd::PinId vId);
     virtual BaseLinkWeakCnt m_getConnectedLinks();
-
-
-
+    bool m_isXmlLoading();
 };
 

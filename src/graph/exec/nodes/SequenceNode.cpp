@@ -45,13 +45,30 @@ void SequenceNode::m_removeUnusedOutputSlotsAndAddOneAtEnd() {
     createChildSlot<FlowOutputSlot>();
 }
 
-ez::xml::Nodes SequenceNode::getXmlNodes(const std::string& vUserDatas) {
-    ez::xml::Node xml;
-    return xml.getChildren();
-}
-
 // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
 bool SequenceNode::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
     const auto& strName = vNode.getName();
+    const auto& strParentName = vParent.getName();
+    if (strName == "node") {
+        ExecNode::setFromXmlNodes(vNode, vParent, vUserDatas);
+    } else if (strName == "slot") {
+        ExecNode::setFromXmlNodes(vNode, vParent, vUserDatas);
+        if (strParentName == "outputs") {
+            const auto& lid = vNode.getAttribute<int32_t>("lid");
+            if (lid == this->m_getOutputSlots().size()) {
+                auto slot_ptr = createChildSlot<FlowOutputSlot>().lock();
+                slot_ptr->setUuid(vNode.getAttribute<ez::Uuid>("gid"));
+            }
+        }
+    }
     return true;
+}
+
+void SequenceNode::beforeXmlLoading() {
+    ExecNode::beforeXmlLoading();
+}
+
+void SequenceNode::afterXmlLoading() {
+    ExecNode::afterXmlLoading();
+    m_removeUnusedOutputSlotsAndAddOneAtEnd();
 }

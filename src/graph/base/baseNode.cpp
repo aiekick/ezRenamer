@@ -78,29 +78,33 @@ ez::xml::Nodes BaseNode::getXmlNodes(const std::string& vUserDatas) {
 // return true for continue xml parsing of childs in this node or false for interrupt the child exploration (if we want explore child ourselves)
 bool BaseNode::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
     const auto& strName = vNode.getName();
+    const auto& strParentName = vParent.getName();
     if (strName == "node") {
         const auto& node_datas = getDatas<BaseNodeDatas>();
         m_pos = vNode.getAttribute<ImVec2>("pos");
-        //setUuid(vNode.getAttribute<ez::Uuid>("gid"));
         nd::SetNodePosition(m_nodeID, m_pos);
-        RecursParsingConfigChilds(vNode, vUserDatas);
     } else if (strName == "slot") {
-        uint32_t idx = 0U;
-        for (const auto& slot : m_getInputSlots()) {
-            auto slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
-            if (vNode.getAttribute("lid") == ez::str::toStr("%u", idx++)) {
-                slot_ptr->setUuid(vNode.getAttribute<ez::Uuid>("gid"));
+        if (strParentName == "inputs") {
+            uint32_t idx = 0U;
+            for (const auto& slot : m_getInputSlots()) {
+                auto slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+                if (vNode.getAttribute("lid") == ez::str::toStr("%u", idx++)) {
+                    slot_ptr->setUuid(vNode.getAttribute<ez::Uuid>("gid"));
+                }
             }
         }
-        idx = 0U;
-        for (const auto& slot : m_getOutputSlots()) {
-            auto slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
-            if (vNode.getAttribute("lid") == ez::str::toStr("%u", idx++)) {
-                slot_ptr->setUuid(vNode.getAttribute<ez::Uuid>("gid"));
+        if (strParentName == "outputs") {
+            uint32_t idx = 0U;
+            for (const auto& slot : m_getOutputSlots()) {
+                auto slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
+                if (vNode.getAttribute("lid") == ez::str::toStr("%u", idx++)) {
+                    slot_ptr->setUuid(vNode.getAttribute<ez::Uuid>("gid"));
+                }
             }
         }
-    } 
-    return true;
+    }
+    RecursParsingConfigChilds(vNode, vUserDatas);
+    return false;
 }
 
 const BaseStyle& BaseNode::getParentStyle() {
@@ -144,6 +148,14 @@ BaseSlotWeak BaseNode::findSlotByTypeAndOptionalName(ez::SlotDir vDir, const std
 void BaseNode::setUuid(const ez::Uuid vUUID) {
     ez::UUID::setUuid(vUUID);
     m_nodeID = getUuid();
+}
+
+void BaseNode::beforeXmlLoading() {
+    m_xmlLoading = true;
+}
+
+void BaseNode::afterXmlLoading() {
+    m_xmlLoading = false;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -314,7 +326,7 @@ BaseSlotWeak BaseNode::m_findSlotById(nd::PinId vId) {
                 return base_slot_ptr;
             }
         }
-        for (const auto& slot : m_getOutputSlots()) {
+        for (const auto& slot : this->m_getOutputSlots()) {
             auto base_slot_ptr = std::static_pointer_cast<BaseSlot>(slot.lock());
             if (base_slot_ptr->m_pinID == vId) {
                 return base_slot_ptr;
@@ -339,4 +351,8 @@ BaseLinkWeakCnt BaseNode::m_getConnectedLinks() {
         ret.tryMerge(base_slot_ptr->getLinks());
     }
     return ret;
+}
+
+bool BaseNode::m_isXmlLoading() {
+    return m_xmlLoading;
 }

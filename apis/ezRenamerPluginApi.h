@@ -152,8 +152,8 @@ public:
     void setParentNode(BaseNodeWeak vBaseNodeWeak = BaseNodeWeak()) { m_parentNode = vBaseNodeWeak; }
     BaseNodeWeak getParentNode() { return m_parentNode; }
     virtual bool drawNodeWidget(const uint32_t& vFrame) = 0;
-    virtual void beforeNodeXmlLoading() {}
-    virtual void afterNodeXmlLoading() {}
+    virtual void beforeXmlLoading() {}
+    virtual void afterXmlLoading() {}
 };
 
 template <typename T>

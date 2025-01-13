@@ -46,6 +46,7 @@ void ProjectFile::Clear() {
     m_IsLoaded = false;
     m_IsThereAnyChanges = false;
     Messaging::Instance()->Clear();
+    NodeManager::Instance()->clear();
 }
 
 void ProjectFile::ClearDatas() {
@@ -83,7 +84,9 @@ bool ProjectFile::LoadAs(const std::string vFilePathName) {
     if (!vFilePathName.empty()) {
         Clear();
         std::string filePathName = ez::file::simplifyFilePath(vFilePathName);
+        NodeManager::Instance()->beforeXmlLoading();
         if (LoadConfigFile(filePathName, "project")) {
+            NodeManager::Instance()->afterXmlLoading();
             m_ProjectFilePathName = ez::file::simplifyFilePath(vFilePathName);
             auto ps = ez::file::parsePathFileName(m_ProjectFilePathName);
             if (ps.isOk) {

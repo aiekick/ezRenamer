@@ -63,6 +63,10 @@ void NodeManager::unit() {
     m_graphPtr.reset();
 }
 
+void NodeManager::clear() {
+    m_graphPtr->clear();
+}
+
 bool NodeManager::drawGraph() {
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("Settings")) {
@@ -168,12 +172,21 @@ BaseNodeWeak NodeManager::createChildNodeInGraph(const BaseLibrary::NodeType& vN
     return m_nodesLibrary.createChildNodeInGraph(vNodeType, vGraph);
 }
 
+void NodeManager::beforeXmlLoading() {
+    m_graphPtr->beforeXmlLoading();
+}
+
+void NodeManager::afterXmlLoading() {
+    m_graphPtr->afterXmlLoading();
+}
+
 bool NodeManager::m_loadNodeFromXml(const BaseGraphWeak& vGraph, const ez::xml::Node& vNode, const ez::xml::Node& vParent) {
     auto graph_ptr = vGraph.lock();
     if (graph_ptr != nullptr) {
         auto node_type = vNode.getAttribute("type");
         auto node_ptr = createChildNodeInGraph(node_type, vGraph).lock();
         if (node_ptr != nullptr) {
+            node_ptr->beforeXmlLoading();
             node_ptr->setFromXmlNodes(vNode, vParent, {});
         }
     }

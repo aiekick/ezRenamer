@@ -36,6 +36,11 @@ void BaseGraph::unit() {
     ez::Graph::unit();
 }
 
+void BaseGraph::clear() {
+    ez::Graph::clear();
+    m_links.clear();
+}
+
 void BaseGraph::setCurrentEditor() const {
     nd::SetCurrentEditor(m_pCanvas);
 }
@@ -214,18 +219,33 @@ bool BaseGraph::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node&
         nd::SetCanvasView(                         //
             vNode.getAttribute<ImVec2>("offset"),  //
             vNode.getAttribute<float>("scale"));
+        return false;
     } else if (strName == "node") {
         if (m_LoadNodeFromXmlFunctor(m_getThis<BaseGraph>(), vNode, vParent)) {
             RecursParsingConfigChilds(vNode, vUserDatas);
         }
+        return false;
     } else if (strName == "links") {
         for (const auto& child : vNode.getChildren()) {
             const auto& slot_in = m_findSlotById(child.getAttribute<nd::PinId>("in"));
             const auto& slot_out = m_findSlotById(child.getAttribute<nd::PinId>("out"));
             m_connectSlots(slot_in, slot_out);
         }
+        return false;
     }
-    return false;  // prevent xml node childs exploring
+    return true;
+}
+
+void BaseGraph::beforeXmlLoading() {
+    m_xmlLoading = true;
+}
+
+void BaseGraph::afterXmlLoading() {
+    m_xmlLoading = false;
+    for (auto& node : getNodesRef()) {
+        auto node_ptr = std::static_pointer_cast<BaseNode>(node.lock());
+        node_ptr->afterXmlLoading();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -616,8 +636,10 @@ bool BaseGraph::m_connectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vT
             // first we connect the BaseSlot
             ret = m_addLink(vFrom, vTo);
             // then we notify to the parent BaseNode
-            fromPtr->getParentNode<BaseNode>().lock()->m_slotWasJustConnected(vFrom, vTo);
-            toPtr->getParentNode<BaseNode>().lock()->m_slotWasJustConnected(vTo, vFrom);
+            if (!m_xmlLoading) {
+                fromPtr->getParentNode<BaseNode>().lock()->m_slotWasJustConnected(vFrom, vTo);
+                toPtr->getParentNode<BaseNode>().lock()->m_slotWasJustConnected(vTo, vFrom);
+            }
         }
     }
     return ret;
@@ -632,8 +654,10 @@ bool BaseGraph::m_disconnectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak&
         // first we disconnect the BaseSlot
         ret = m_breakLink(vFrom, vTo);
         // then we notify to the parent BaseNode
-        fromPtr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(vFrom, vTo);
-        toPtr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(vTo, vFrom);
+        if (!m_xmlLoading) {
+            fromPtr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(vFrom, vTo);
+            toPtr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(vTo, vFrom);
+        }
     }
     return ret;
 }
@@ -646,8 +670,10 @@ bool BaseGraph::m_disconnectLink(const BaseLinkWeak& vLink) {
         // first we disconnect the BaseLink
         ret = m_breakLink(link_ptr);
         // then we notify to the parent BaseNode
-        link_ptr->m_in.lock()->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(link_ptr->m_in, link_ptr->m_out);
-        link_ptr->m_out.lock()->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(link_ptr->m_out, link_ptr->m_in);
+        if (!m_xmlLoading) {
+            link_ptr->m_in.lock()->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(link_ptr->m_in, link_ptr->m_out);
+            link_ptr->m_out.lock()->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(link_ptr->m_out, link_ptr->m_in);
+        }
     }
     return ret;
 }

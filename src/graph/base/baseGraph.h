@@ -55,6 +55,7 @@ private:  // Graph
     std::vector<nd::NodeId> m_nodesToCopy;  // for copy/paste
     ImVec2 m_nodesCopyOffset;
     bool m_graphChanged{false};
+    bool m_xmlLoading = false;
 
 public:  // Normal
     template <typename T>
@@ -66,6 +67,8 @@ public:  // Normal
 
     bool init() override;
     void unit() override;
+
+    void clear() override;
 
     void setCurrentEditor() const;
 
@@ -97,6 +100,9 @@ public:  // Normal
     void setPrepareForCreateNodeFromSlotActionFunctor(const PrepareForCreateNodeFromSlotActionFunctor& vFunctor);
 
     void drawDebugInfos() override;
+
+    void beforeXmlLoading() override;
+    void afterXmlLoading() override;
 
 public:  // Template
     template <typename T>
