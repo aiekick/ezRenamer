@@ -2,11 +2,10 @@
 
 #include <apis/ezRenamerPluginApi.h>
 
+#include <graph/base/baseDefs.h>
 #include <imguipack/ImGuiPack.h>
 #include <ezlibs/ezGraph.hpp>
 #include <ezlibs/ezXmlConfig.hpp>
-
-#include <graph/base/baseDefs.h>
 
 #include <vector>
 #include <functional>

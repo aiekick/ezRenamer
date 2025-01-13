@@ -34,6 +34,8 @@ public:
     virtual void drawDebugInfos() = 0;
 };
 
+#ifdef USE_IMGUI_NODE_EDITOR
+
 #include <istream>
 #include <ostream>
 
@@ -51,3 +53,5 @@ static inline std::ostream& operator<<(std::ostream& vOut, const nd::PinId& vTyp
     vOut << static_cast<uintptr_t>(vType);
     return vOut;
 }
+
+#endif
