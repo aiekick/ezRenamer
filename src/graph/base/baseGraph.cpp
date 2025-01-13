@@ -227,8 +227,8 @@ bool BaseGraph::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node&
         return false;
     } else if (strName == "links") {
         for (const auto& child : vNode.getChildren()) {
-            const auto& slot_in = m_findSlotById(child.getAttribute<nd::PinId>("in"));
-            const auto& slot_out = m_findSlotById(child.getAttribute<nd::PinId>("out"));
+            const auto& slot_in = m_findSlotById(child.getAttribute<ez::Uuid>("in"));
+            const auto& slot_out = m_findSlotById(child.getAttribute<ez::Uuid>("out"));
             m_connectSlots(slot_in, slot_out);
         }
         return false;
