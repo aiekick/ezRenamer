@@ -54,4 +54,7 @@ static inline std::ostream& operator<<(std::ostream& vOut, const nd::PinId& vTyp
     return vOut;
 }
 
+#include <ezlibs/ezXml.hpp>
+#include <ezlibs/ezXmlConfig.hpp>
+
 #endif
