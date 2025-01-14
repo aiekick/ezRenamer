@@ -162,17 +162,17 @@ private:  // Graph
     BaseNodeWeak m_findNode(nd::NodeId vId);
     BaseNodeWeak m_findNodeByName(const std::string& vName);
     BaseLinkWeak m_findLink(nd::LinkId vId);
+    BaseLinkWeak m_findLinkConnectedToSlot(nd::PinId vId);
     BaseSlotWeak m_findSlotById(nd::PinId vId);
 
     bool m_addLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd);
     bool m_breakLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd);
     bool m_breakLink(const BaseLinkWeak& vLink);
-    // will check each links, and will delete
-    // all links who are connected on one side only
-    void m_delOneSideLinks();
+    bool m_breakLinkConnectedToSlot(const BaseSlotWeak& vSlot);
 
     bool m_connectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo);
     bool m_disconnectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo);
+    bool m_disconnectSlot(const BaseSlotWeak& vSlot);
     bool m_disconnectLink(const BaseLinkWeak& vLink);
 
     bool m_delNode(const BaseNodeWeak& vNode);
