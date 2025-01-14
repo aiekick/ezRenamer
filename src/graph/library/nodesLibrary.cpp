@@ -11,6 +11,8 @@
 // Others Nodes (will be in a plugin in few times)
 #include <graph/nodes/tools/SplitFilePathNode.h>
 #include <graph/nodes/tools/JoinFilePathNode.h>
+#include <graph/nodes/generators/StringNode.h>
+#include <graph/nodes/tools/RegexNode.h>
 
 BaseLibrary NodesLibrary::get() {
     BaseLibrary lib;
@@ -59,19 +61,37 @@ BaseLibrary NodesLibrary::get() {
 
     // File Manipulation
     lib.addLibraryEntry(BaseLibrary::LibraryEntry(
-        "File Manipulation",
+        "File",
         "File path splitter",
         "FILE_PATH_SPLITTER_NODE",  //
         {"FILE", "FLOW"},
         {"STRING", "FLOW"},
         [](const BaseGraphWeak& vGraph) { return vGraph.lock()->createChildNode<SplitFilePathNode>(); }));
     lib.addLibraryEntry(BaseLibrary::LibraryEntry(
-        "File Manipulation",
+        "File",
         "File path joiner",
         "FILE_PATH_JOINER_NODE",  //
         {"STRING", "FLOW"},
         {"FILE", "FLOW"},
         [](const BaseGraphWeak& vGraph) { return vGraph.lock()->createChildNode<JoinFilePathNode>(); }));
+
+    // Generators
+    lib.addLibraryEntry(BaseLibrary::LibraryEntry(
+        "String",
+        "String",
+        "STRING_GENERATOR_NODE",  //
+        {},
+        {"STRING", "FLOW"},
+        [](const BaseGraphWeak& vGraph) { return vGraph.lock()->createChildNode<StringNode>(); }));
+
+    // String Tools
+    lib.addLibraryEntry(BaseLibrary::LibraryEntry(
+        "String",
+        "Regex",
+        "REGEX_NODE",  //
+        {"STRING", "FLOW"},
+        {"STRING", "FLOW"},
+        [](const BaseGraphWeak& vGraph) { return vGraph.lock()->createChildNode<RegexNode>(); }));
 
     ////////////////////////////////////////
     return lib;

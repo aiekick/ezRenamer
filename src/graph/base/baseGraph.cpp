@@ -287,7 +287,9 @@ void BaseGraph::drawDebugInfos() {
 //////////////////////////////////////////////////////////////////////////////
 
 void BaseGraph::m_doCreateLinkOrNode() {
-    if (nd::BeginCreate(ImColor(255, 255, 255), 2.0f)) {
+    nd::PinId startSlotId = 0;
+    static ImVec4 slastSlotColor(1.0f, 1.0f, 1.0f, 1.0f); 
+    if (nd::BeginCreate(&startSlotId, slastSlotColor, 2.0f)) {
         auto showLabel = [](const char* label, const ImColor& color) {
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetTextLineHeight());
             auto _size_ = ImGui::CalcTextSize(label);
@@ -301,8 +303,13 @@ void BaseGraph::m_doCreateLinkOrNode() {
             ImGui::TextUnformatted(label);
         };
 
+        auto start_slot_ptr = m_findSlotById(startSlotId).lock();
+        if (start_slot_ptr != nullptr) {
+            slastSlotColor = ImGui::ColorConvertU32ToFloat4(start_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().color);
+        }
+        
         // new link
-        nd::PinId startSlotId = 0, endSlotId = 0;
+        nd::PinId endSlotId = 0;
         if (nd::QueryNewLink(&startSlotId, &endSlotId)) {
             auto start_slot_ptr = m_findSlotById(startSlotId).lock();
             auto end_slot_ptr = m_findSlotById(endSlotId).lock();
@@ -311,6 +318,8 @@ void BaseGraph::m_doCreateLinkOrNode() {
                     start_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().dir == ez::SlotDir::INPUT) {  // if start and end are inverted
                     std::swap(start_slot_ptr, end_slot_ptr);
                 }
+                slastSlotColor = ImGui::ColorConvertU32ToFloat4(start_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().color);
+
                 if (start_slot_ptr == end_slot_ptr) {  // same slot
                     showLabel("Same Slot", ImColor(32, 45, 32, 180));
                     nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
@@ -369,6 +378,8 @@ void BaseGraph::m_doCreateLinkOrNode() {
 #endif
             }
         }
+    } else {
+        slastSlotColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
     }
     nd::EndCreate();
 }
