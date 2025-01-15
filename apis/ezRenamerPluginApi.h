@@ -178,7 +178,7 @@ public:
 struct ImGuiContext;
 class GuiInterface {
 public:
-    virtual bool drawWidgets(const uint32_t& vFrame) = 0;
+    virtual bool drawWidgets() = 0;
 };
 
 }  // namespace rnm
