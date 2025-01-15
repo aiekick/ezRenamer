@@ -12,3 +12,11 @@ bool RegexNode::init() {
     createChildSlot<StringInputSlot>().lock()->getDatasRef<BaseSlot::BaseSlotDatas>().name = "String";
     return ret;
 }
+
+void RegexNode::m_getXmlModule(ez::xml::Node& vInOutNode) {
+    vInOutNode.addChild("pattern").setContent(".*");
+}
+
+void RegexNode::m_setXmlModule(const ez::xml::Node& vNode, const ez::xml::Node& vParent) {
+
+}

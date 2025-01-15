@@ -51,7 +51,7 @@ void ExecNode::drawDebugInfos() {
 
 ez::xml::Nodes ExecNode::getXmlNodes(const std::string& vUserDatas) {
     ez::xml::Node xml;
-    xml.addChilds(BaseNode::getXmlNodes(vUserDatas));
+    xml.addChilds(Parent::getXmlNodes(vUserDatas));
     auto& node = xml.getChildren().back();
     if (!getInputFlowSlot().expired()) {
         auto& slots_in = node.getOrAddChild("inputs");
@@ -73,6 +73,7 @@ ez::xml::Nodes ExecNode::getXmlNodes(const std::string& vUserDatas) {
             .addAttribute("gid", slot_ptr->getUuid())  //
             .addAttribute("lid", "MainOutFlow");
     }
+    m_getXmlModule(node.addChild("module").addAttribute("type", getDatas<BaseNodeDatas>().type));
     return xml.getChildren();
 }
 
@@ -80,9 +81,9 @@ ez::xml::Nodes ExecNode::getXmlNodes(const std::string& vUserDatas) {
 bool ExecNode::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) {
     const auto& strName = vNode.getName();
     if (strName == "node") {
-        BaseNode::setFromXmlNodes(vNode, vParent, vUserDatas);
+        Parent::setFromXmlNodes(vNode, vParent, vUserDatas);
     } else if (strName == "slot") {
-        BaseNode::setFromXmlNodes(vNode, vParent, vUserDatas);
+        Parent::setFromXmlNodes(vNode, vParent, vUserDatas);
         const auto& lid = vNode.getAttribute("lid");
         if (lid == "MainInFlow") {
             if (!getInputFlowSlot().expired()) {
@@ -94,6 +95,10 @@ bool ExecNode::setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& 
                 auto slot_ptr = getOutputFlowSlot().lock();
                 slot_ptr->setUuid(vNode.getAttribute<ez::Uuid>("gid"));
             }
+        }
+    } else if (strName == "module") {
+        if (vNode.getAttribute("type") == getDatas<BaseNodeDatas>().type) {
+            m_setXmlModule(vNode, vParent);
         }
     }
     return true;
@@ -162,4 +167,10 @@ BaseLinkWeakCnt ExecNode::m_getConnectedLinks() {
         ret.tryMerge(getOutputFlowSlot().lock()->getLinks());
     }
     return ret;
+}
+
+void ExecNode::m_getXmlModule(ez::xml::Node& vInOutNode) {
+}
+
+void ExecNode::m_setXmlModule(const ez::xml::Node& vNode, const ez::xml::Node& vParent) {
 }

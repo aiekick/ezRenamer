@@ -31,9 +31,9 @@ protected:
     bool m_drawHeader() override;
     bool m_drawHints() override;
     BaseSlotWeak m_findSlotById(nd::PinId vId);
-    BaseSlotWeak m_findSlotByName(const std::string& vName);
-    BaseSlotWeak m_findSlotByType(const std::string& vType);
     virtual BaseLinkWeakCnt m_getConnectedLinks();
+    virtual void m_getXmlModule(ez::xml::Node& vInOutNode);
+    virtual void m_setXmlModule(const ez::xml::Node& vNode, const ez::xml::Node& vParent);
 };
 
 typedef std::shared_ptr<ExecNode> ExecNodePtr;
