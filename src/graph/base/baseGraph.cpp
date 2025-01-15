@@ -70,6 +70,8 @@ bool BaseGraph::drawGraph() {
         m_doShorcutsOnNode();
     }
 
+    m_slotNotifier.consume();
+
     m_drawPopups();
 
     nd::Suspend();
@@ -246,6 +248,7 @@ void BaseGraph::afterXmlLoading() {
         auto node_ptr = std::static_pointer_cast<BaseNode>(node.lock());
         node_ptr->afterXmlLoading();
     }
+    m_slotNotifier.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -288,23 +291,23 @@ void BaseGraph::drawDebugInfos() {
 ////// CREATE / DELETE LINKS /////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
+void BaseGraph::m_drawLabel(const char* vLabel, ImU32 vColor) {
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetTextLineHeight());
+    auto _size_ = ImGui::CalcTextSize(vLabel);
+    auto padding = ImGui::GetStyle().FramePadding;
+    auto spacing = ImGui::GetStyle().ItemSpacing;
+    ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(spacing.x, -spacing.y));
+    auto rectMin = ImGui::GetCursorScreenPos() - padding;
+    auto rectMax = ImGui::GetCursorScreenPos() + _size_ + padding;
+    auto draw_list_ptr = ImGui::GetWindowDrawList();
+    draw_list_ptr->AddRectFilled(rectMin, rectMax, vColor, _size_.y * 0.15f);
+    ImGui::TextUnformatted(vLabel);
+}
+
 void BaseGraph::m_doCreateLinkOrNode() {
     nd::PinId startSlotId = 0;
     static ImVec4 slastSlotColor(1.0f, 1.0f, 1.0f, 1.0f);
     if (nd::BeginCreate(&startSlotId, slastSlotColor, 2.0f)) {
-        auto showLabel = [](const char* label, const ImColor& color) {
-            ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetTextLineHeight());
-            auto _size_ = ImGui::CalcTextSize(label);
-            auto padding = ImGui::GetStyle().FramePadding;
-            auto spacing = ImGui::GetStyle().ItemSpacing;
-            ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(spacing.x, -spacing.y));
-            auto rectMin = ImGui::GetCursorScreenPos() - padding;
-            auto rectMax = ImGui::GetCursorScreenPos() + _size_ + padding;
-            auto draw_list_ptr = ImGui::GetWindowDrawList();
-            draw_list_ptr->AddRectFilled(rectMin, rectMax, color, _size_.y * 0.15f);
-            ImGui::TextUnformatted(label);
-        };
-
         auto start_slot_ptr = m_findSlotById(startSlotId).lock();
         if (start_slot_ptr != nullptr) {
             slastSlotColor = ImGui::ColorConvertU32ToFloat4(start_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().color);
@@ -323,34 +326,34 @@ void BaseGraph::m_doCreateLinkOrNode() {
                 slastSlotColor = ImGui::ColorConvertU32ToFloat4(start_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().color);
 
                 if (start_slot_ptr == end_slot_ptr) {  // same slot
-                    showLabel("Same Slot", ImColor(32, 45, 32, 180));
+                    m_drawLabel("Same Slot", IM_COL32(32, 45, 32, 180));
                     nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
                 } else if (start_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().dir == end_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().dir) {  // same dir
-                    showLabel("Same dir", ImColor(32, 45, 32, 180));
+                    m_drawLabel("Same dir", IM_COL32(32, 45, 32, 180));
                     nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
                 } else if (start_slot_ptr->getParentNode().lock() == end_slot_ptr->getParentNode().lock()) {  // same parent node
-                    showLabel("Same node", ImColor(32, 45, 32, 180));
+                    m_drawLabel("Same node", IM_COL32(32, 45, 32, 180));
                     nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
                 } else if (start_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().type != end_slot_ptr->getDatas<BaseSlot::BaseSlotDatas>().type) {  // same dir
-                    showLabel("Not Same type", ImColor(32, 45, 32, 180));
+                    m_drawLabel("Not Same type", IM_COL32(32, 45, 32, 180));
                     nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
                 } /* else if ((end_slot_ptr->getLinks().size() + 1) > end_slot_ptr->getMaxConnectionCount()) {  // slot can have more connections
-                    showLabel("the slot cant accept more connections", ImColor(32, 45, 32, 180));
+                    m_drawLabel("the slot cant accept more connections", IM_COL32(32, 45, 32, 180));
                     nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
                 } */
-                 else if ((start_slot_ptr->getLinks().size() + 1) > start_slot_ptr->getMaxConnectionCount()) {  // slot can have more connections
-                        showLabel("the slot cant accept more connections", ImColor(32, 45, 32, 180));
-                        nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
-                    }
-                else {
+                else if ((start_slot_ptr->getLinks().size() + 1) > start_slot_ptr->getMaxConnectionCount()) {  // slot can have more connections
+                    m_drawLabel("the slot cant accept more connections", IM_COL32(32, 45, 32, 180));
+                    nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+                } else {
                     if (!end_slot_ptr->getLinks().empty()) {  // slot can have more connections
-                        showLabel("+ Re linking", ImColor(32, 45, 32, 180));                             //-V112
+                        m_drawLabel("+ Re linking", IM_COL32(32, 45, 32, 180));
                     } else {
-                        showLabel("+ Create Link", ImColor(32, 45, 32, 180));  //-V112
+                        m_drawLabel("+ Create Link", IM_COL32(32, 45, 32, 180));
                     }
                     if (nd::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
+                        // link or relink
                         if ((end_slot_ptr->getLinks().size() + 1) > end_slot_ptr->getMaxConnectionCount()) {
-                            m_disconnectSlot(end_slot_ptr);  // we disconnect all slot attached to it
+                            m_disconnectSlot(end_slot_ptr);
                         }
                         m_connectSlots(start_slot_ptr, end_slot_ptr);
                     }
@@ -365,20 +368,19 @@ void BaseGraph::m_doCreateLinkOrNode() {
             if (slot_ptr != nullptr) {
                 if (slot_ptr->getDatas<ez::SlotDatas>().dir == ez::SlotDir::INPUT) {
                     if ((slot_ptr->getLinks().size() + 1) > slot_ptr->getMaxConnectionCount()) {
-                        showLabel("the slot cant accept more connections to new node\nbut accept relinking", ImColor(32, 45, 32, 180));
+                        m_drawLabel("the slot cant accept more connections to new node\nbut accept relinking", IM_COL32(32, 45, 32, 180));
                         nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
                     } else {
 #ifdef _DEBUG
-                        showLabel("o Redirect link", ImColor(32, 45, 32, 180));  //-V112
+                        m_drawLabel("o Redirect link", IM_COL32(32, 45, 32, 180));  //-V112
 #endif
                     }
                 } else if (slot_ptr->getDatas<ez::SlotDatas>().dir == ez::SlotDir::OUTPUT) {
                     if ((slot_ptr->getLinks().size() + 1) > slot_ptr->getMaxConnectionCount()) {
-                        showLabel("the slot cant accept more connections to new node\nbut accept relinking", ImColor(32, 45, 32, 180));
+                        m_drawLabel("the slot cant accept more connections to new node\nbut accept relinking", IM_COL32(32, 45, 32, 180));
                         nd::RejectNewItem(ImColor(255, 0, 0), 2.0f);
-                    } else
-                    {
-                        showLabel("+ Create Node", ImColor(32, 45, 32, 180));  //-V112
+                    } else {
+                        m_drawLabel("+ Create Node", IM_COL32(32, 45, 32, 180));  //-V112
                         if (nd::AcceptNewItem()) {
                             m_doCreateNodeFromSlot(slot_ptr);
                         }
@@ -386,7 +388,7 @@ void BaseGraph::m_doCreateLinkOrNode() {
                 }
             } else {
 #ifdef _DEBUG
-                showLabel("/_\\ Slot not found", ImColor(32, 45, 32, 180));  //-V112
+                m_drawLabel("/_\\ Slot not found", IM_COL32(32, 45, 32, 180));  //-V112
 #endif
             }
         }
@@ -565,7 +567,7 @@ BaseSlotWeak BaseGraph::m_findSlotById(nd::PinId vId) {
 ////// ADD / DEL VISUAL LINKS ////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-bool BaseGraph::m_addLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd) {
+bool BaseGraph::m_addVisualLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd) {
     bool ret = false;
     const auto startPtr = vStart.lock();
     const auto endPtr = vEnd.lock();
@@ -585,7 +587,7 @@ bool BaseGraph::m_addLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd) 
     return ret;
 }
 
-bool BaseGraph::m_breakLink(const BaseLinkWeak& vLink) {
+bool BaseGraph::m_breakVisualLink(const BaseLinkWeak& vLink) {
     bool ret = false;
     const auto link_ptr = vLink.lock();
     if (link_ptr != nullptr) {
@@ -605,7 +607,7 @@ bool BaseGraph::m_breakLink(const BaseLinkWeak& vLink) {
     return ret;
 }
 
-bool BaseGraph::m_breakLinkConnectedToSlot(const BaseSlotWeak& vSlot) {
+bool BaseGraph::m_breakVisualLinkConnectedToSlot(const BaseSlotWeak& vSlot) {
     bool ret = false;
     const auto slot_ptr = vSlot.lock();
     if (slot_ptr != nullptr ) {
@@ -615,13 +617,13 @@ bool BaseGraph::m_breakLinkConnectedToSlot(const BaseSlotWeak& vSlot) {
             ret = true;
         }
         for (const auto& link : links_to_destroy) {
-            m_breakLink(link);
+            m_breakVisualLink(link);
         }
     }
     return ret;
 }
 
-bool BaseGraph::m_breakLink(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo) {
+bool BaseGraph::m_breakVisualLink(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo) {
     bool ret = false;
     const auto fromPtr = vFrom.lock();
     const auto toPtr = vTo.lock();
@@ -642,7 +644,7 @@ bool BaseGraph::m_breakLink(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo) 
             }
         }
         if (found_links.size() == 1U) {
-            m_breakLink(found_links.front());
+            m_breakVisualLink(found_links.front());
         } else {
             // ya un bug
             EZ_TOOLS_DEBUG_BREAK;
@@ -674,11 +676,10 @@ bool BaseGraph::m_connectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vT
     if (fromPtr != nullptr && toPtr != nullptr) {
         if (ez::Graph::m_connectSlots(vFrom, vTo) == ez::RetCodes::SUCCESS) {
             // first we connect the BaseSlot
-            ret = m_addLink(vFrom, vTo);
+            ret = m_addVisualLink(vFrom, vTo);
             // then we notify to the parent BaseNode
             if (!m_xmlLoading) {
-                fromPtr->getParentNode<BaseNode>().lock()->m_slotWasJustConnected(vFrom, vTo);
-                toPtr->getParentNode<BaseNode>().lock()->m_slotWasJustConnected(vTo, vFrom);
+                m_slotNotifier.addAction(vFrom, vTo, SlotNotifier::ActionType::CONNECT);
             }
         }
     }
@@ -692,11 +693,10 @@ bool BaseGraph::m_disconnectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak&
     if (fromPtr != nullptr && toPtr != nullptr) {
         ez::Graph::m_disconnectSlots(vFrom, vTo);
         // first we disconnect the BaseSlot
-        ret = m_breakLink(vFrom, vTo);
+        ret = m_breakVisualLink(vFrom, vTo);
         // then we notify to the parent BaseNode
         if (!m_xmlLoading) {
-            fromPtr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(vFrom, vTo);
-            toPtr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(vTo, vFrom);
+            m_slotNotifier.addAction(vFrom, vTo, SlotNotifier::ActionType::DISCONNECT);
         }
     }
     return ret;
@@ -711,12 +711,11 @@ bool BaseGraph::m_disconnectSlot(const BaseSlotWeak& vSlot) {
             auto other_slot_ptr = std::static_pointer_cast<BaseSlot>(base_slot_ptr->m_getConnectedSlots().front().lock());
             base_slot_ptr->m_disconnectSlot(other_slot_ptr);
             if (!m_xmlLoading) {
-                base_slot_ptr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(base_slot_ptr, other_slot_ptr);
-                other_slot_ptr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(other_slot_ptr, base_slot_ptr);
+                m_slotNotifier.addAction(base_slot_ptr, other_slot_ptr, SlotNotifier::ActionType::DISCONNECT);
             }
             ret = true;
         }        
-        m_breakLinkConnectedToSlot(vSlot);
+        m_breakVisualLinkConnectedToSlot(vSlot);
     }
     return ret;
 }
@@ -728,14 +727,56 @@ bool BaseGraph::m_disconnectLink(const BaseLinkWeak& vLink) {
     if (link_ptr != nullptr) {
         ez::Graph::m_disconnectSlots(link_ptr->m_in, link_ptr->m_out);
         // first we disconnect the BaseLink
-        ret = m_breakLink(link_ptr);
+        ret = m_breakVisualLink(link_ptr);
         // then we notify to the parent BaseNode
         if (!m_xmlLoading) {
-            link_ptr->m_in.lock()->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(link_ptr->m_in, link_ptr->m_out);
-            link_ptr->m_out.lock()->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(link_ptr->m_out, link_ptr->m_in);
+            m_slotNotifier.addAction(link_ptr->m_in, link_ptr->m_out, SlotNotifier::ActionType::DISCONNECT);
         }
     }
     return ret;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+////// SLOT NOTIFIER /////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+void BaseGraph::SlotNotifier::addAction(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd, ActionType vType) {
+    Action action;
+    action.start = vStart;
+    action.end = vEnd;
+    action.type = vType;
+    m_waitingActions.push_back(action);
+}
+
+void BaseGraph::SlotNotifier::consume() {
+    for (const auto& action : m_waitingActions) {
+        auto start_slot_ptr = action.start.lock();
+        auto end_slot_ptr = action.end.lock();
+        switch (action.type) {
+            case ActionType::CONNECT: {
+                if (start_slot_ptr != nullptr) {
+                    start_slot_ptr->getParentNode<BaseNode>().lock()->m_slotWasJustConnected(action.start, action.end);
+                }
+                if (end_slot_ptr != nullptr) {
+                    end_slot_ptr->getParentNode<BaseNode>().lock()->m_slotWasJustConnected(action.end, action.start);
+                }
+            } break;
+            case ActionType::DISCONNECT: {
+                if (start_slot_ptr != nullptr) {
+                    start_slot_ptr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(action.start, action.end);
+                }
+                if (end_slot_ptr != nullptr) {
+                    end_slot_ptr->getParentNode<BaseNode>().lock()->m_slotWasJustDisConnected(action.end, action.start);
+                }
+            } break;
+            default: break;
+        }
+    }
+    clear();
+}
+
+void BaseGraph::SlotNotifier::clear() {
+    m_waitingActions.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////////

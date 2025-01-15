@@ -55,6 +55,23 @@ private:  // Graph
     ImVec2 m_nodesCopyOffset;
     bool m_graphChanged{false};
     bool m_xmlLoading = false;
+    class SlotNotifier {
+    public:
+        enum class ActionType { CONNECT = 0, DISCONNECT, Count };
+
+    private:
+        struct Action {
+            BaseSlotWeak start;
+            BaseSlotWeak end;
+            ActionType type;
+        };
+        std::vector<Action> m_waitingActions;
+
+    public:
+        void addAction(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd, ActionType vAction);
+        void consume();
+        void clear();
+    } m_slotNotifier;
 
 public:  // Normal
     template <typename T>
@@ -144,6 +161,8 @@ private:  // Graph
     void m_drawBgContextMenuPopup();
     void m_drawLinks();
 
+    void m_drawLabel(const char* vLabel, ImU32 vColor);
+
     void m_doCreateLinkOrNode();
     void m_doDeleteLinkOrNode();
 
@@ -165,10 +184,10 @@ private:  // Graph
     BaseLinkWeak m_findLinkConnectedToSlot(nd::PinId vId);
     BaseSlotWeak m_findSlotById(nd::PinId vId);
 
-    bool m_addLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd);
-    bool m_breakLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd);
-    bool m_breakLink(const BaseLinkWeak& vLink);
-    bool m_breakLinkConnectedToSlot(const BaseSlotWeak& vSlot);
+    bool m_addVisualLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd);
+    bool m_breakVisualLink(const BaseSlotWeak& vStart, const BaseSlotWeak& vEnd);
+    bool m_breakVisualLink(const BaseLinkWeak& vLink);
+    bool m_breakVisualLinkConnectedToSlot(const BaseSlotWeak& vSlot);
 
     bool m_connectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo);
     bool m_disconnectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo);
