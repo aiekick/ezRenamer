@@ -93,7 +93,7 @@ bool BaseGraph::drawNodeWidget(const uint32_t& vFrame) {
     return false;
 }
 
-bool BaseGraph::drawWidgets(const uint32_t& vFrame) {
+bool BaseGraph::drawWidgets() {
     return false;
 }
 

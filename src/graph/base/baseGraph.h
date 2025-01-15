@@ -91,7 +91,7 @@ public:  // Normal
     bool drawGraph();
 
     bool drawNodeWidget(const uint32_t& vFrame) override;
-    bool drawWidgets(const uint32_t& vFrame) override;
+    bool drawWidgets() override;
 
     void zoomToContent() const;
     void navigateToContent() const;
@@ -161,7 +161,7 @@ private:  // Graph
     void m_drawBgContextMenuPopup();
     void m_drawLinks();
 
-    void m_drawLabel(const char* vLabel, ImU32 vColor);
+    static void m_drawLabel(const char* vLabel, ImU32 vColor);
 
     void m_doCreateLinkOrNode();
     void m_doDeleteLinkOrNode();

@@ -78,7 +78,7 @@ public:  // Normal
 
     bool init() override;
 
-    bool drawWidgets(const uint32_t& vFrame) override;
+    bool drawWidgets() override;
     bool drawNodeWidget(const uint32_t& vFrame) override;
 
     bool drawNode();
