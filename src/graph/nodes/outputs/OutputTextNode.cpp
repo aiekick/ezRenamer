@@ -9,7 +9,7 @@ bool OutputTextNode::init() {
     getDatasRef<BaseNodeDatas>().name = "Output text";
     getDatasRef<BaseNodeDatas>().type = "OUTPUT_TEXT_NODE";
     createChildSlot<TextInputSlot>();
-    return ret && true;
+    return ret;
 }
 
 

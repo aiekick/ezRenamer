@@ -7,5 +7,5 @@ StringOutputSlot::StringOutputSlot(const BaseStyle& vParentStyle)  //
 bool StringOutputSlot::init() {
     auto ret = Parent::init();
     getDatasRef<BaseSlotDatas>().hoveredInfos = "A String";
-    return ret && true;
+    return ret;
 }

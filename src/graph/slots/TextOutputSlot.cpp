@@ -7,5 +7,5 @@ TextOutputSlot::TextOutputSlot(const BaseStyle& vParentStyle)  //
 bool TextOutputSlot::init() {
     auto ret = Parent::init();
     getDatasRef<BaseSlotDatas>().hoveredInfos = "A Text";
-    return ret && true;
+    return ret;
 }

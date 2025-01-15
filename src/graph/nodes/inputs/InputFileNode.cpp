@@ -9,5 +9,5 @@ bool InputFileNode::init() {
     getDatasRef<BaseNodeDatas>().name = "Input file";
     getDatasRef<BaseNodeDatas>().type = "INPUT_FILE_NODE";
     createChildSlot<FileOutputSlot>();
-    return ret && true;
+    return ret;
 }

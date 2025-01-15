@@ -13,5 +13,5 @@ bool JoinFilePathNode::init() {
     createChildSlot<StringInputSlot>().lock()->getDatasRef<BaseSlot::BaseSlotDatas>().name = "Path";
     createChildSlot<StringInputSlot>().lock()->getDatasRef<BaseSlot::BaseSlotDatas>().name = "Name";
     createChildSlot<StringInputSlot>().lock()->getDatasRef<BaseSlot::BaseSlotDatas>().name = "Ext";
-    return ret && true;
+    return ret;
 }

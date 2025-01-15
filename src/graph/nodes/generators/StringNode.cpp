@@ -10,5 +10,5 @@ bool StringNode::init() {
     getDatasRef<BaseNodeDatas>().name = "String";
     getDatasRef<BaseNodeDatas>().type = "STRING_GENERATOR_NODE";
     createChildSlot<StringOutputSlot>().lock()->getDatasRef<BaseSlot::BaseSlotDatas>().name = "String";
-    return ret && true;
+    return ret;
 }

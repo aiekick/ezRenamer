@@ -13,5 +13,5 @@ bool SplitFilePathNode::init() {
     createChildSlot<StringOutputSlot>().lock()->getDatasRef<BaseSlot::BaseSlotDatas>().name = "Path";
     createChildSlot<StringOutputSlot>().lock()->getDatasRef<BaseSlot::BaseSlotDatas>().name = "Name";
     createChildSlot<StringOutputSlot>().lock()->getDatasRef<BaseSlot::BaseSlotDatas>().name = "Ext";
-    return ret && true;
+    return ret;
 }

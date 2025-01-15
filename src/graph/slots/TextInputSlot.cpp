@@ -7,5 +7,5 @@ TextInputSlot::TextInputSlot(const BaseStyle& vParentStyle)  //
 bool TextInputSlot::init() {
     auto ret = Parent::init();
     getDatasRef<BaseSlotDatas>().hoveredInfos = "A Text";
-    return ret && true;
+    return ret;
 }

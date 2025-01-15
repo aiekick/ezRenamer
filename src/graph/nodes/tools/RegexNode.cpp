@@ -10,5 +10,5 @@ bool RegexNode::init() {
     getDatasRef<BaseNodeDatas>().name = "Regex";
     getDatasRef<BaseNodeDatas>().type = "REGEX_NODE";
     createChildSlot<StringInputSlot>().lock()->getDatasRef<BaseSlot::BaseSlotDatas>().name = "String";
-    return ret && true;
+    return ret;
 }

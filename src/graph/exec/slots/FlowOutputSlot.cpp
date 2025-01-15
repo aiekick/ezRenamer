@@ -9,7 +9,7 @@ bool FlowOutputSlot::init() {
     getDatasRef<BaseSlotDatas>().hoveredInfos = "Flow";
     getDatasRef<BaseSlotDatas>().color = ImGui::GetColorU32(ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
     getDatasRef<BaseSlotDatas>().hideName = true;
-    return ret && true;
+    return ret;
 }
 
 void FlowOutputSlot::drawSlot() {

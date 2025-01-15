@@ -12,6 +12,7 @@
 #include <graph/nodes/tools/SplitFilePathNode.h>
 #include <graph/nodes/tools/JoinFilePathNode.h>
 #include <graph/nodes/generators/StringNode.h>
+#include <graph/nodes/tools/ReplaceNode.h>
 #include <graph/nodes/tools/RegexNode.h>
 
 BaseLibrary NodesLibrary::get() {
@@ -92,6 +93,13 @@ BaseLibrary NodesLibrary::get() {
         {"STRING", "FLOW"},
         {"STRING", "FLOW"},
         [](const BaseGraphWeak& vGraph) { return vGraph.lock()->createChildNode<RegexNode>(); }));
+    lib.addLibraryEntry(BaseLibrary::LibraryEntry(
+        "String",
+        "Replace",
+        "REPLACE_NODE",  //
+        {"STRING", "FLOW"},
+        {"STRING", "FLOW"},
+        [](const BaseGraphWeak& vGraph) { return vGraph.lock()->createChildNode<ReplaceNode>(); }));
 
     ////////////////////////////////////////
     return lib;

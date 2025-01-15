@@ -7,5 +7,5 @@ FileInputSlot::FileInputSlot(const BaseStyle& vParentStyle)  //
 bool FileInputSlot::init() {
     auto ret = Parent::init();
     getDatasRef<BaseSlotDatas>().hoveredInfos = "A File path";
-    return ret && true;
+    return ret;
 }
