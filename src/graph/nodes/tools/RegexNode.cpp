@@ -15,8 +15,9 @@ bool RegexNode::init() {
 
 void RegexNode::m_getXmlModule(ez::xml::Node& vInOutNode) {
     vInOutNode.addChild("pattern").setContent(".*");
+    EZ_TOOLS_DEBUG_BREAK;
 }
 
 void RegexNode::m_setXmlModule(const ez::xml::Node& vNode, const ez::xml::Node& vParent) {
-
+    EZ_TOOLS_DEBUG_BREAK;
 }
