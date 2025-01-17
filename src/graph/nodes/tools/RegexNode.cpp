@@ -20,6 +20,7 @@ bool RegexNode::init() {
 }
 
 bool RegexNode::drawWidgets() {
+    ImGui::Header("Regex");
     bool change = false;
     if (m_inputPattern.DisplayInputText(0.0f, "Regex pattern", "(.*)")) {
         m_updateNode();
@@ -42,24 +43,36 @@ void RegexNode::m_setXmlModule(const ez::xml::Node &vNode, const ez::xml::Node &
 }
 
 void RegexNode::m_updateNode() {
-    const std::regex base_regex(m_inputPattern.GetText());
-    const auto captures_count = base_regex.mark_count();
 
-    std::vector<BaseSlotWeak> slotsToRemove;
-    for (const auto &slot: this->m_getOutputSlots()) {
-        auto slot_ptr = std::static_pointer_cast<FlowOutputSlot>(slot.lock());
-        if (!slot_ptr->isConnected()) {
-            slotsToRemove.push_back(slot_ptr);
+    try {
+        uint32_t captures_count{0u};
+        const std::regex base_regex(m_inputPattern.GetText());
+        captures_count = base_regex.mark_count();
+
+        // first loop : delete only not connected slots
+        // second loop : delete also connected slots if more than captures count
+        bool second_loop_check = false;
+        std::vector<BaseSlotWeak> slotsToRemove;
+        while (this->m_getOutputSlots().size() > captures_count) {
+            for (const auto &slot : this->m_getOutputSlots()) {
+                auto slot_ptr = std::static_pointer_cast<FlowOutputSlot>(slot.lock());
+                if (!slot_ptr->isConnected() || second_loop_check) {
+                    slotsToRemove.push_back(slot_ptr);
+                }
+            }
+            for (const auto &slot : slotsToRemove) {
+                m_delSlot(slot);
+            }
+            second_loop_check = true;
+            slotsToRemove.clear();
         }
-    }
-    // now remove
-    for (const auto &slot: slotsToRemove) {
-        m_delSlot(slot);
-    }
 
-    while (captures_count > m_getOutputSlots().size()) {
-        createChildSlot<StringOutputSlot>().lock()->getDatasRef<BaseSlot::BaseSlotDatas>().hideName = true;
+        while (captures_count > m_getOutputSlots().size()) {
+            createChildSlot<StringOutputSlot>().lock()->getDatasRef<BaseSlot::BaseSlotDatas>().hideName = true;
+        }
+    } catch (std::exception &ex) {
+        LogVarError("Regex error : %s", ex.what());
+    } catch (...) {
+        LogVarError("Unknow regex error");
     }
-    // now add a slot at end
-
 }

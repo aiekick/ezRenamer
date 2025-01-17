@@ -50,19 +50,7 @@ bool Controller::drawMenu(float& vOutWidth) {
 }
 
 bool Controller::drawControl() {
-    /*ImGui::Header("Renamers");
-    const auto w = ImGui::GetContentRegionAvail().x;
-    auto selectedRenamerPtr = m_selectedRenamer.lock();
-    if (ImGui::BeginChild("##Renamers", ImVec2(w, -1), ImGuiChildFlags_FrameStyle | ImGuiChildFlags_Border)) {
-        for (auto& plugin : m_renamers) {
-            if (ImGui::Selectable(plugin.first.c_str(), selectedRenamerPtr == plugin.second)) {
-                m_selectedRenamer = plugin.second;
-            }
-        }
-        ImGui::EndChild(); 
-    }*/
-
-    return false;
+    return NodeManager::Instance()->drawControl();
 }
 
 bool Controller::drawFilesList() {

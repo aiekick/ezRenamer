@@ -55,8 +55,8 @@ const BaseSlotWeak& BaseLink::getOutSlot() const {
 void BaseLink::drawDebugInfos() {
     ImGui::Text(
         "Link : %s -> %s",  //
-        m_in.lock()->getDatas<BaseSlot::BaseSlotDatas>().name.c_str(),
-        m_out.lock()->getDatas<BaseSlot::BaseSlotDatas>().name.c_str());
+        (m_in.expired()) ? "Expîred" : m_in.lock()->getDatas<BaseSlot::BaseSlotDatas>().name.c_str(),
+        (m_out.expired()) ? "Expîred" : m_out.lock()->getDatas<BaseSlot::BaseSlotDatas>().name.c_str());
 }
 
 //////////////////////////////////////////////////////////////////////////////

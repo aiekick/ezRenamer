@@ -134,5 +134,6 @@ protected:  // Node
     virtual BaseSlotWeak m_findSlotById(nd::PinId vId);
     virtual BaseLinkWeakCnt m_getConnectedLinks();
     bool m_isXmlLoading();
+    ez::RetCodes m_delSlot(const ez::SlotWeak& vSlot) override;
 };
 

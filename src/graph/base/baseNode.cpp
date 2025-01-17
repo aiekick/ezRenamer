@@ -1,6 +1,7 @@
 #include "baseNode.h"
 #include <ezlibs/ezLog.hpp>
 
+#include <graph/base/baseGraph.h>
 #include <graph/base/baseSlot.h>
 #include <graph/base/baseLink.h>
 
@@ -343,7 +344,7 @@ BaseSlotWeak BaseNode::m_findSlotById(nd::PinId vId) {
 }
 
 
-// willr eturn all connected link from all slots
+// will return all connected link from all slots
 // for destruction by the graph
 // since ther links are owned by the graph
 BaseLinkWeakCnt BaseNode::m_getConnectedLinks() {
@@ -361,4 +362,17 @@ BaseLinkWeakCnt BaseNode::m_getConnectedLinks() {
 
 bool BaseNode::m_isXmlLoading() {
     return m_xmlLoading;
+}
+
+ez::RetCodes BaseNode::m_delSlot(const ez::SlotWeak &vSlot) {
+    if (!vSlot.expired()) {
+        auto graph_ptr = getParentGraph<BaseGraph>().lock();
+        if (graph_ptr != nullptr) {
+            auto slot_ptr = std::static_pointer_cast<BaseSlot>(vSlot.lock());
+            graph_ptr->disconnectSlot(slot_ptr);
+            return ez::Node::m_delSlot(vSlot);
+        }
+        return ez::RetCodes::FAILED_GRAPH_PTR_NULL;
+    }
+    return ez::RetCodes::FAILED_SLOT_PTR_NULL;
 }

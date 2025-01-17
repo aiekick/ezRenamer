@@ -47,7 +47,10 @@ bool NodeManager::init() {
             }
             return m_filterLibraryForInputSlotType(slot_type);
         });
-
+    m_graphPtr->setSelectNodeActionFunctor(                               //
+        [this](const BaseGraphWeak& vGraph, const BaseNodeWeak& vNode) {  //
+            m_selectNode(vGraph, vNode);
+        });
     addSlotColor("NONE", ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
     addSlotColor("FLOW", ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
     addSlotColor("FILE", ImVec4(0.5f, 0.5f, 0.9f, 1.0f));
@@ -120,6 +123,14 @@ bool NodeManager::drawGraph() {
     return m_graphPtr->drawGraph();
 }
 
+bool NodeManager::drawControl() {
+    auto node_ptr = m_selectedNode.lock();
+    if (node_ptr != nullptr) {
+        return node_ptr->drawWidgets();
+    }
+    return false;
+}
+
 BaseGraphWeak NodeManager::getGraph() const {
     return m_graphPtr;
 }
@@ -178,6 +189,10 @@ void NodeManager::beforeXmlLoading() {
 
 void NodeManager::afterXmlLoading() {
     m_graphPtr->afterXmlLoading();
+}
+
+void NodeManager::m_selectNode(const BaseGraphWeak& vGraph, const BaseNodeWeak& vNode) {
+    m_selectedNode = vNode;
 }
 
 bool NodeManager::m_loadNodeFromXml(const BaseGraphWeak& vGraph, const ez::xml::Node& vNode, const ez::xml::Node& vParent) {

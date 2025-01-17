@@ -36,11 +36,14 @@ private:
     // empty if not createFromSlot mode
     BaseSlotWeak m_createNodeFromSlot;
 
+    BaseNodeWeak m_selectedNode;
+
 public:
     bool init();
     void unit();
     void clear();
     bool drawGraph();
+    bool drawControl();
     BaseGraphWeak getGraph() const;
     bool getSlotColor(const std::string& vBaseSlotType, ImVec4& vOutColor) const override;
     bool getSlotColor(const std::string& vBaseSlotType, ImU32& vOutColor) const override;
@@ -53,6 +56,7 @@ public:
     void afterXmlLoading();
 
 private:
+    void m_selectNode(const BaseGraphWeak& vGraph, const BaseNodeWeak& vNode);
     bool m_loadNodeFromXml(const BaseGraphWeak& vGraph, const ez::xml::Node& vNode, const ez::xml::Node& vParent);
     bool m_filterLibraryForInputSlotType(const BaseLibrary::SlotType& vSlotType);
     void m_showLibrary();

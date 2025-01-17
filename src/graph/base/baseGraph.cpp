@@ -63,16 +63,13 @@ bool BaseGraph::drawGraph() {
                 m_graphChanged = true;
             }
         }
-
-        m_drawLinks();
-        m_doCreateLinkOrNode();
-        m_doDeleteLinkOrNode();
-        m_doShorcutsOnNode();
     }
 
-    m_slotNotifier.consume();
-
+    m_drawLinks();
     m_drawPopups();
+    m_doCreateLinkOrNode();
+    m_doDeleteLinkOrNode();
+    m_doShorcutsOnNode();
 
     nd::Suspend();
     // draw command
@@ -80,7 +77,12 @@ bool BaseGraph::drawGraph() {
 
     nd::End();
 
-    if ((canvas_offset != nd::GetCanvasOffset()) || (canvas_scale != nd::GetCanvasScale())) {
+    m_doSelectedLinkOrNode();
+
+    m_slotNotifier.consume();
+
+    if ((canvas_offset != nd::GetCanvasOffset()) || //
+        (canvas_scale != nd::GetCanvasScale())) {
         m_graphChanged = true;
     }
 
@@ -113,7 +115,6 @@ void BaseGraph::m_drawPopups() {
         m_PrepareForCreateNodeFromSlot({});  // no slot, maybe needed for reset what was done for slot
     }
     m_drawBgContextMenuPopup();
-
     nd::Resume();
 }
 
@@ -254,6 +255,10 @@ void BaseGraph::afterXmlLoading() {
 //////////////////////////////////////////////////////////////////////////////
 ////// ACTION FUNCTORS ///////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
+
+void BaseGraph::setSelectNodeActionFunctor(const SelectNodeActionFunctor& vFunctor) {
+    m_SelectNodeActionFunctor = vFunctor;
+}
 
 void BaseGraph::setLoadNodeFromXmlFunctor(const LoadNodeFromXmlFunctor& vFunctor) {
     m_LoadNodeFromXmlFunctor = vFunctor;
@@ -411,11 +416,28 @@ void BaseGraph::m_doDeleteLinkOrNode() {
         while (nd::QueryDeletedNode(&nodeId)) {
             auto node = m_findNode(nodeId);
             if (nd::AcceptDeletedItem()) {
-                m_delNode(node);
+                m_graphChanged = m_delNode(node);
             }
         }
     }
     nd::EndDelete();
+}
+
+void BaseGraph::m_doSelectedLinkOrNode() {
+    if (nd::HasSelectionChanged()) {
+        std::vector<nd::NodeId> selected_nodes;
+        selected_nodes.resize(nd::GetSelectedObjectCount());
+        if (nd::GetSelectedNodes(selected_nodes.data(), selected_nodes.size())) {
+            if (selected_nodes.size() == 1U) {
+                m_selectedNode = m_findNode(*selected_nodes.begin());
+            }
+        } else {
+            m_selectedNode.reset();
+        }
+        if (m_SelectNodeActionFunctor != nullptr) {
+            m_SelectNodeActionFunctor(m_getThis<BaseGraph>(), m_selectedNode);
+        }
+    }
 }
 
 void BaseGraph::m_doCreateNodeFromSlot(const BaseSlotWeak& vSlot) {
@@ -466,6 +488,7 @@ void BaseGraph::m_copySelectedNodes() {
     for (const auto& id : m_nodesToCopy) {
         m_nodesCopyOffset += nd::GetNodePosition(id) * 0.5f;
     }
+    m_graphChanged = true;
 }
 
 void BaseGraph::m_pasteNodesAtMousePos() {
@@ -473,12 +496,14 @@ void BaseGraph::m_pasteNodesAtMousePos() {
     auto newOffset = nd::ScreenToCanvas(ImGui::GetMousePos()) - m_nodesCopyOffset;
     nd::Resume();
     m_duplicateSelectedNodes(newOffset);
+    m_graphChanged = true;
 }
 
 void BaseGraph::m_duplicateSelectedNodes(const ImVec2& vOffset) {
     for (auto& it : m_nodesToCopy) {
         m_duplicateNode((uint32_t)it.Get(), vOffset);
     }
+    m_graphChanged = true;
     m_nodesToCopy.clear();
 }
 
@@ -661,6 +686,10 @@ bool BaseGraph::connectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo)
     return m_connectSlots(vFrom, vTo);
 }
 
+bool BaseGraph::disconnectSlot(const BaseSlotWeak& vSlot) {
+    return m_disconnectSlot(vSlot);
+}
+
 bool BaseGraph::disconnectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vTo) {
     return m_disconnectSlots(vFrom, vTo);
 }
@@ -681,6 +710,7 @@ bool BaseGraph::m_connectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak& vT
             if (!m_xmlLoading) {
                 m_slotNotifier.addAction(vFrom, vTo, SlotNotifier::ActionType::CONNECT);
             }
+            m_graphChanged = true;
         }
     }
     return ret;
@@ -698,6 +728,7 @@ bool BaseGraph::m_disconnectSlots(const BaseSlotWeak& vFrom, const BaseSlotWeak&
         if (!m_xmlLoading) {
             m_slotNotifier.addAction(vFrom, vTo, SlotNotifier::ActionType::DISCONNECT);
         }
+        m_graphChanged = true;
     }
     return ret;
 }
@@ -713,6 +744,7 @@ bool BaseGraph::m_disconnectSlot(const BaseSlotWeak& vSlot) {
             if (!m_xmlLoading) {
                 m_slotNotifier.addAction(base_slot_ptr, other_slot_ptr, SlotNotifier::ActionType::DISCONNECT);
             }
+            m_graphChanged = true;
             ret = true;
         }        
         m_breakVisualLinkConnectedToSlot(vSlot);
@@ -732,6 +764,7 @@ bool BaseGraph::m_disconnectLink(const BaseLinkWeak& vLink) {
         if (!m_xmlLoading) {
             m_slotNotifier.addAction(link_ptr->m_in, link_ptr->m_out, SlotNotifier::ActionType::DISCONNECT);
         }
+        m_graphChanged = true;
     }
     return ret;
 }
@@ -792,6 +825,8 @@ bool BaseGraph::m_delNode(const BaseNodeWeak& vNode) {
             m_disconnectLink(link); // we dont 
         }
     }
+
+    m_graphChanged = true;
 
     // then we can just delete the node
     return (ez::Graph::m_delNode(vNode.lock()) == ez::RetCodes::SUCCESS);
