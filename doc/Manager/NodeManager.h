@@ -18,7 +18,7 @@ limitations under the License.
 
 #include <LumoBackend/Graph/Graph.h>
 #include <ctools/cTools.h>
-#include <imGuiPack.h>
+#include <imguipack.h>
 #include <LumoBackend/Graph/Base/BaseNode.h>
 #include <ctools/ConfigAbstract.h>
 #include <LumoBackend/Interfaces/GuiInterface.h>

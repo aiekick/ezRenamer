@@ -1,5 +1,5 @@
 set(IMGUIPACK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imguipack)
-set(IMGUIPACK_LIBRARIES imGuiPack)
+set(IMGUIPACK_LIBRARIES imguipack)
 
 # ON
 set(USE_IM_TOOLS ON CACHE BOOL "" FORCE)
@@ -20,24 +20,24 @@ set(USE_IMGUI_COLOR_TEXT_EDIT OFF CACHE BOOL "" FORCE)
 add_subdirectory(${IMGUIPACK_SOURCE_DIR})
 
 if(USE_SHARED_LIBS)
-	target_compile_definitions(imGuiPack INTERFACE BUILD_CTOOLS_SHARED_LIBS)	
-	set_target_properties(imGuiPack PROPERTIES FOLDER 3rdparty/Shared)
+	target_compile_definitions(imguipack INTERFACE BUILD_CTOOLS_SHARED_LIBS)	
+	set_target_properties(imguipack PROPERTIES FOLDER 3rdparty/Shared)
 	set_target_properties(freetype PROPERTIES FOLDER 3rdparty/Shared)
 	if(TARGET boost_regex)
 		set_target_properties(boost_regex PROPERTIES FOLDER 3rdparty/Shared)
 	endif()
 else()
-	set_target_properties(imGuiPack PROPERTIES FOLDER 3rdparty/Static)
+	set_target_properties(imguipack PROPERTIES FOLDER 3rdparty/Static)
 	set_target_properties(freetype PROPERTIES FOLDER 3rdparty/Static)
 	if(TARGET boost_regex)
 		set_target_properties(boost_regex PROPERTIES FOLDER 3rdparty/Static)
 	endif()
 endif()
 
-set_target_properties(imGuiPack PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${FINAL_BIN_DIR}")
-set_target_properties(imGuiPack PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${FINAL_BIN_DIR}")
-set_target_properties(imGuiPack PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${FINAL_BIN_DIR}")
-set_target_properties(imGuiPack PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${FINAL_BIN_DIR}")
+set_target_properties(imguipack PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${FINAL_BIN_DIR}")
+set_target_properties(imguipack PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${FINAL_BIN_DIR}")
+set_target_properties(imguipack PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${FINAL_BIN_DIR}")
+set_target_properties(imguipack PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${FINAL_BIN_DIR}")
 
 set_target_properties(freetype PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${FINAL_BIN_DIR}")
 set_target_properties(freetype PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${FINAL_BIN_DIR}")
@@ -86,7 +86,7 @@ if (USE_IMGUI_COLOR_TEXT_EDIT)
 endif()
  
 if(TARGET glfw)
-	target_link_libraries(imGuiPack 
+	target_link_libraries(imguipack 
 		glfw
 	)
 endif()

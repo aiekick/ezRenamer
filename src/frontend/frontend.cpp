@@ -19,7 +19,7 @@ limitations under the License.
 
 #include "frontend.h"
 
-#include <imGuiPack.h>
+#include <imguipack.h>
 
 #include <backend/backend.h>
 #include <project/projectFile.h>

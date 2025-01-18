@@ -1,6 +1,6 @@
 #pragma once
 
-#include <imguipack/imGuiPack.h>
+#include <imguipack/imguipack.h>
 
 #include <grapher/grapher.h>
 

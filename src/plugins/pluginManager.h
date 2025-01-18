@@ -9,7 +9,7 @@
 #include <ezlibs/ezPlugin.hpp>
 #include <ezlibs/ezXmlConfig.hpp>
 
-#include <imGuiPack.h>
+#include <imguipack.h>
 
 #include <apis/ezRenamerPluginApi.h>
 

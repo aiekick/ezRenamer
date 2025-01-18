@@ -2,7 +2,7 @@
 
 #include <ezlibs/ezTools.hpp>
 
-#include <imGuiPack.h>
+#include <imguipack.h>
 
 #include <project/projectFile.h>
 

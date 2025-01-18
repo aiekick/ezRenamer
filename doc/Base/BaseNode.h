@@ -27,7 +27,7 @@ limitations under the License.
 #include <unordered_map>
 #include <unordered_set>
 
-#include <imGuiPack.h>
+#include <imguipack.h>
 namespace nd = nd;
 
 #include <headers/datasDef.h>
