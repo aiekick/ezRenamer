@@ -1,6 +1,6 @@
 #pragma once
 
-#include <graph/base/baseSlot.h>
+#include <grapher/grapher.h>
 
 class FlowOutputSlot : public BaseSlot {
     typedef BaseSlot Parent;

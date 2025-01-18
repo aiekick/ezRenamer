@@ -73,7 +73,7 @@ add_definitions(-DUSE_STD_FILESYSTEM)
 add_definitions(-DIMGUI_ENABLE_FREETYPE)
 add_definitions(-DIMGUI_DEFINE_MATH_OPERATORS)
 add_definitions(-DUSE_DECORATIONS_FOR_RESIZE_CHILD_WINDOWS)
-add_definitions(-DIMGUI_INCLUDE="${CMAKE_SOURCE_DIR}/3rdparty/imguipack/ImGuiPack.h")
+add_definitions(-DIMGUI_INCLUDE="${CMAKE_SOURCE_DIR}/3rdparty/imguipack/imGuiPack.h")
 add_definitions(-DIMGUI_USER_CONFIG="${CMAKE_SOURCE_DIR}/src/headers/customImGuiConfig.h")
 add_definitions(-DCUSTOM_IMWIDGETS_CONFIG="${CMAKE_SOURCE_DIR}/src/headers/customImWidgetsConfig.h")
 add_definitions(-DCUSTOM_IN_APP_GPU_PROFILER_CONFIG="${CMAKE_SOURCE_DIR}/src/headers/customInAppGpuProfiler.h")
@@ -158,9 +158,10 @@ add_executable(${PROJECT}
 )
 
 if (USE_SHARED_LIBS)
+	target_compile_definitions(${PROJECT} PRIVATE BUILD_GRAPHER_SHARED_LIBS)
 	target_compile_definitions(${PROJECT} PRIVATE BUILD_IMGUI_PACK_SHARED_LIBS)	
-	target_compile_definitions(${PROJECT} PRIVATE BUILD_IN_APP_GPU_PROFILER_SHARED_LIBS)
 	target_compile_definitions(${PROJECT} PRIVATE BUILD_EZ_RENAMER_BRIDGE_SHARED_LIBS)
+	target_compile_definitions(${PROJECT} PRIVATE BUILD_IN_APP_GPU_PROFILER_SHARED_LIBS)
 endif()
 
 set_target_properties(${PROJECT} PROPERTIES OUTPUT_NAME "${PROJECT}_${CMAKE_SYSTEM_NAME}_${ARCH}")
@@ -174,6 +175,7 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/3rdparty
 	${IMGUIPACK_INCLUDE_DIRS}
 	${CMAKE_SOURCE_DIR}/src
+	${GRAPHER_INCLUDE_DIR}
 	${OPENGL_INCLUDE_DIR}
 	${CMAKE_SOURCE_DIR}
 	${PLOG_INCLUDE_DIR}
@@ -184,6 +186,7 @@ include_directories(
 target_link_libraries(${PROJECT}
 	${IN_APP_GPU_PROFILER_LIBRARIES}
 	${IMGUIPACK_LIBRARIES}
+	${GRAPHER_LIBRARIES}
 	${OPENGL_LIBRARIES}
 	${GLFW_LIBRARIES}
 	${GLAD_LIBRARIES}

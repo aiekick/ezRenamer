@@ -1,7 +1,5 @@
 #include "ExecManager.h"
-#include <graph/base/baseLink.h>
-#include <graph/base/baseNode.h>
-#include <graph/base/baseGraph.h>
+#include <grapher/grapher.h>
 #include <graph/exec/nodes/InputNode.h>
 #include <graph/exec/nodes/OutputNode.h>
 #include <graph/exec/nodes/SequenceNode.h>

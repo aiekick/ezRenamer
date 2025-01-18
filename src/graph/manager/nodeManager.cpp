@@ -1,8 +1,8 @@
 #include "nodeManager.h"
 #include <ezlibs/ezImGui.hpp>
 #include <project/projectFile.h>
-#include <graph/base/baseNode.h>
-#include <graph/base/baseSlot.h>
+#include <grapher/baseNode.h>
+#include <grapher/baseSlot.h>
 #include <graph/library/nodesLibrary.h>
 
 std::unique_ptr<NodeManager> NodeManager::mp_singleton = nullptr;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <headers/datasDef.h>
-#include <imguipack/ImGuiPack.h>
+#include <imguipack/imGuiPack.h>
 
 class Controller {
 private:  // Static

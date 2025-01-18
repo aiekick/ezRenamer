@@ -21,7 +21,7 @@ limitations under the License.
 
 #include <Frontend/MainFrontend.h>
 #include <ctools/FileHelper.h>
-#include <ImGuiPack.h>
+#include <imGuiPack.h>
 
 #include <LumoBackend/Systems/CommonSystem.h>
 #include <Gaia/Core/VulkanCore.h>

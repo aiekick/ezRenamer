@@ -1,11 +1,11 @@
 #pragma once
 
-#include <imguipack/ImGuiPack.h>
-#include <graph/base/baseDefs.h>
-#include <graph/base/baseGraph.h>
-#include <graph/base/baseLayout.h>
-#include <graph/base/baseLibrary.h>
-#include <graph/base/interfaces/SlotColorBankInterface.h>
+#include <imguipack/imGuiPack.h>
+
+#include <grapher/grapher.h>
+
+#include <grapher/interfaces/SlotColorBankInterface.h>
+
 #include <ezlibs/ezXmlConfig.hpp>
 
 #include <memory>

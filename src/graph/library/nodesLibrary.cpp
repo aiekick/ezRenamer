@@ -1,5 +1,4 @@
 #include <graph/library/nodesLibrary.h>
-#include <graph/base/baseGraph.h>
 
 // Internal Nodes
 #include <graph/nodes/inputs/InputFileNode.h>

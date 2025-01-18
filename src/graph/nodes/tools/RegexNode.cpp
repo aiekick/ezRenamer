@@ -61,7 +61,7 @@ void RegexNode::m_updateNode() {
                 }
             }
             for (const auto &slot : slotsToRemove) {
-                m_delSlot(slot);
+                m_removeSlot(slot);
             }
             second_loop_check = true;
             slotsToRemove.clear();

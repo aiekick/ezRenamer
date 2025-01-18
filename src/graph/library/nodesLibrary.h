@@ -1,6 +1,6 @@
 #pragma once
 
-#include <graph/base/baseLibrary.h>
+#include <grapher/grapher.h>
 
 class NodesLibrary {
 public:

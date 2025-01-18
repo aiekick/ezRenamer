@@ -22,7 +22,7 @@ limitations under the License.
 #include <vector>
 #include <memory>
 
-#include <ImGuiPack.h>
+#include <imGuiPack.h>
 #include <headers/datasDef.h>
 
 namespace nd = ax::NodeEditor;

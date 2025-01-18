@@ -1,5 +1,5 @@
 #include "OutputNode.h"
-#include <graph/base/baseSlot.h>
+#include <grapher/grapher.h>
 
 OutputNode::OutputNode(const BaseStyle& vParentStyle)  //
     : Parent(vParentStyle) {}

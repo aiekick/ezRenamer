@@ -1,6 +1,6 @@
 #include "pluginManager.h"
 
-#include <ImGuiPack.h>
+#include <imGuiPack.h>
 
 #include <ezlibs/ezFile.hpp>
 

@@ -1,5 +1,5 @@
 #include "SequenceNode.h"
-#include <graph/base/baseSlot.h>
+#include <grapher/grapher.h>
 #include <graph/exec/slots/FlowOutputSlot.h>
 
 SequenceNode::SequenceNode(const BaseStyle& vParentStyle)  //

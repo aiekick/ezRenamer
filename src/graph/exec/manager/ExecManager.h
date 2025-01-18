@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-#include <graph/base/baseDefs.h>
+#include <grapher/grapher.h>
 #include <graph/exec/nodes/ToolNode.h>
 #include <graph/exec/nodes/InputNode.h>
 #include <graph/exec/nodes/OutputNode.h>

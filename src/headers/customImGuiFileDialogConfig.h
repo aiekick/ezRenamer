@@ -17,7 +17,7 @@ limitations under the License.
 #pragma once
 #pragma warning(disable : 4005)
 
-#include <ImGuiPack.h>
+#include <imGuiPack.h>
 
 // uncomment and modify defines under for customize ImGuiFileDialog
 

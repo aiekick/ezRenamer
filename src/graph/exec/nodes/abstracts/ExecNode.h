@@ -1,7 +1,6 @@
 #pragma once
 
-#include <graph/base/baseDefs.h>
-#include <graph/base/baseNode.h>
+#include <grapher/grapher.h>
 #include <graph/exec/nodes/abstracts/FlowInputSlotAbstract.h>
 #include <graph/exec/nodes/abstracts/FlowOutputSlotAbstract.h>
 
