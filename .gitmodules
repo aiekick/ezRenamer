@@ -10,3 +10,7 @@
 	path = 3rdparty/imguipack
 	url = https://github.com/aiekick/ImGuiPack.git
 	branch = master
+[submodule "3rdparty/grapher"]
+	path = 3rdparty/grapher
+	url = https://github.com/aiekick/Grapher.git
+	branch = master

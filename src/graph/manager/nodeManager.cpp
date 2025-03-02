@@ -31,15 +31,15 @@ bool NodeManager::init() {
     m_graphConfig.showFlowKey = ImGuiKey_Backspace;
     m_graphPtr = BaseGraph::create(m_graphStyle, m_graphConfig);
     m_graphPtr->setLoadNodeFromXmlFunctor(                                 //
-        [this](const BaseGraphWeak& vGraph, const ez::xml::Node& vNode, const ez::xml::Node& vParent) {  //
+        [this](const BaseGraphWeak& vGraph, const ez::xml::Node& vNode, const ez::xml::Node& vParent, BaseGraph::UserDatas /*vUserDatas*/) {  //
             return m_loadNodeFromXml(vGraph, vNode, vParent);
         });
     m_graphPtr->setBgRightClickActionFunctor(      //
-        [this](const BaseGraphWeak& /*vGraph*/) {  //
+        [this](const BaseGraphWeak& /*vGraph*/, BaseGraph::UserDatas /*vUserDatas*/) {  //
             m_showLibrary();
         });
     m_graphPtr->setPrepareForCreateNodeFromSlotActionFunctor(                         //
-        [this](const BaseGraphWeak& /*vGraph*/, const BaseSlotWeak& vSlot) -> bool {  //
+        [this](const BaseGraphWeak& /*vGraph*/, const BaseSlotWeak& vSlot, BaseGraph::UserDatas /*vUserDatas*/) -> bool {  //
             m_createNodeFromSlot = vSlot;
             BaseLibrary::SlotType slot_type;
             if (!m_createNodeFromSlot.expired()) {
@@ -48,7 +48,7 @@ bool NodeManager::init() {
             return m_filterLibraryForInputSlotType(slot_type);
         });
     m_graphPtr->setSelectNodeActionFunctor(                               //
-        [this](const BaseGraphWeak& vGraph, const BaseNodeWeak& vNode) {  //
+        [this](const BaseGraphWeak& vGraph, const BaseNodeWeak& vNode, BaseGraph::UserDatas /*vUserDatas*/) {  //
             m_selectNode(vGraph, vNode);
         });
     addSlotColor("NONE", ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
